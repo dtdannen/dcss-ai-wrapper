@@ -1,4 +1,116 @@
-# file: README
+# README file for the dcss-ai-wrapper project.
+
+#### Overview of this document: ######################################
+#
+# 1. Installing Dungeon Crawl Stone Soup
+#
+# 2. How to Run an agent in the terminal
+#
+# 3. Creating and using custom levels
+#
+# 4. Troubleshooting
+#
+######################################################################
+
+
+######################################################################
+# 0. Pre-requisites
+######################################################################
+
+This guide assumes you have the following installed:
+
+    git
+    python2
+    pip2
+    python3
+    pip3
+
+######################################################################
+# 1. Installing Dungeon Crawl Stone Soup
+######################################################################
+
+While this API is likely to work with the current master branch, it has been tested with the 23.1 version, which
+is the recommended version of crawl to use with this API. We recommend installing a local version of crawl inside this
+project's folder.
+
+    1. Grab a copy of the 23.1 version of crawl, by cloning the repo and then resetting to the 23.1 version
+
+       > cd ~/dcss-ai-wrapper/
+       > git clone https://github.com/crawl/crawl.git
+       > cd ~/dcss-ai-wrapper/crawl/
+       > git reset --hard d6e21ad81dcba7f7f8c15336e0e985f070ce85fb
+
+    2. Compile crawl with the following flags
+
+       > cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/
+       > sudo make install prefix=/usr/local/ WEBTILES=y
+
+    3. Install requirements to run the webserver version of the game
+
+       > sudo pip2 install tornado==3.0.2
+       > sudo pip3 install asyncio
+       > sudo pip3 install websockets
+
+    4. Test that the browser version of the game is working
+
+       > cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/
+       > python2 webserver/server.py
+
+       Now open your web browser and go to http://localhost:8080/
+
+       Click register at the top right (not necessary to enter an email).
+
+       Then after logging in, click the leftmost link under "Play now:" which is "DCSS trunk".
+       You should then go to a menu where you choose your character configuration (i.e. species > background > weapon)
+       Once you proceed through the menus you should find yourself in a newly generated world. If you've reached this
+       step (and can see the tiles) you have successfully installed the game.
+
+       Make sure you test the game is working in the browser before moving to Step 2.
+
+
+######################################################################
+# 2. How to Run an agent in the terminal
+######################################################################
+
+    1. Start a terminal version of crawl with a socket for our agent to connect to
+
+       > cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/
+       > ./crawl -name AlexTheAgent -rc ./rcs/AlexTheAgent.rc -macro ./rcs/AlexTheAgent.macro -morgue ./rcs/midca -sprint -webtiles-socket ./rcs/AlexTheAgent:test.sock -await-connection
+
+            This will now hang while waiting for out agent to connect
+
+            Note: Feel free to change AlexTheAgent to any other string, this is just the name of the agent. Be sure
+            to change it in all four places.
+
+    2. Open up terminal_test_demo.py and change the variable 'crawl_socketpath' (line 14) to point to the location
+       of the socket you just created.
+
+    3. Run the demo script:
+
+       > python2 terminal_test_demo.py
+
+    4. You should now be able to watch the agent in the terminal as this script is running
+
+
+######################################################################
+# 3. Creating and using custom levels
+######################################################################
+
+# TODO...
+
+######################################################################
+# 4. Troubleshooting
+######################################################################
+
+  Problem: No images showing up and getting errors from the webserver like:
+    'HTTPOutputError: Tried to write X number of bytes but error with content length'
+  Solution: Make sure you are using tornado 3.0 (not the default version)
+
+#### End README ######################################################
+
+######################################################################
+# Old README - might be useful
+######################################################################
 
 
 # Install
@@ -109,6 +221,5 @@ sudo cp clingo /usr/local/bin/
 
 # 1. Navigate your browser to localhost:8080
 
-# 2. You should see a list of agents playing, click on the agent's name to spectate (note, you do not need to log in for this). If you don't see the agent on the list, try refreshing the page.
-
- l
+# 2. You should see a list of agents playing, click on the agent's name to spectate (note, you do not need to log in
+# for this). If you don't see the agent on the list, try refreshing the page.

@@ -8,17 +8,23 @@ import warnings
 import os
 import random
 import time
-#from dcss_gamestate import GameState
+
+
+#crawl_socketpath = '/Users/Decker/Documents/Repos/crawl/crawl-ref/source/rcs/midca:test.sock'
+crawl_socketpath = '/home/dustin/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/AlexTheAgent:test.sock'
+
 
 crawl_socket = None
-#game_state = GameState()
+
 
 dir_map = { 'NW' : 'y',  'N' : 'k', 'NE' : 'u',
              'W' : 'h',              'E' : 'l',
             'SW' : 'b',  'S' : 'j', 'SE' : 'n' }
 
+
 def json_encode(value):
     return json.dumps(value).replace("</", "<\\/")
+
 
 def close():
     global crawl_socket
@@ -27,6 +33,7 @@ def close():
         #socketpathobj.close()
         os.remove(socketpath)
         crawl_socket = None
+
 
 def send_message(data):
     start = datetime.now()
@@ -46,11 +53,15 @@ def send_message(data):
 def control_input(c):
     send_message(json_encode({'msg':'key', 'keycode':ord(c)-ord('A')+1}))
 
+
 def send_input(input_str):
     for c in input_str:
         send_message(json_encode({'msg':'key', 'keycode':ord(c)}))
 
+
 msg_buffer = None
+
+
 def read_msg():
     global msg_buffer
     data = crawl_socket.recv(128 * 1024, socket.MSG_DONTWAIT)
@@ -65,6 +76,7 @@ def read_msg():
         return data
     return ''
 
+
 def read_msgs():
     msgs = []
     data = read_msg()
@@ -72,20 +84,18 @@ def read_msgs():
     while "flush_messages" not in data:
         if len(data) > 0 and not data.startswith("*"): 
             msgs.append(json.loads(data))
-            #game_state.update(msgs[-1])
         elif data.startswith("*"): 
             server_msg = json.loads(data[1:])
             # TODO: Handle server messages (client_path,flush_messages,dump,exit_reason)
         data = read_msg()
     return msgs
 
+
 def send_and_receive(input_str):
     send_input(input_str)
     msgs = read_msgs()
     return msg
 
-#crawl_socketpath = '/Users/Decker/Documents/Repos/crawl/crawl-ref/source/rcs/midca:test.sock'
-crawl_socketpath = '/home/dustin/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/midca:test.sock'
 
 if os.path.exists(crawl_socketpath):
 
@@ -109,57 +119,44 @@ if os.path.exists(crawl_socketpath):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        #socketpathobj = tempfile.NamedTemporaryFile(prefix="crawl")
         socketpath = os.tempnam(None, "crawl")
-        # socketpath = "/var/tmp/crawlHW9O3N" # TODO: Replace this fixed path
-    
-    #socketpath = server_path
+
 
     crawl_socket.bind(socketpath)
-    #crawl_socket.bind(socketpathobj.name)
 
     send_message(msg)
     read_msgs()
-    
+
+    print("Selecting game mode and choosing character configuration...")
+
     # select sprint and character build
     send_and_receive('a') # choose Sonja spring
     send_and_receive('b') # choose Minotaur
     send_and_receive('h') # choose Berserker
     send_and_receive('a') # choose short sword
 
-    #time.sleep(1) # allow menus to transition to game
-
-    # turn off auto pick-up
-    # control_input('A')
-    # read_msgs()
-
-    # Get Stone
-    # send_and_receive(dir_map['NW'])
-    # send_and_receive('g')
-
-    # move into inner room
-    # time.sleep(1)
-    # send_and_receive(dir_map['NE'])
-    # send_and_receive(dir_map['N'])
-    # time.sleep(1)
-    # send_and_receive(dir_map['N'])
-    # send_and_receive(dir_map['N'])
-
     # move some random steps
+    print("About to start sending random moves...")
     i = 0
     while i < 20:
         direction = random.choice(dir_map.keys())
+        print("  moving {}".format(direction))
         send_and_receive(dir_map[direction])
         i = i + 1
-        time.sleep(1)
-    #	 #if game_state.can_move_direction(direction):
-    #     send_and_receive(dir_map[direction])
-    #	i = i + 1
+        time.sleep(0.25)
+    print("Done sending random moves...")
 
     # Quit and delete the game
-    # control_input('Q')
-    # send_input('yes\r')
-
+    print("Quitting the game and deleting for fresh start next time...")
+    control_input('Q')
+    time.sleep(0.25)
+    send_input('yes\r')
+    time.sleep(0.25)
+    send_input('\r')
+    time.sleep(0.25)
+    send_input('\r')
+    time.sleep(0.25)
+    send_input('\r')
     close()
 else:
     print('%s does not exist' % crawl_socketpath)
