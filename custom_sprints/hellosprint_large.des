@@ -1,0 +1,25 @@
+##############################################################################
+# Hello Sprint (Large) map
+#
+NAME:   hello_sprint_large
+DESC:   Custom Sprint: Large Test Scenario 1
+ORDER:  12
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+ORIENT: encompass
+COLOUR: xXc = blue
+KITEM:  # = Orb of Zot
+KMONS:  u = rat
+KITEM:  $ = gold q:27
+
+MAP
+XXXXXXXXXXXXXXXXXXXXXXXX
+XccccccccccccccccccccccX
+Xc.........cc....#....cX
+Xc.........cc.........cX
+Xc.........cc.........cX
+Xc....................cX
+Xc.........cc.........cX
+Xc....{....cc.........cX
+XccccccccccccccccccccccX
+XXXXXXXXXXXXXXXXXXXXXXXX
+ENDMAP

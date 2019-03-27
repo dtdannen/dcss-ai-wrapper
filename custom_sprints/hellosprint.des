@@ -1,0 +1,25 @@
+##############################################################################
+# Hello World sprint map
+#
+NAME:   hello_sprint
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Custom Sprint: "Hello World "
+ORDER:  11
+ORIENT: encompass
+COLOUR: xXc = blue
+KITEM:  # = Orb of Zot
+KMONS:  u = rat
+KITEM:  $ = gold q:27
+
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc....#....cX
+Xc.........cX
+Xc.........cX
+Xc.........cX
+Xc.........cX
+Xc....{....cX
+XcccccccccccX
+XXXXXXXXXXXXX
+ENDMAP

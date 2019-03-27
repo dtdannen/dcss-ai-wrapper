@@ -1,0 +1,114 @@
+# file: README
+
+
+# Install
+
+<<<<<<< HEAD
+0. TODO: make a note about installing crawl first before testing webserver add info from INSTALL.txt, I had to sudo
+make install prefix=/usr/local/ WEBTILES=y
+=======
+0. Clone the recent version of crawl from their github repository
+
+1. copy over files for custom levels from our repo (under custom_sprint/) into crawl-ref/source/dat/des/sprint/
+
+2. compile the crawl from step 0 by
+    > cd crawl-ref/source
+    > sudo make install prefix=/usr/local WEBTILES=y
+
+* Note: anytime you change one of the custom sprint levels in source/dat/des/sprint/ you need to recompile the whole crawl game
+
+>>>>>>> 371306fafd14d3907c21d755983935015ca8be36
+
+
+1. For webserver (which uses python2)
+
+pip install tornado==3.0.2
+
+2. For Agent-based API (which uses python3)
+
+sudo pip3 install asyncio
+sudo pip3 install websockets 
+
+# Problems that may arise:
+
+[1] No images showing up and getting errors from the webserver like:
+HTTPOutputError: Tried to write X number of bytes but error with content length
+[SOLUTION:] use tornado 3.0 instead of the current version
+
+[2] My custom sprint map isn't showing up!
+[SOLUTION] Recompile the code (when you compile, it moves the maps to the install directory, and that's where the
+webserver looks for the maps)
+
+3. For learning, we need to install ILASP and the potassco asp tools (clingo, gringo, etc):
+
+    a. Download ILASP here: https://sourceforge.net/projects/spikeimperial/files/ILASP/ILASP%20v3.1.0/
+
+    - mv the ILASP executable somewhere system-wide (like /usr/local/bin/ ) or just make sure they are on the path
+
+    - test the installation by running ILASP on the command line
+      $ ILASP
+
+
+    b. Download Potassco ASP tools from the most recent release here: https://github.com/potassco/clingo/releases/
+
+    - mv the executables somewhere system-wide (like /usr/local/bin/ ) or just make sure they are on the path
+
+     - test the installation by running clingo on the command line
+      $ clingo
+
+
+    c. Make sure there are empty folders named 'agent_data' and 'ilasp_data' and 'asp_data'
+
+
+Resources:
+-----------
+# Induction Learner Tools:
+
+[1] Download ILASP here:
+https://sourceforge.net/projects/spikeimperial/?source=directory
+
+
+sudo cp ILASP /usr/local/bin/             #(or somewhere else on your path)
+
+[2] Download clingo and put all executables on the path
+Clingo 5 release on github: https://github.com/potassco/clingo/releases
+
+Choose the linux-x86_64.tar.gz
+
+sudo cp clingo /usr/local/bin/
+... (do the same for reify, gringo, clasp, and lpconvert)
+
+
+# Running
+----------
+
+# 1. Start webserver
+
+> cd crawl_18/crawl/crawl-ref/source/
+> python2 webserver/server.py
+
+# 2. now check to see if its up using a browser at localhost:8080
+
+# 2.5. If this is the first time you are running this on your machine,
+  you will need to register an account on the webserver (in the
+  browser). Keep track of the username and password, as you will enter
+  this into the code file, which the agent will use to connect to the
+  server.
+
+# 3. In a new terminal, go back to top level dir 
+
+# 4. run the test_interface script using python3 (sidenote: installing asyncio
+  on python2.x will initially work but then you get errors when trying
+  to import it)
+
+> python3 main.py
+
+
+
+# Watching the Agent Play
+
+# 1. Navigate your browser to localhost:8080
+
+# 2. You should see a list of agents playing, click on the agent's name to spectate (note, you do not need to log in for this). If you don't see the agent on the list, try refreshing the page.
+
+ l
