@@ -17,13 +17,14 @@
 # 0. Pre-requisites
 ######################################################################
 
-This guide assumes you have the following installed:
+This guide has been tested on Ubuntu 18.04 LTS and assumes you have the following installed:
 
-    git
-    python2
-    pip2
-    python3
-    pip3
+    - git (sudo apt-get install git)
+    - python2 (sudo apt-get install python2.7)
+    - pip2 (sudo apt-get install python-pip)
+    - python3 (sudo apt-get install python3.6)
+    - pip3 (sudo apt-get install python3-pip)
+    - A variety of packages required by Dungeon Crawl Stone Soup (sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core)
 
 ######################################################################
 # 1. Installing Dungeon Crawl Stone Soup
@@ -33,12 +34,15 @@ While this API is likely to work with the current master branch, it has been tes
 is the recommended version of crawl to use with this API. We recommend installing a local version of crawl inside this
 project's folder.
 
+    0. Make sure you have cloned this repository (dcss-ai-wrapper)
+    
     1. Grab a copy of the 23.1 version of crawl, by cloning the repo and then resetting to the 23.1 version
 
-       > cd ~/dcss-ai-wrapper/
+       > cd ~/dcss-ai-wrapper/  (assuming this is the directory where you cloned this project - dcss-ai-wrapper)
        > git clone https://github.com/crawl/crawl.git
        > cd ~/dcss-ai-wrapper/crawl/
        > git reset --hard d6e21ad81dcba7f7f8c15336e0e985f070ce85fb
+       > git submodule update --init
 
     2. Compile crawl with the following flags
 
