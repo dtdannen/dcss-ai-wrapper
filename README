@@ -106,21 +106,10 @@ project's folder.
 # 4. Troubleshooting
 ######################################################################
 
-  Problem: Getting errors complaining about images or zlib
-  Solution: you may need to install these:
-
-    sudo apt-get install libpng-dev
-    sudo apt-get install zlib1g-dev
-
-
-
-  Problem: Can't compile on a headless terminal linux install
-  Solution: If you're not going to use the agent via the browser,
-            and instead just run it in the terminal version of crawl,
-	    compile without WEBTILES like the following:
-
-    sudo make install prefix=/usr/local/
-
+  Problem: Errors during compiling
+  Solution: Double check you installed all the packages listed at the
+  beginning that crawl needs. These come from the install instructions
+  for crawl itself.
 
 
   Problem: No images showing up and getting errors from the webserver like:
