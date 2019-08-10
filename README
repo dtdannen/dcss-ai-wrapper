@@ -126,7 +126,7 @@ project's folder.
   Problem: No images showing up and getting errors from the webserver like:
     'HTTPOutputError: Tried to write X number of bytes but error with content length'
     
-  Solution: Make sure you are using tornado 3.0 (not the default version)
+  Solution: Make sure you are using tornado 3.0 (not the version that installs by default)
 
 #### End README ######################################################
 
