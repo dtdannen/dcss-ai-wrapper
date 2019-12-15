@@ -11,7 +11,7 @@ import time
 
 
 #crawl_socketpath = '/Users/Decker/Documents/Repos/crawl/crawl-ref/source/rcs/midca:test.sock'
-crawl_socketpath = '/home/dustin/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/AlexTheAgent:test.sock'
+crawl_socketpath = '/home/dustin/Projects/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/midca:test.sock'
 
 
 crawl_socket = None
@@ -39,6 +39,7 @@ def send_message(data):
     start = datetime.now()
     try:
         crawl_socket.sendto(data.encode('utf-8'), crawl_socketpath)
+        print("Sent data")
     except socket.timeout:
         #self.logger.warning("Game socket send timeout", exc_info=True)
         print("Game socket send timeout")
@@ -71,8 +72,10 @@ def read_msg():
         # All messages from crawl end with \n.
         # If this one doesn't, it's fragmented.
         msg_buffer = data
+        print("fragmented data {}".format(msg_buffer))
     else:
         msg_buffer = None
+        print("data {}".format(msg_buffer))        
         return data
     return ''
 
@@ -103,7 +106,7 @@ if os.path.exists(crawl_socketpath):
 
     crawl_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     crawl_socket.settimeout(10)
-
+    print("Set timeout")
     crawl_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     if (crawl_socket.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF) < 2048):
@@ -118,12 +121,13 @@ if os.path.exists(crawl_socketpath):
             })
 
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
+        #warnings.simplefilter("ignore")
         socketpath = os.tempnam(None, "crawl")
 
-
+    print("about to bind socket path")
     crawl_socket.bind(socketpath)
 
+    print("about to send msg")
     send_message(msg)
     read_msgs()
 
@@ -131,9 +135,17 @@ if os.path.exists(crawl_socketpath):
 
     # select sprint and character build
     send_and_receive('a') # choose Sonja spring
+    print("send_and_receive('a') # choose Sonja spring")
+
     send_and_receive('b') # choose Minotaur
+    print("send_and_receive('b') # choose Minotaur    ")
+
     send_and_receive('h') # choose Berserker
+    print("send_and_receive('h') # choose Berserker")
+
     send_and_receive('a') # choose short sword
+    print("send_and_receive('a') # choose short sword    ")
+
 
     # move some random steps
     print("About to start sending random moves...")
