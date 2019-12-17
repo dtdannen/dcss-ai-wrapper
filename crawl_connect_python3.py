@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import warnings
 import os
 import random
-from dcss_gamestate import GameState
+from gamestate import GameState
 
 crawl_socket = None
 game_state = GameState()
@@ -96,7 +96,7 @@ def send_and_receive(input_str):
     msgs = read_msgs()
     handle_msgs(msgs)
 
-crawl_socketpath = '/Users/Decker/Documents/Repos/crawl/crawl-ref/source/rcs/midca:test.sock'
+crawl_socketpath = '/home/dustin/Projects/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/midca:test.sock'
 socketpath = '/var/tmp/crawl_socket'
 
 try:
