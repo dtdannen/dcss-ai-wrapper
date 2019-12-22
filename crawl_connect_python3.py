@@ -8,6 +8,10 @@ import warnings
 import os
 import random
 from gamestate import GameState
+import logging
+import time
+
+logging.basicConfig(level=logging.DEBUG)
 
 crawl_socket = None
 game_state = GameState()
@@ -92,6 +96,7 @@ def read_msgs():
     handle_msgs(msgs)
 
 def send_and_receive(input_str):
+    logging.debug("Sending {}".format(input_str))
     send_input(input_str)
     msgs = read_msgs()
     handle_msgs(msgs)
@@ -142,10 +147,10 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
     #send_message(msg)
 
     # select sprint and character build
-    send_and_receive('j')
+    send_and_receive('a')
     send_and_receive('b')
     send_and_receive('h')
-    send_and_receive('a')
+    send_and_receive('b')
 
     # turn off auto pick-up
     control_input('A')
