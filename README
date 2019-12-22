@@ -24,7 +24,8 @@ This guide has been tested on Ubuntu 18.04 LTS and assumes you have the followin
     - pip2 (sudo apt-get install python-pip)
     - python3 (sudo apt-get install python3.6)
     - pip3 (sudo apt-get install python3-pip)
-    - A variety of packages required by Dungeon Crawl Stone Soup (sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core)
+    - A variety of packages required by Dungeon Crawl Stone Soup
+        - sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core
 
 ######################################################################
 # 1. Installing Dungeon Crawl Stone Soup
