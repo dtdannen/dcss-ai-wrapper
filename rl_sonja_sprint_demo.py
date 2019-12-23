@@ -1,5 +1,11 @@
-# Run crawl with the following command line
-# ./crawl -name midca -rc ./rcs/midca.rc -macro ./rcs/midca.macro -morgue ./rcs/midca -sprint -webtiles-socket ./rcs/midca:test.sock -await-connection
+"""
+
+Demo of an RL agent on the sonja sprint in crawl 23.1
+
+Make sure to run crawl before running this demo, see:
+    start_crawl_terminal.sh
+
+"""
 
 import socket
 import json
