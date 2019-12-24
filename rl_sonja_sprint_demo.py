@@ -170,18 +170,20 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
     i = 0
     while( i < 100 ):
         action_str = "Action %3d - " % (i+1) 
-        direction = random.choice(list(dir_map.keys())) 
-        if game_state.can_move_direction(direction):
-            action_str += " Moving %s..." % direction
-            send_and_receive(dir_map[direction])
-        elif game_state.can_open_door(direction):
-            action_str += " Opening %s door..." % direction
-            send_and_receive(dir_map[direction])  
-        elif game_state.can_attack_monster(direction):     
-            action_str += " Attacking monster %s..." % direction
-            send_and_receive(dir_map[direction])    
-        else:
-            continue             
+        direction = random.choice(list(dir_map.keys()))
+        send_and_receive(dir_map[direction])
+        # if game_state.can_move_direction(direction):
+        #     action_str += " Moving %s..." % direction
+        #     send_and_receive(dir_map[direction])
+        # elif game_state.can_open_door(direction):
+        #     action_str += " Opening %s door..." % direction
+        #     send_and_receive(dir_map[direction])  
+        # elif game_state.can_attack_monster(direction):     
+        #     action_str += " Attacking monster %s..." % direction
+        #     send_and_receive(dir_map[direction])    
+        # else:
+        #     continue
+        
         i = i + 1
         print(action_str)
 
@@ -191,6 +193,6 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
     close()
 
-    print("Map Boundaries : %s" % str(game_state.map_obj.get_bounds()))
+    #print("Map Boundaries : %s" % str(game_state.map_obj.get_bounds()))
 else:
     print('%s does not exist' % crawl_socketpath)

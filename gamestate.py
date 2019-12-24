@@ -6,6 +6,9 @@ the current state of the dcss game
 import actions
 import logging
 import re
+import threading
+import time
+
 
 class Cell():
     '''
@@ -70,8 +73,6 @@ class TileFeatures():
                       # number of actions executed since last visit
 
 
-import threading
-import time
 
 class GameState():
 
