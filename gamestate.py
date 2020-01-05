@@ -50,6 +50,30 @@ class Cell():
             return g
         pass
 
+class InventoryItem():
+
+    def __init__(self, id_num, name, quantity, base_type=None):
+        self.id_num = id_num
+        self.name = name
+        self.quantity = quantity
+        self.base_type = base_type
+    
+    def set_base_type(self, base_type):
+        self.base_type = base_type
+
+    def set_name(self, name):
+        self.name = name
+
+    def set_quantity(self, quantity):
+        self.quantity = quantity
+
+    def set_id_num(self, id_num):
+        self.id_num = id_num
+
+    def __eq__(self, other):
+        return self.name == other.name
+        
+    
 class TileFeatures():
     '''
     Contains feature data used per tile
@@ -99,8 +123,9 @@ class GameState():
         self.map_dim = 24
         self.map_middle = 12
 
-        self.inventory = {}
-
+        self.inventory_raw = {}
+        self.inventory = []
+        
         self.last_recorded_movement = ''
 
         self.asp_str = '' # facts that don't change when an action is executed
@@ -226,11 +251,36 @@ class GameState():
 
     def process_inv(self,data):
         print("Data is {}".format(data))
+        name = None
+        quantity = None
+        base_type = None
         for inv_id in data.keys():
-            name = data[inv_id]['name']
-            quantity = data[inv_id]['quantity']
-            self.inventory[inv_id] = [name, quantity]
+            if 'name' in data[inv_id].keys():
+                name = data[inv_id]['name']
+            if 'quantity' in data[inv_id].keys():
+                quantity = data[inv_id]['quantity']
+            if 'base_type' in data[inv_id].keys():
+                base_type = data[inv_id]['base_type']
+            self.inventory_raw[inv_id] = [name, quantity, base_type]
+            inv_item = InventoryItem(inv_id, name, quantity, base_type)
+            if inv_item in self.inventory:
+                # item already exists, update quantity, remove if quantity = 0
+                if inv_item.get_quantity() <= 0:
+                    # remove
+                    self.inventory.remove(inv_item)
+                else:
+                    # update quantity
+                    prev_quantity = inv_item.get_quantity()
+                    existing_inv_item = None
+                    for prev_inv_item in self.inventory:
+                        if prev_inv_item == inv_item:
+                            existing_inv_item = prev_inv_item
+                    if prev_quantity > existing_inv_item.get_quantity():
+                        existing_inv_item.set_quantity(prev_quantity)
 
+                    
+                    
+                
     def get_x_y_g_cell_data(self, cells):
         only_xyg_cell_data = []
         curr_x = None
@@ -537,7 +587,12 @@ class GameState():
 
         print(s)
 
+    def print_inventory(self):
+        print("   Inventory:")
+        for inv_id, item_description in self.inventory.items():
+            print("     {}-{}".format(inv_id, item_description))
 
+        
     def _pretty_print(self, curr_state, offset=1,last_key=''):
         if not isinstance(curr_state, dict):
             print(' '*offset+str(curr_state))

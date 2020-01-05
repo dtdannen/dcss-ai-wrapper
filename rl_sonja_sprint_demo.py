@@ -183,6 +183,9 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
         #     send_and_receive(dir_map[direction])    
         # else:
         #     continue
+
+        #time.sleep(1)
+        game_state.draw_map()
         
         i = i + 1
         print(action_str)
