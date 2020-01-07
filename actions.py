@@ -76,3 +76,6 @@ text_actions['n'] = {'text':'N', 'msg':'input'}
 
 # enter key for clearing game text messages
 key_actions['enter_key'] = {'text':'\r', 'msg':'input'}
+
+# quaff
+text_actions['q'] = {'text':'q', 'msg':'input'}

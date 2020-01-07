@@ -8,6 +8,7 @@ import logging
 import re
 import threading
 import time
+import string
 
 
 class Cell():
@@ -53,7 +54,7 @@ class Cell():
 class InventoryItem():
 
     def __init__(self, id_num, name, quantity, base_type=None):
-        self.id_num = id_num
+        self.id_num = int(id_num)
         self.name = name
         self.quantity = quantity
         self.base_type = base_type
@@ -64,12 +65,33 @@ class InventoryItem():
     def set_name(self, name):
         self.name = name
 
+    def get_name(self):
+        return self.name
+        
     def set_quantity(self, quantity):
         self.quantity = quantity
 
-    def set_id_num(self, id_num):
-        self.id_num = id_num
+    def get_quantity(self):
+        return self.quantity
+        
+    def set_num_id(self, id_num):
+        self.id_num = int(id_num)
 
+    def get_num_id(self):
+        return self.id_num
+
+    def get_letter(self):
+        return string.ascii_letters[self.id_num]
+
+    def get_item_vector_value(self):
+        """
+        See documentation for how this is calculated.
+        """
+
+        # TODO
+        # will need one of these for each inventory vector
+        pass
+        
     def __eq__(self, other):
         return self.name == other.name
         
@@ -150,7 +172,7 @@ class GameState():
             #print(str(msg_from_server))
             self._process_raw_state(msg_from_server)
             #self.draw_map()
-            self.compute_asp_str()
+            #self.compute_asp_str()
             #print(self.training_asp_str)
             #print(self.background_asp_str)
         except Exception as e:
@@ -251,36 +273,45 @@ class GameState():
 
     def process_inv(self,data):
         print("Data is {}".format(data))
-        name = None
-        quantity = None
-        base_type = None
         for inv_id in data.keys():
+            name = None
+            quantity = None
+            base_type = None            
+            print("inv_id = {}".format(inv_id))
             if 'name' in data[inv_id].keys():
                 name = data[inv_id]['name']
             if 'quantity' in data[inv_id].keys():
-                quantity = data[inv_id]['quantity']
+                quantity = int(data[inv_id]['quantity'])
             if 'base_type' in data[inv_id].keys():
                 base_type = data[inv_id]['base_type']
             self.inventory_raw[inv_id] = [name, quantity, base_type]
             inv_item = InventoryItem(inv_id, name, quantity, base_type)
-            if inv_item in self.inventory:
-                # item already exists, update quantity, remove if quantity = 0
-                if inv_item.get_quantity() <= 0:
-                    # remove
-                    self.inventory.remove(inv_item)
-                else:
-                    # update quantity
-                    prev_quantity = inv_item.get_quantity()
-                    existing_inv_item = None
-                    for prev_inv_item in self.inventory:
-                        if prev_inv_item == inv_item:
-                            existing_inv_item = prev_inv_item
-                    if prev_quantity > existing_inv_item.get_quantity():
-                        existing_inv_item.set_quantity(prev_quantity)
+            
+            items_to_remove = []
+            new_item = True
+            for prev_inv_item in self.inventory:
+                print("inv_id={}, name={}, quantity={}, base_type={}".format(inv_id, name, quantity, base_type))
+                print("prev_inv_item.get_name() = {}".format(prev_inv_item.get_name()))
+                if quantity is not None:
+                    print("here")
+                    if int(inv_id) == prev_inv_item.get_num_id():
+                        print("found existing item {}".format(prev_inv_item.get_name()))
+                        new_item = False
+                        if quantity is not None:
+                            if quantity <= 0:
+                                items_to_remove.append(prev_inv_item)
+                            elif quantity < prev_inv_item.get_quantity():
+                                prev_inv_item.set_quantity(quantity)
+
+            if new_item:
+                print("adding item {}".format(inv_item.get_name()))
+                self.inventory.append(inv_item)
+                                            
+            for item_to_remove in items_to_remove:
+                print("Removing item {}".format(item_to_remove.get_name()))
+                self.inventory.remove(item_to_remove)
 
                     
-                    
-                
     def get_x_y_g_cell_data(self, cells):
         only_xyg_cell_data = []
         curr_x = None
@@ -485,14 +516,14 @@ class GameState():
 
         # add inventory facts
         object_types = []
-        for i in self.inventory.keys():
-            name = self.inventory[i][0]
+        for i in self.inventory_raw.keys():
+            name = self.inventory_raw[i][0]
             name = ''.join([i for i in name if not i.isdigit() and not i in ['+','-']])
             name = name.strip().replace(' ','')
 
             # depluralize
             name = name.replace('potions','potion').replace('scrolls','scroll').replace('stones','stone').replace('rations','ration')
-            quantity = self.inventory[i][1]
+            quantity = self.inventory_raw[i][1]
 
             if name not in object_types:
                 object_types.append(name)
@@ -589,7 +620,15 @@ class GameState():
 
     def print_inventory(self):
         print("   Inventory:")
-        for inv_id, item_description in self.inventory.items():
+        for inv_item in sorted(self.inventory,key=lambda i: i.get_num_id()):
+            print("     {} - {} (#={})".format(inv_item.get_letter(), inv_item.get_name(), inv_item.get_quantity()))
+            
+    def get_inventory_vector(self):
+        pass
+            
+    def print_inventory_raw(self):
+        print("   Inventory:")
+        for inv_id, item_description in self.inventory_raw.items():
             print("     {}-{}".format(inv_id, item_description))
 
         
