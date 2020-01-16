@@ -10,6 +10,13 @@ import threading
 import time
 import string
 
+# TODO - change this to enum
+class ItemProperty():
+    NO_PROPERTY = 0
+    FIRE_RESISTANCE = 1
+    COLD_RESISTANCE = 2
+    # TODO - finish listing all properties, see crawl wiki
+
 
 class Cell():
     '''
@@ -53,15 +60,30 @@ class Cell():
 
 class InventoryItem():
 
+    ITEM_VECTOR_LENGTH = 5
+    
     def __init__(self, id_num, name, quantity, base_type=None):
         self.id_num = int(id_num)
         self.name = name
         self.quantity = quantity
         self.base_type = base_type
-    
+        self.item_bonus = 0
+        self.properties = []
+
+        if '+' in self.name:
+            # TODO - implement parsing code to get bonus value
+            # self.item_bonus =
+            pass
+
+        # TODO - figure out how to know if item is equipped
+        self.equipped = False
+        
     def set_base_type(self, base_type):
         self.base_type = base_type
 
+    def get_base_type(self):
+        return self.base_type
+        
     def set_name(self, name):
         self.name = name
 
@@ -83,15 +105,55 @@ class InventoryItem():
     def get_letter(self):
         return string.ascii_letters[self.id_num]
 
-    def get_item_vector_value(self):
+    def get_item_bonus(self):
+        return self.item_bonus
+    
+    def is_item_equipped(self):
+        return self.equipped
+    
+    def get_item_type(self):
         """
-        See documentation for how this is calculated.
+        Since 0 is a valid value, increase all by 1, so 0 means an empty value
         """
+        return 1+self.base_type
 
-        # TODO
-        # will need one of these for each inventory vector
-        pass
+    def get_property_i(self,i):
+        if i < len(self.properties):
+            return self.properties[i]
+        else:
+            return ItemProperty.NO_PROPERTY
+    
+    def get_item_vector(self):
+        """
+        * Indicates that item vector value may be repeated, if more than one property.
+
+        Index  Information Contained
+        -----  ---------------------
+          0    Item Type (Armour, Weapon, etc)
+          1    Item Count
+          2    Item Bonus ("+x" value)
+          3    Item Equipped
+          4    Property* (Fire resist, stealth, venom, etc)
+        """
+        item_vector = []
+        item_vector.append(self.get_item_type())
+        item_vector.append(self.get_quantity())
+        item_vector.append(self.get_item_bonus())
+        item_vector.append(self.is_item_equipped())
+        item_vector.append(self.get_property_i(0))        
         
+        assert len(item_vector) == InventoryItem.ITEM_VECTOR_LENGTH
+        # Note: If this assert fails, update
+        # InventoryItem.ITEM_VECTOR_LENGTH to be the correct value
+        
+        return item_vector
+
+    
+    @staticmethod
+    def get_empty_item_vector():
+        item_vector = [0 for i in range(InventoryItem.ITEM_VECTOR_LENGTH)]
+        return item_vector
+    
     def __eq__(self, other):
         return self.name == other.name
         
@@ -117,8 +179,6 @@ class TileFeatures():
     has_monster = 0
     last_visit = None # None if never visited, 0 if currently here, otherwise >1 representing
                       # number of actions executed since last visit
-
-
 
 class GameState():
 
@@ -277,7 +337,6 @@ class GameState():
             name = None
             quantity = None
             base_type = None            
-            print("inv_id = {}".format(inv_id))
             if 'name' in data[inv_id].keys():
                 name = data[inv_id]['name']
             if 'quantity' in data[inv_id].keys():
@@ -290,25 +349,20 @@ class GameState():
             items_to_remove = []
             new_item = True
             for prev_inv_item in self.inventory:
-                print("inv_id={}, name={}, quantity={}, base_type={}".format(inv_id, name, quantity, base_type))
-                print("prev_inv_item.get_name() = {}".format(prev_inv_item.get_name()))
                 if quantity is not None:
-                    print("here")
                     if int(inv_id) == prev_inv_item.get_num_id():
-                        print("found existing item {}".format(prev_inv_item.get_name()))
                         new_item = False
                         if quantity is not None:
                             if quantity <= 0:
                                 items_to_remove.append(prev_inv_item)
                             elif quantity < prev_inv_item.get_quantity():
+                                # TODO - this hasn't been tested yet
                                 prev_inv_item.set_quantity(quantity)
 
             if new_item:
-                print("adding item {}".format(inv_item.get_name()))
                 self.inventory.append(inv_item)
                                             
             for item_to_remove in items_to_remove:
-                print("Removing item {}".format(item_to_remove.get_name()))
                 self.inventory.remove(item_to_remove)
 
                     
@@ -621,7 +675,8 @@ class GameState():
     def print_inventory(self):
         print("   Inventory:")
         for inv_item in sorted(self.inventory,key=lambda i: i.get_num_id()):
-            print("     {} - {} (#={})".format(inv_item.get_letter(), inv_item.get_name(), inv_item.get_quantity()))
+            print("     {} - {} (#={}, base_type={})".format(inv_item.get_letter(), inv_item.get_name(), inv_item.get_quantity(), inv_item.get_base_type()))
+            print("     Vector: {}".format(inv_item.get_item_vector())) 
             
     def get_inventory_vector(self):
         pass
