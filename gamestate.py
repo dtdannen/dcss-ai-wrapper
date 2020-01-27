@@ -116,7 +116,7 @@ class Cell():
 
     def __str__(self):
         if self.g and len(self.g) >= 1:
-            return g
+            return self.g
         pass
 
 
@@ -131,10 +131,12 @@ class InventoryItem():
         self.item_bonus = 0
         self.properties = []
 
-        if '+' in self.name:
-            # TODO - implement parsing code to get bonus value
-            # self.item_bonus =
-            pass
+        if '+' in self.name or '-' in self.name:
+            m = re.search('[\+\-][1-9][1-9]?', self.name)
+            if m:
+                self.item_bonus = int(m.group(0))
+            else:
+                self.item_bonus = 0
 
         # TODO - figure out how to know if item is equipped
         self.equipped = False
