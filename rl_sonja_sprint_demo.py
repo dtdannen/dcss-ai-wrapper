@@ -187,6 +187,7 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
         #time.sleep(1)
         game_state.draw_map()
+        game_state.print_inventory()
         
         i = i + 1
         print(action_str)
