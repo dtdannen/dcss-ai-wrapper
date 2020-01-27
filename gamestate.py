@@ -9,13 +9,74 @@ import re
 import threading
 import time
 import string
+from enum import Enum
 
-# TODO - change this to enum
-class ItemProperty():
+
+class ItemProperty(Enum):
+    """
+    See crawl wiki for lists of these:
+    weapons: http://crawl.chaosforge.org/Brand
+    armour: http://crawl.chaosforge.org/Ego
+    """
     NO_PROPERTY = 0
-    FIRE_RESISTANCE = 1
-    COLD_RESISTANCE = 2
-    # TODO - finish listing all properties, see crawl wiki
+
+    # Melee Weapon Brands
+    Antimagic_Brand = 1
+    Chaos_Brand = 2
+    Disruption_Brand = 3
+    Distortion_Brand = 4
+    Dragon_slaying_Brand = 5
+    Draining_Brand = 6
+    Electrocution_Brand = 7
+    Flaming_Brand = 8
+    Freezing_Brand = 9
+    Holywrath_Brand = 10
+    Pain_Brand = 11
+    Necromancy_Brand = 12
+    Protection_Brand = 13
+    Reaping_Brand = 14
+    Speed_Brand = 15
+    Vampiricism_Brand = 16
+    Venom_Brand = 17
+    Vorpal_Brand = 18
+
+    # Thrown weapon brands
+    Dispersal_Brand = 19
+    Exploding_Brand = 20
+    Penetration_Brand = 21
+    Poisoned_Brand = 22
+    Returning_Brand = 23
+    Silver_Brand = 24
+    Steel_Brand = 25
+
+    # Needles
+    Confusion_Brand = 26
+    Curare_Brand = 27
+    Frenzy_Brand = 28
+    Paralysis_Brand = 29
+    Sleeping_Brand = 30
+
+    # Armour Properties (Egos)
+    Resistance_Ego = 31
+    Fire_Resistance_Ego = 32
+    Cold_Resistance_Ego = 33
+    Poison_Resistance_Ego = 34
+    Positive_Energy_Ego = 35
+    Protection_Ego = 36
+    Invisibility_Ego = 37
+    Magic_Resistance_Ego = 38
+    Strength_Ego = 39
+    Dexterity_Ego = 40
+    Intelligence_Ego = 41
+    Running_Ego = 42
+    Flight_Ego = 43
+    Stealth_Ego = 44
+    See_Invisible_Ego = 45
+    Archmagi_Ego = 46
+    Ponderousness_Ego = 47
+    Reflection_Ego = 48
+    Spirit_Shield_Ego = 49
+    Archery_Ego = 50
 
 
 class Cell():
@@ -29,7 +90,7 @@ class Cell():
     t = None
     mf = None
     col = None
-    raw = None # raw data from the server
+    raw = None  # raw data from the server
 
     def __init__(self, vals):
         '''
@@ -58,10 +119,10 @@ class Cell():
             return g
         pass
 
-class InventoryItem():
 
+class InventoryItem():
     ITEM_VECTOR_LENGTH = 5
-    
+
     def __init__(self, id_num, name, quantity, base_type=None):
         self.id_num = int(id_num)
         self.name = name
@@ -77,25 +138,25 @@ class InventoryItem():
 
         # TODO - figure out how to know if item is equipped
         self.equipped = False
-        
+
     def set_base_type(self, base_type):
         self.base_type = base_type
 
     def get_base_type(self):
         return self.base_type
-        
+
     def set_name(self, name):
         self.name = name
 
     def get_name(self):
         return self.name
-        
+
     def set_quantity(self, quantity):
         self.quantity = quantity
 
     def get_quantity(self):
         return self.quantity
-        
+
     def set_num_id(self, id_num):
         self.id_num = int(id_num)
 
@@ -107,22 +168,22 @@ class InventoryItem():
 
     def get_item_bonus(self):
         return self.item_bonus
-    
+
     def is_item_equipped(self):
         return self.equipped
-    
+
     def get_item_type(self):
         """
         Since 0 is a valid value, increase all by 1, so 0 means an empty value
         """
-        return 1+self.base_type
+        return 1 + self.base_type
 
-    def get_property_i(self,i):
+    def get_property_i(self, i):
         if i < len(self.properties):
             return self.properties[i]
         else:
             return ItemProperty.NO_PROPERTY
-    
+
     def get_item_vector(self):
         """
         * Indicates that item vector value may be repeated, if more than one property.
@@ -140,24 +201,23 @@ class InventoryItem():
         item_vector.append(self.get_quantity())
         item_vector.append(self.get_item_bonus())
         item_vector.append(self.is_item_equipped())
-        item_vector.append(self.get_property_i(0))        
-        
+        item_vector.append(self.get_property_i(0))
+
         assert len(item_vector) == InventoryItem.ITEM_VECTOR_LENGTH
         # Note: If this assert fails, update
         # InventoryItem.ITEM_VECTOR_LENGTH to be the correct value
-        
+
         return item_vector
 
-    
     @staticmethod
     def get_empty_item_vector():
         item_vector = [0 for i in range(InventoryItem.ITEM_VECTOR_LENGTH)]
         return item_vector
-    
+
     def __eq__(self, other):
         return self.name == other.name
-        
-    
+
+
 class TileFeatures():
     '''
     Contains feature data used per tile
@@ -173,15 +233,14 @@ class TileFeatures():
              * hereBefore = 0 if first time player on this tile, 1 if player has already been here
     '''
 
-
     absolute_x = None
     absolute_y = None
     has_monster = 0
-    last_visit = None # None if never visited, 0 if currently here, otherwise >1 representing
-                      # number of actions executed since last visit
+    last_visit = None  # None if never visited, 0 if currently here, otherwise >1 representing
+    # number of actions executed since last visit
+
 
 class GameState():
-
     ID = 0
 
     def __init__(self):
@@ -207,38 +266,38 @@ class GameState():
 
         self.inventory_raw = {}
         self.inventory = []
-        
+
         self.last_recorded_movement = ''
 
-        self.asp_str = '' # facts that don't change when an action is executed
-        self.asp_comment_str = '' # comments associated with asp
+        self.asp_str = ''  # facts that don't change when an action is executed
+        self.asp_comment_str = ''  # comments associated with asp
         self.player_cell = None
-        self.training_asp_str = '' # facts that do change
-        self.all_asp_cells = None # number of cell objects
+        self.training_asp_str = ''  # facts that do change
+        self.all_asp_cells = None  # number of cell objects
 
-        self.messages = {} # key is turn, value is list of messages received on this turn in order,
-                           # where first is oldest message
+        self.messages = {}  # key is turn, value is list of messages received on this turn in order,
+        # where first is oldest message
 
         # intiliaze values of state variables
         for k in self.state_keys:
             self.state[k] = None
 
         self.id = GameState.ID
-        GameState.ID+=1
+        GameState.ID += 1
 
     def update(self, msg_from_server):
         try:
-            #print(str(self.state))
-            #print(str(msg_from_server))
+            # print(str(self.state))
+            # print(str(msg_from_server))
             self._process_raw_state(msg_from_server)
-            #self.draw_map()
-            #self.compute_asp_str()
-            #print(self.training_asp_str)
-            #print(self.background_asp_str)
+            # self.draw_map()
+            # self.compute_asp_str()
+            # print(self.training_asp_str)
+            # print(self.background_asp_str)
         except Exception as e:
             raise Exception("Something went wrong" + e)
 
-    def record_movement(self,dir):
+    def record_movement(self, dir):
         self.last_recorded_movement = dir
         print('last recorded movement is ' + str(self.last_recorded_movement))
         if dir in actions.key_actions.keys():
@@ -251,27 +310,27 @@ class GameState():
             elif dir is 'move_W':
                 self.shift_agent_x(-1)
             else:
-                pass # do nothing if the agent didn't move
-        pass # do nothing if the agent didn't move
+                pass  # do nothing if the agent didn't move
+        pass  # do nothing if the agent didn't move
 
-    def shift_agent_x(self,change):
+    def shift_agent_x(self, change):
         '''
         Performs an addition
         '''
         self.agent_x += change
 
-    def shift_agent_y(self,change):
+    def shift_agent_y(self, change):
         '''
         Performs an addition
         '''
         self.agent_y += change
-        
+
     def _process_raw_state(self, s, last_key=''):
-        #print("processing {}\n\n".format(s))
+        # print("processing {}\n\n".format(s))
         if isinstance(s, list):
             for i in s:
                 self._process_raw_state(i)
-                
+
         elif isinstance(s, dict):
             for k in s.keys():
                 if k == 'cells':
@@ -286,7 +345,7 @@ class GameState():
 
                 if k in self.state_keys:
                     self.state[k] = s[k]
-                    #print("Just stored {} with data {}".format(k,s[k]))
+                    # print("Just stored {} with data {}".format(k,s[k]))
                 elif isinstance(s[k], list):
                     for i in s[k]:
                         self._process_raw_state(i)
@@ -318,6 +377,7 @@ class GameState():
             s = MLStripper()
             s.feed(html)
             return s.get_data()
+
         # end: html stripping code
 
         # need to store the message for current location so I can get quanitity of food items and stones for pickup action
@@ -329,14 +389,14 @@ class GameState():
             else:
                 self.messages[turn] = [message_only]
 
-            #print("Just added message for turn {}: {}".format(turn,message_only))
+            # print("Just added message for turn {}: {}".format(turn,message_only))
 
-    def process_inv(self,data):
+    def process_inv(self, data):
         print("Data is {}".format(data))
         for inv_id in data.keys():
             name = None
             quantity = None
-            base_type = None            
+            base_type = None
             if 'name' in data[inv_id].keys():
                 name = data[inv_id]['name']
             if 'quantity' in data[inv_id].keys():
@@ -345,7 +405,7 @@ class GameState():
                 base_type = data[inv_id]['base_type']
             self.inventory_raw[inv_id] = [name, quantity, base_type]
             inv_item = InventoryItem(inv_id, name, quantity, base_type)
-            
+
             items_to_remove = []
             new_item = True
             for prev_inv_item in self.inventory:
@@ -361,11 +421,10 @@ class GameState():
 
             if new_item:
                 self.inventory.append(inv_item)
-                                            
+
             for item_to_remove in items_to_remove:
                 self.inventory.remove(item_to_remove)
 
-                    
     def get_x_y_g_cell_data(self, cells):
         only_xyg_cell_data = []
         curr_x = None
@@ -373,47 +432,47 @@ class GameState():
         num_at_signs = 0
         if cells:
             for i_dict in cells:
-                #if (curr_x and ('x' in i_dict.keys()) or (not ('y' in i_dict.keys()) and curr_y == -1):
+                # if (curr_x and ('x' in i_dict.keys()) or (not ('y' in i_dict.keys()) and curr_y == -1):
                 #    raise Exception("ERROR: yeah I must be wrong")
-                #print("i_dict is ",str(i_dict))
+                # print("i_dict is ",str(i_dict))
                 if 'x' in i_dict.keys() and 'y' in i_dict.keys() and 'g' in i_dict.keys():
                     curr_x = i_dict['x']
                     curr_y = i_dict['y']
-                    only_xyg_cell_data.append([i_dict['x'],i_dict['y'],i_dict['g']])
-                    #print("x={},y={},g={}".format(str(curr_x),str(curr_y),str(i_dict['g'])))
+                    only_xyg_cell_data.append([i_dict['x'], i_dict['y'], i_dict['g']])
+                    # print("x={},y={},g={}".format(str(curr_x),str(curr_y),str(i_dict['g'])))
                 elif 'x' in i_dict.keys() and 'y' in i_dict.keys():
                     ''' Sometimes there is only x and y and no g, often at the beginning of the cells list'''
                     curr_x = i_dict['x']
                     curr_y = i_dict['y']
-                    #print("x={},y={}".format(str(curr_x), str(curr_y)))
+                    # print("x={},y={}".format(str(curr_x), str(curr_y)))
                 elif 'g' in i_dict.keys() and len(i_dict['g']) > 0:
-                    #print("x,y,g = ", str(curr_x), str(curr_y), str(i_dict['g']))
+                    # print("x,y,g = ", str(curr_x), str(curr_y), str(i_dict['g']))
                     try:
-                        curr_x+=1
-                        only_xyg_cell_data.append([curr_x,curr_y,i_dict['g']])
-                        #print("added it just fine")
+                        curr_x += 1
+                        only_xyg_cell_data.append([curr_x, curr_y, i_dict['g']])
+                        # print("added it just fine")
                         if '@' in str(i_dict['g']):
-                            num_at_signs+=1
-                            #print("Just added ({0},{1},{2}) to only_xyg_cell_data".format(curr_x,curr_y,i_dict['g']))
+                            num_at_signs += 1
+                            # print("Just added ({0},{1},{2}) to only_xyg_cell_data".format(curr_x,curr_y,i_dict['g']))
                             if num_at_signs > 1:
                                 print("Whoa, too many @ signs, here's the cell data")
                                 print(cells)
-                        #print("x={},y={},g={}".format(str(curr_x), str(curr_y), str(i_dict['g'])))
+                        # print("x={},y={},g={}".format(str(curr_x), str(curr_y), str(i_dict['g'])))
                     except:
                         # TODO: test this more robustly
                         #        right now I think that if this triggers, it means
                         #        the player didn't move, so just keep old data and don't
                         #        update
-                        
-                        logging.warning("Failure with cell data: "+str(i_dict))
-                        print("curr_x={0} and curr_y={1}".format(curr_x,curr_y))
-                        print("Cells are "+str(cells))
+
+                        logging.warning("Failure with cell data: " + str(i_dict))
+                        print("curr_x={0} and curr_y={1}".format(curr_x, curr_y))
+                        print("Cells are " + str(cells))
                         input("Press enter to continue")
                         pass
 
-                #else:
+                # else:
                 #    raise Exception("ERROR: no \'g\' found in cell data")
-            #for i in only_xyg_cell_data:
+            # for i in only_xyg_cell_data:
             #    print(str(i))
 
             return only_xyg_cell_data
@@ -427,7 +486,7 @@ class GameState():
         :param player_move_dir:
         '''
 
-        at_sign_count = 0 # we should only see the @ in one location
+        at_sign_count = 0  # we should only see the @ in one location
 
         # If map object isn't created yet, then initialize
         if len(self.map_obj) == 0:
@@ -447,29 +506,26 @@ class GameState():
             map_obj_x = self.map_middle + x
             map_obj_y = self.map_middle + y
 
-
             if '@' == g:
-                #print("player x,y is " + str(x) + ',' + str(y) + " from cell data")
-                #print("player x,y in gamestate is " + str(map_obj_x) + ',' + str(map_obj_y) + " from cell data")
+                # print("player x,y is " + str(x) + ',' + str(y) + " from cell data")
+                # print("player x,y in gamestate is " + str(map_obj_x) + ',' + str(map_obj_y) + " from cell data")
                 self.map_obj_player_x = map_obj_x
                 self.map_obj_player_y = map_obj_y
-                at_sign_count+=1
+                at_sign_count += 1
                 if at_sign_count > 1:
                     print("Error, multiple @ signs - let's debug!")
                     time.sleep(1000)
 
             # boundary conditions
-            if map_obj_y < len(self.map_obj)  and \
-               map_obj_x < len(self.map_obj[map_obj_y]) and \
-               map_obj_x > 0 and \
-               map_obj_y > 0:
-
+            if map_obj_y < len(self.map_obj) and \
+                    map_obj_x < len(self.map_obj[map_obj_y]) and \
+                    map_obj_x > 0 and \
+                    map_obj_y > 0:
                 self.map_obj[map_obj_y][map_obj_x] = g
-
 
     def print_map_obj(self):
         while self.lock:
-            #wait
+            # wait
             time.sleep(0.001)
 
         self.lock = True
@@ -483,7 +539,7 @@ class GameState():
             self.lock = False
 
     def get_player_xy(self):
-        return (self.map_obj_player_x,self.map_obj_player_y)
+        return (self.map_obj_player_x, self.map_obj_player_y)
 
     def get_asp_str(self):
         return self.asp_str
@@ -502,7 +558,7 @@ class GameState():
         asp_comment_str = '%'
 
         if filename:
-            pass # TODO write to file
+            pass  # TODO write to file
 
         bg_asp_str = ''
         training_asp_str = ''
@@ -558,7 +614,7 @@ class GameState():
                         asp_comment_str += "| c{0:0=3d} |".format(cell_id)
                 cell_id += 1
                 x += 1
-            asp_comment_str+= '\n%' + '+------+'* len(row)+ '\n%'
+            asp_comment_str += '\n%' + '+------+' * len(row) + '\n%'
             y += 1
 
         # objects agent knows about
@@ -572,18 +628,19 @@ class GameState():
         object_types = []
         for i in self.inventory_raw.keys():
             name = self.inventory_raw[i][0]
-            name = ''.join([i for i in name if not i.isdigit() and not i in ['+','-']])
-            name = name.strip().replace(' ','')
+            name = ''.join([i for i in name if not i.isdigit() and not i in ['+', '-']])
+            name = name.strip().replace(' ', '')
 
             # depluralize
-            name = name.replace('potions','potion').replace('scrolls','scroll').replace('stones','stone').replace('rations','ration')
+            name = name.replace('potions', 'potion').replace('scrolls', 'scroll').replace('stones', 'stone').replace(
+                'rations', 'ration')
             quantity = self.inventory_raw[i][1]
 
             if name not in object_types:
                 object_types.append(name)
                 bg_asp_str += 'itemtype({}).\n'.format(name)
 
-            bg_asp_str += 'inv_item({0},{1}).\n'.format(name,quantity)
+            bg_asp_str += 'inv_item({0},{1}).\n'.format(name, quantity)
             bg_asp_str += 'inv_id({0},{1}).\n'.format(i, name)
 
         # add facts about current tile
@@ -591,7 +648,7 @@ class GameState():
             max_turn = max(self.messages.keys())
             logging.debug("max_turn is {}".format(max_turn))
             for m in self.messages[max_turn]:
-                logging.debug("a message on turn {} is {}".format(max_turn,m))
+                logging.debug("a message on turn {} is {}".format(max_turn, m))
                 if 'You see here a ' in m:
                     for obj_type in agent_known_object_types:
                         if obj_type in m:
@@ -606,9 +663,9 @@ class GameState():
                             if obj_type in m:
                                 bg_asp_str += 'item({},{},{}).\n'.format(player_cell, obj_type, quantity)
                 else:
-                    pass # just ignore
+                    pass  # just ignore
 
-        self.asp_comment_str = '%Map Picture:\n'+asp_comment_str+'\n'
+        self.asp_comment_str = '%Map Picture:\n' + asp_comment_str + '\n'
         self.player_cell = player_cell
         self.asp_str = bg_asp_str
         if FOUND_PLAYER:
@@ -616,7 +673,7 @@ class GameState():
 
         self.all_asp_cells = set(num_asp_cells)
 
-        #print(self.asp_str)
+        # print(self.asp_str)
 
     def get_tiles_around_player_radius_1(self):
         '''
@@ -647,84 +704,82 @@ class GameState():
         curr_radius = 0
 
         tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x])
-        tiles.append(self.map_obj[self.map_obj_player_y-1][self.map_obj_player_x])
-        tiles.append(self.map_obj[self.map_obj_player_y+1][self.map_obj_player_x])
-        tiles.append(self.map_obj[self.map_obj_player_y-1][self.map_obj_player_x-1])
-        tiles.append(self.map_obj[self.map_obj_player_y-1][self.map_obj_player_x+1])
-        tiles.append(self.map_obj[self.map_obj_player_y+1][self.map_obj_player_x-1])
-        tiles.append(self.map_obj[self.map_obj_player_y+1][self.map_obj_player_x+1])
-        tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x-1])
-        tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x+1])
+        tiles.append(self.map_obj[self.map_obj_player_y - 1][self.map_obj_player_x])
+        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x])
+        tiles.append(self.map_obj[self.map_obj_player_y - 1][self.map_obj_player_x - 1])
+        tiles.append(self.map_obj[self.map_obj_player_y - 1][self.map_obj_player_x + 1])
+        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x - 1])
+        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x + 1])
+        tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x - 1])
+        tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x + 1])
 
     def draw_map(self):
-        #print("in draw map!")
+        # print("in draw map!")
         s = ''
         for row in self.map_obj:
             row_s = ''
             for spot in row:
                 if len(spot) != 0:
-                    row_s+=(str(spot))
+                    row_s += (str(spot))
                 else:
-                    row_s+=' '
+                    row_s += ' '
             # remove any rows that are all whitespace
             if len(row_s.strip()) > 0:
-                s+=row_s+'\n'
+                s += row_s + '\n'
 
         print(s)
 
     def print_inventory(self):
         print("   Inventory:")
-        for inv_item in sorted(self.inventory,key=lambda i: i.get_num_id()):
-            print("     {} - {} (#={}, base_type={})".format(inv_item.get_letter(), inv_item.get_name(), inv_item.get_quantity(), inv_item.get_base_type()))
-            print("     Vector: {}".format(inv_item.get_item_vector())) 
-            
+        for inv_item in sorted(self.inventory, key=lambda i: i.get_num_id()):
+            print("     {} - {} (#={}, base_type={})".format(inv_item.get_letter(), inv_item.get_name(),
+                                                             inv_item.get_quantity(), inv_item.get_base_type()))
+            print("     Vector: {}".format(inv_item.get_item_vector()))
+
     def get_inventory_vector(self):
         pass
-            
+
     def print_inventory_raw(self):
         print("   Inventory:")
         for inv_id, item_description in self.inventory_raw.items():
             print("     {}-{}".format(inv_id, item_description))
 
-        
-    def _pretty_print(self, curr_state, offset=1,last_key=''):
+    def _pretty_print(self, curr_state, offset=1, last_key=''):
         if not isinstance(curr_state, dict):
-            print(' '*offset+str(curr_state))
+            print(' ' * offset + str(curr_state))
         else:
             for key in curr_state.keys():
                 last_key = key
                 if isinstance(curr_state[key], dict):
-                    print(' '*offset+str(key)+'= {')
-                    self._pretty_print(curr_state[key], offset+2, last_key)
-                    print(' '*offset+'}')
+                    print(' ' * offset + str(key) + '= {')
+                    self._pretty_print(curr_state[key], offset + 2, last_key)
+                    print(' ' * offset + '}')
                 elif isinstance(curr_state[key], list):
                     if last_key == 'cells':
                         # don't recur
                         self.print_x_y_g_cell_data(curr_state[key])
-                        #for i in curr_state[key]:
+                        # for i in curr_state[key]:
                         #    print('  '*offset+str(i))
-                        #pass
+                        # pass
                     else:
-                        print(' '*offset+str(key)+'= [')
+                        print(' ' * offset + str(key) + '= [')
                         for i in curr_state[key]:
-                            self._pretty_print(i, offset+2, last_key)
-                        print(' '*offset+"--")
-                    print(' '*offset+']')                
-                
-                else:
-                    print(' '*offset+str(key)+"="+str(curr_state[key]))
+                            self._pretty_print(i, offset + 2, last_key)
+                        print(' ' * offset + "--")
+                    print(' ' * offset + ']')
 
-    
+                else:
+                    print(' ' * offset + str(key) + "=" + str(curr_state[key]))
 
     def printstate(self):
-        #print("self.state="+str(self.state))
-        #print('-'*20+" GameState "+'-'*20)
-        #self._pretty_print(self.state)
+        # print("self.state="+str(self.state))
+        # print('-'*20+" GameState "+'-'*20)
+        # self._pretty_print(self.state)
         pass
 
     def get_map_obj(self):
         return self.map_obj
-        
+
     def convert_cells_to_map_obj(self, cells_str):
         '''
         cells is the data of the map and nearby monsters and enemies received from the server
@@ -732,7 +787,7 @@ class GameState():
         map_dim = 200
         map_middle = 100
         for i in range(map_dim):
-            row = [' ']*map_dim
+            row = [' '] * map_dim
             self.map_obj.append(row)
 
         curr_x = -1
@@ -743,18 +798,19 @@ class GameState():
             # put into right location into map
             if new_cell.x and new_cell.y and new_cell.g:
                 curr_x = new_cell.x
-                self.map_obj[new_cell.y+map_middle][new_cell.x+map_middle] = new_cell.g
-                
-                #map_obj[abs(new_cell.x)][abs(new_cell.y)] = new_cell.g
-            #elif new_cell.y and new_cell.g and curr_x >= 0:
+                self.map_obj[new_cell.y + map_middle][new_cell.x + map_middle] = new_cell.g
+
+                # map_obj[abs(new_cell.x)][abs(new_cell.y)] = new_cell.g
+            # elif new_cell.y and new_cell.g and curr_x >= 0:
             #    map_obj[new_cell.y+map_middle][curr_x] = new_cell.g
-                #map_obj[curr_x][abs(new_cell.y)] = new_cell.g                                
+            # map_obj[curr_x][abs(new_cell.y)] = new_cell.g
 
         def print_map_obj(self):
             for row in self.map_obj:
                 for spot in row:
                     print(str(spot), end='')
                 print('')
+
 
 class FactoredState():
     '''
@@ -778,19 +834,97 @@ class FactoredState():
     hunger = None
 
     def __init__(self, gs):
-        map_obj = gs. get_map_obj()
+        map_obj = gs.get_map_obj()
 
 
 if __name__ == '__main__':
-    example_json_state_string_1 = {'msgs': [{'msg': 'map', 'clear': True, 'cells': [{'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1847}, 'x': -6, 'mf': 2, 'y': -1}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}, {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1847}, 'x': -6, 'mf': 2, 'y': 0}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 9, 'ov': [2202, 2204]}}, {'f': 33, 'g': '$', 'mf': 6, 'col': 14, 't': {'doll': None, 'ov': [2204], 'fg': 947, 'mcache': None, 'bg': 1048585, 'base': 0}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2204]}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2, 'ov': [2204]}}, {'f': 33, 'g': '0', 'mf': 6, 'col': 5, 't': {'doll': None, 'ov': [2204], 'fg': 842, 'mcache': None, 'bg': 2, 'base': 0}}, {'f': 33, 'g': '@', 'mf': 1, 'col': 87, 't': {'mcache': None, 'doll': [[3302, 32], [3260, 32], [3372, 32], [3429, 32], [4028, 32], [3688, 32]], 'bg': 7, 'ov': [2204], 'fg': 527407}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5, 'ov': [2204]}}, {'f': 33, 'g': '$', 'mf': 6, 'col': 14, 't': {'doll': None, 'ov': [2204], 'fg': 947, 'mcache': None, 'bg': 1048580, 'base': 0}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6, 'ov': [2204, 2206]}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}}, {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1848}, 'x': -6, 'mf': 2, 'y': 1}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2202]}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2206]}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}, {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1846}, 'x': -6, 'mf': 2, 'y': 2}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2202]}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 9}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2206]}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}}, {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1846}, 'x': -6, 'mf': 2, 'y': 3}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2202]}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2, 'ov': [2206]}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}}, {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1845}, 'x': -6, 'mf': 2, 'y': 4}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7, 'ov': [2202]}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 9}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 8}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 8, 'ov': [2206]}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}}, {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1845}, 'x': -6, 'mf': 2, 'y': 5}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2202]}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2}}, {'f': 60, 'g': '<', 'mf': 12, 'col': 9, 't': {'bg': 2381, 'flv': {'f': 6, 's': 50}}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2206]}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}}, {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1847}, 'x': -6, 'mf': 2, 'y': 6}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}}, {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}], 'player_on_level': True, 'vgrdc': {'y': 0, 'x': 0}}]}
+    example_json_state_string_1 = {'msgs': [{'msg': 'map', 'clear': True, 'cells': [
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1847}, 'x': -6, 'mf': 2, 'y': -1},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}},
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1847}, 'x': -6, 'mf': 2, 'y': 0},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 9, 'ov': [2202, 2204]}},
+        {'f': 33, 'g': '$', 'mf': 6, 'col': 14,
+         't': {'doll': None, 'ov': [2204], 'fg': 947, 'mcache': None, 'bg': 1048585, 'base': 0}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2204]}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2, 'ov': [2204]}}, {'f': 33, 'g': '0', 'mf': 6, 'col': 5,
+                                                                               't': {'doll': None, 'ov': [2204],
+                                                                                     'fg': 842, 'mcache': None, 'bg': 2,
+                                                                                     'base': 0}},
+        {'f': 33, 'g': '@', 'mf': 1, 'col': 87,
+         't': {'mcache': None, 'doll': [[3302, 32], [3260, 32], [3372, 32], [3429, 32], [4028, 32], [3688, 32]],
+               'bg': 7, 'ov': [2204], 'fg': 527407}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5, 'ov': [2204]}}, {'f': 33, 'g': '$', 'mf': 6, 'col': 14,
+                                                                               't': {'doll': None, 'ov': [2204],
+                                                                                     'fg': 947, 'mcache': None,
+                                                                                     'bg': 1048580, 'base': 0}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6, 'ov': [2204, 2206]}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}},
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1848}, 'x': -6, 'mf': 2, 'y': 1},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2202]}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2206]}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}},
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1846}, 'x': -6, 'mf': 2, 'y': 2},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2202]}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 9}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2206]}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}},
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1846}, 'x': -6, 'mf': 2, 'y': 3},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2202]}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 6}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2, 'ov': [2206]}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}},
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1845}, 'x': -6, 'mf': 2, 'y': 4},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7, 'ov': [2202]}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 9}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 7}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 8}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 8, 'ov': [2206]}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}},
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1845}, 'x': -6, 'mf': 2, 'y': 5},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3, 'ov': [2202]}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 3}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2}},
+        {'f': 60, 'g': '<', 'mf': 12, 'col': 9, 't': {'bg': 2381, 'flv': {'f': 6, 's': 50}}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}}, {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 5}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 2}},
+        {'f': 33, 'g': '.', 'mf': 1, 'col': 7, 't': {'bg': 4, 'ov': [2206]}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1847}},
+        {'f': 9, 'col': 1, 'g': '#', 't': {'bg': 1847}, 'x': -6, 'mf': 2, 'y': 6},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1846}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1845}},
+        {'f': 9, 'g': '#', 'mf': 2, 'col': 1, 't': {'bg': 1848}}], 'player_on_level': True, 'vgrdc': {'y': 0, 'x': 0}}]}
     example_json_state_string_2 = "{'msgs': [{'msg': 'input_mode', 'mode': 0}, {'msg': 'player', 'turn': 12, 'time': 120, 'pos': {'y': 1, 'x': -1}}, {'msg': 'map', 'cells': [{'col': 7, 'y': 0, 'g': '.', 't': {'mcache': None, 'doll': None, 'fg': 0}, 'x': 0}, {'col': 87, 'y': 1, 'g': '@', 't': {'mcache': None, 'doll': [[3302, 32], [3260, 32], [3372, 32], [3429, 32], [4028, 32], [3688, 32]], 'fg': 527407}, 'x': -1}], 'vgrdc': {'y': 1, 'x': -1}}, {'msg': 'input_mode', 'mode': 1}]}"
 
     gs1 = GameState()
 
     gs1.update(example_json_state_string_1)
-
-
-
 
 '''
                         
