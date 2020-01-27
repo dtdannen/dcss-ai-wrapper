@@ -107,7 +107,8 @@ def send_and_receive(input_str):
     msgs = read_msgs()
     handle_msgs(msgs)
 
-crawl_socketpath = '/home/dustin/Projects/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/midca:test.sock'
+#crawl_socketpath = '/home/dustin/Projects/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/midca:test.sock'
+crawl_socketpath = '/home/dustin/crawl/crawl-ref/source/rcs/midca:test.sock'
 socketpath = '/var/tmp/crawl_socket'
 
 try:

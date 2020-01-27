@@ -132,7 +132,7 @@ class InventoryItem():
         self.properties = []
 
         if '+' in self.name or '-' in self.name:
-            m = re.search('[\+\-][1-9][1-9]?', self.name)
+            m = re.search('[+-][1-9][1-9]?', self.name)
             if m:
                 self.item_bonus = int(m.group(0))
             else:
