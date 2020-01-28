@@ -34,6 +34,8 @@ key_actions['exit_via_esc'] = {'msg':'key','keycode':27}
 # combat other than movement
 key_actions['tab_auto_attack'] = {'msg':'key', 'keycode':9}
 
+# show history of messages
+key_actions['show_previous_messages'] = {'msg':'key', 'keycode':16}
 
 # End key_actions
 

@@ -284,13 +284,22 @@ class GameState():
         for k in self.state_keys:
             self.state[k] = None
 
+        self.died = False  # becomes true if agent has died
+
+        self.more_prompt = False  # becomes true when there is more messages before the agent can act
+                                  #  and therefore must press enter to receive for messages
+
+        self.too_terrified_to_move = False  # idk what to do here, but agent can't move
+
+        self.cannot_move = False  # agent can't move for some reason, no use trying move actions
+
         self.id = GameState.ID
         GameState.ID += 1
 
     def update(self, msg_from_server):
         try:
             # print(str(self.state))
-            # print(str(msg_from_server))
+            logging.info(str(msg_from_server))
             self._process_raw_state(msg_from_server)
             # self.draw_map()
             # self.compute_asp_str()
@@ -359,7 +368,6 @@ class GameState():
             pass
 
     def process_messages(self, data):
-
         # begin: this is just for html stripping
         from html.parser import HTMLParser
         class MLStripper(HTMLParser):
@@ -391,7 +399,40 @@ class GameState():
             else:
                 self.messages[turn] = [message_only]
 
-            # print("Just added message for turn {}: {}".format(turn,message_only))
+            if 'You die...' in message_only:
+                self.died = True
+
+            if len(self.messages[turn]) >= 8:
+                self.more_prompt = True
+
+            if 'too terrified to move' in message_only:
+                self.too_terrified_to_move = True
+
+            if 'You cannot move' in message_only:
+                self.cannot_move = True
+
+            print("Just added message for turn {}: {}".format(turn, message_only))
+
+    def has_agent_died(self):
+        return self.died
+
+    def is_agent_too_terrified(self, reset=True):
+        agent_terrified = self.too_terrified_to_move
+        if reset:
+            self.too_terrified_to_move = False
+        return agent_terrified
+
+    def agent_cannot_move(self, reset=True):
+        cannot_move = self.cannot_move
+        if reset:
+            self.cannot_move = False
+        return cannot_move
+
+    def game_has_more_messages(self, reset=False):
+        more_prompt = self.more_prompt
+        if reset:
+            self.more_prompt = False
+        return more_prompt
 
     def process_inv(self, data):
         print("Data is {}".format(data))
@@ -487,6 +528,8 @@ class GameState():
         :param only_x_y_g_cells_data:
         :param player_move_dir:
         '''
+
+        print("cells data is {}".format(only_x_y_g_cells_data))
 
         at_sign_count = 0  # we should only see the @ in one location
 

@@ -60,15 +60,24 @@ def send_input(input_str):
     for c in input_str:
         send_message(json_encode({'msg':'key', 'keycode':ord(c)}))
 
+num_times_to_try_pressing_enter = 5
+num_times_pressed_enter = 0
+
 msg_buffer = None
 def read_msg():
     global msg_buffer
     try:
         data = crawl_socket.recv(128 * 1024, socket.MSG_DONTWAIT)
+        num_times_pressed_enter = 0
     except socket.timeout:
-        print("ERROR: in read_msg() - Game socket send timeout")
-        close()
-        return ''
+        # first try to send and receive 'r' since the game might just be waiting with lots of messages
+        if num_times_pressed_enter <= num_times_to_try_pressing_enter:
+            send_and_receive('\r')
+            num_times_pressed_enter+=1
+        else:
+            print("ERROR: in read_msg() - Game socket send timeout")
+            close()
+            return ''
 
     if isinstance(data,bytes):
         data = data.decode("utf-8") 
@@ -169,7 +178,7 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
     # move some random steps but don't walk into walls
     i = 0
-    while( i < 100 ):
+    while( i < 500 ):
         action_str = "Action %3d - " % (i+1) 
         direction = random.choice(list(dir_map.keys()))
         send_and_receive(dir_map[direction])
@@ -185,6 +194,28 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
         # else:
         #     continue
 
+        if game_state.is_agent_too_terrified():
+            print("FIX ME")
+            time.sleep(10)
+
+        if game_state.agent_cannot_move():
+            print("FIX ME")
+            time.sleep(10)
+
+        if game_state.has_agent_died():
+            print("******* AW MAN ... WE DIED ***********")
+            time.sleep(1)
+            send_input('\r')
+            time.sleep(1)
+            send_input('\r')
+            time.sleep(1)
+            send_input('\r')
+            break
+
+        if game_state.game_has_more_messages(reset=True):
+            print("more prompt!")
+            send_and_receive('\r')
+
         #time.sleep(1)
         game_state.draw_map()
         game_state.print_inventory()
@@ -192,9 +223,17 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
         i = i + 1
         print(action_str)
 
-    # Quit and delete the game
-    control_input('Q')
-    send_input('yes\r')
+    if not game_state.has_agent_died():
+        # Quit and delete the game
+        control_input('Q')
+        time.sleep(1)
+        send_input('yes\r')
+        time.sleep(1)
+        send_input('\r')
+        time.sleep(1)
+        send_input('\r')
+        time.sleep(1)
+        send_input('\r')
 
     close()
 
