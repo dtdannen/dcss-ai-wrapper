@@ -293,6 +293,8 @@ class GameState():
 
         self.cannot_move = False  # agent can't move for some reason, no use trying move actions
 
+        self.just_gained_level = False
+
         self.id = GameState.ID
         GameState.ID += 1
 
@@ -367,6 +369,12 @@ class GameState():
         else:
             pass
 
+    def _process_items_agent_location(self, message):
+        items = message.split(';')
+        print("Found {} items, they are:".format(len(items)))
+        for i in items:
+            print("   {}".format(i))
+
     def process_messages(self, data):
         # begin: this is just for html stripping
         from html.parser import HTMLParser
@@ -391,6 +399,7 @@ class GameState():
         # end: html stripping code
 
         # need to store the message for current location so I can get quanitity of food items and stones for pickup action
+        last_message_is_items_here = False
         for m in data:
             turn = m['turn']
             message_only = strip_tags(m['text'])
@@ -411,6 +420,16 @@ class GameState():
             if 'You cannot move' in message_only:
                 self.cannot_move = True
 
+            if 'You have reached level' in message_only:
+                self.just_gained_level = True
+
+            if last_message_is_items_here:
+                self._process_items_agent_location(message_only)
+                last_message_is_items_here = False
+
+            if 'Things that are here' in message_only:
+                last_message_is_items_here = True
+
             print("Just added message for turn {}: {}".format(turn, message_only))
 
     def has_agent_died(self):
@@ -427,6 +446,12 @@ class GameState():
         if reset:
             self.cannot_move = False
         return cannot_move
+
+    def agent_just_leveled_up(self, reset=True):
+        leveled_up = self.just_gained_level
+        if reset:
+            self.just_gained_level = False
+        return leveled_up
 
     def game_has_more_messages(self, reset=False):
         more_prompt = self.more_prompt

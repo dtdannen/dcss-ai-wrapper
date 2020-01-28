@@ -16,6 +16,7 @@ import random
 from gamestate import GameState
 import logging
 import time
+import sys
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -126,6 +127,11 @@ except OSError:
     if os.path.exists(socketpath):
         raise
 
+HUMAN_INPUT = False
+if len(sys.argv) >= 2:
+    if 'human' in sys.argv[1]:
+        HUMAN_INPUT = True
+
 if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
     primary = True
@@ -179,42 +185,53 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
     # move some random steps but don't walk into walls
     i = 0
     while( i < 500 ):
-        action_str = "Action %3d - " % (i+1) 
-        direction = random.choice(list(dir_map.keys()))
-        send_and_receive(dir_map[direction])
-        # if game_state.can_move_direction(direction):
-        #     action_str += " Moving %s..." % direction
-        #     send_and_receive(dir_map[direction])
-        # elif game_state.can_open_door(direction):
-        #     action_str += " Opening %s door..." % direction
-        #     send_and_receive(dir_map[direction])  
-        # elif game_state.can_attack_monster(direction):     
-        #     action_str += " Attacking monster %s..." % direction
-        #     send_and_receive(dir_map[direction])    
-        # else:
-        #     continue
+        action_str = "Action %3d - " % (i+1)
 
-        if game_state.is_agent_too_terrified():
-            print("FIX ME")
-            time.sleep(10)
+        if HUMAN_INPUT:
+            human_pressed_key = input('Your Next Action')
+            if human_pressed_key == "":
+                human_pressed_key = '\r'
+            send_and_receive(human_pressed_key)
+        else:
+            direction = random.choice(list(dir_map.keys()))
+            send_and_receive(dir_map[direction])
+            # if game_state.can_move_direction(direction):
+            #     action_str += " Moving %s..." % direction
+            #     send_and_receive(dir_map[direction])
+            # elif game_state.can_open_door(direction):
+            #     action_str += " Opening %s door..." % direction
+            #     send_and_receive(dir_map[direction])
+            # elif game_state.can_attack_monster(direction):
+            #     action_str += " Attacking monster %s..." % direction
+            #     send_and_receive(dir_map[direction])
+            # else:
+            #     continue
 
-        if game_state.agent_cannot_move():
-            print("FIX ME")
-            time.sleep(10)
+            if game_state.agent_just_leveled_up():
+                print("Woohooo we leveled up!!!!!!!!")
+                send_input('\r')
 
-        if game_state.has_agent_died():
-            print("******* AW MAN ... WE DIED ***********")
-            time.sleep(1)
-            send_input('\r')
-            time.sleep(1)
-            send_input('\r')
-            time.sleep(1)
-            send_input('\r')
-            break
+            if game_state.is_agent_too_terrified():
+                print("FIX ME")
+                time.sleep(10)
 
-        if game_state.game_has_more_messages(reset=True):
-            print("more prompt!")
-            send_and_receive('\r')
+            if game_state.agent_cannot_move():
+                print("FIX ME")
+                time.sleep(10)
+
+            if game_state.has_agent_died():
+                print("******* AW MAN ... WE DIED ***********")
+                time.sleep(1)
+                send_input('\r')
+                time.sleep(1)
+                send_input('\r')
+                time.sleep(1)
+                send_input('\r')
+                break
+
+            if game_state.game_has_more_messages(reset=True):
+                print("more prompt!")
+                send_and_receive('\r')
 
         #time.sleep(1)
         game_state.draw_map()
