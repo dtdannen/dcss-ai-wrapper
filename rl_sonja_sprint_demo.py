@@ -235,7 +235,7 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
         #time.sleep(1)
         game_state.draw_map()
-        print("Tiles around agent are: {}".format(game_state.get_tiles_around_player_radius_1()))
+        print("Tiles around agent are: {}".format(game_state.get_tiles_around_player_radius()))
         game_state.print_inventory()
         
         i = i + 1
