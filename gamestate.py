@@ -347,9 +347,9 @@ class GameState:
         elif isinstance(s, dict):
             for k in s.keys():
                 if k == 'cells':
-                    cells_x_y_g_data_only = self.get_x_y_g_cell_data(s[k])
-                    self.update_map_obj(cells_x_y_g_data_only)
-                    #self.update_map_obj(s[k])
+                    cell_objs = self.get_cell_objs_from_raw_data(s[k])
+                    #self.update_map_obj(cells_x_y_g_data_only)
+                    self.update_map_obj(cell_objs)
                 last_key = k
 
                 if k == 'messages':
@@ -494,33 +494,42 @@ class GameState:
             for item_to_remove in items_to_remove:
                 self.inventory.remove(item_to_remove)
 
-    def get_x_y_g_cell_data(self, cells):
+    def get_cell_objs_from_raw_data(self, cells):
         only_xyg_cell_data = []
         curr_x = None
         curr_y = None
+        g_var = None
         num_at_signs = 0
         if cells:
-            for i_dict in cells:
+            for cell_dict in cells:
+                if 'x' in cell_dict.keys():
+                    curr_x = cell_dict['x']
+                if 'y' in cell_dict.keys():
+                    curr_y = cell_dict['y']
+                if 'g' in cell_dict.keys():
+                    g_var = cell_dict['g']  # this is the ascii symbol for whats drawn on the tile
+
+
                 # if (curr_x and ('x' in i_dict.keys()) or (not ('y' in i_dict.keys()) and curr_y == -1):
                 #    raise Exception("ERROR: yeah I must be wrong")
                 # print("i_dict is ",str(i_dict))
-                if 'x' in i_dict.keys() and 'y' in i_dict.keys() and 'g' in i_dict.keys():
-                    curr_x = i_dict['x']
-                    curr_y = i_dict['y']
-                    only_xyg_cell_data.append([i_dict['x'], i_dict['y'], i_dict['g']])
+                if 'x' in cell_dict.keys() and 'y' in cell_dict.keys() and 'g' in cell_dict.keys():
+                    curr_x = cell_dict['x']
+                    curr_y = cell_dict['y']
+                    only_xyg_cell_data.append([cell_dict['x'], cell_dict['y'], cell_dict['g']])
                     # print("x={},y={},g={}".format(str(curr_x),str(curr_y),str(i_dict['g'])))
-                elif 'x' in i_dict.keys() and 'y' in i_dict.keys():
+                elif 'x' in cell_dict.keys() and 'y' in cell_dict.keys():
                     ''' Sometimes there is only x and y and no g, often at the beginning of the cells list'''
-                    curr_x = i_dict['x']
-                    curr_y = i_dict['y']
+                    curr_x = cell_dict['x']
+                    curr_y = cell_dict['y']
                     # print("x={},y={}".format(str(curr_x), str(curr_y)))
-                elif 'g' in i_dict.keys() and len(i_dict['g']) > 0:
+                elif 'g' in cell_dict.keys() and len(cell_dict['g']) > 0:
                     # print("x,y,g = ", str(curr_x), str(curr_y), str(i_dict['g']))
                     try:
                         curr_x += 1
-                        only_xyg_cell_data.append([curr_x, curr_y, i_dict['g']])
+                        only_xyg_cell_data.append([curr_x, curr_y, cell_dict['g']])
                         # print("added it just fine")
-                        if '@' in str(i_dict['g']):
+                        if '@' in str(cell_dict['g']):
                             num_at_signs += 1
                             # print("Just added ({0},{1},{2}) to only_xyg_cell_data".format(curr_x,curr_y,i_dict['g']))
                             if num_at_signs > 1:
@@ -533,7 +542,7 @@ class GameState:
                         #        the player didn't move, so just keep old data and don't
                         #        update
 
-                        logging.warning("Failure with cell data: " + str(i_dict))
+                        logging.warning("Failure with cell data: " + str(cell_dict))
                         print("curr_x={0} and curr_y={1}".format(curr_x, curr_y))
                         print("Cells are " + str(cells))
                         input("Press enter to continue")
@@ -546,16 +555,16 @@ class GameState:
 
             return only_xyg_cell_data
 
-    def update_map_obj(self, only_x_y_g_cells_data):
+    def update_map_obj(self, cell_data_raw):
         '''
         If we already have a map data, and we have new map data from the player moving,
         shift the map and update the cells
 
-        :param only_x_y_g_cells_data:
+        :param cell_data_raw:
         :param player_move_dir:
         '''
 
-        print("cells data is {}".format(only_x_y_g_cells_data))
+        #print("cells data is {}".format(cell_data_raw))
 
         at_sign_count = 0  # we should only see the @ in one location
 
@@ -565,11 +574,20 @@ class GameState:
                 row = [' '] * self.map_dim
                 self.map_obj.append(row)
 
-        if not only_x_y_g_cells_data:
+        if not cell_data_raw:
             # We don't always get cell data, if so, return
             return
 
-        for xyg_cell in only_x_y_g_cells_data:
+        if cell_data_raw:
+            print("Raw cells data:")
+            prev_x = None
+            prev_y = None
+            for cell_raw_str in cell_data_raw:
+
+                x, y, g = cell_raw_str['x']
+                print("  {}".format(cell))
+
+        for xyg_cell in cell_data_raw:
             x = int(xyg_cell[0])
             y = int(xyg_cell[1])
             g = xyg_cell[2]
