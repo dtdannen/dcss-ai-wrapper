@@ -79,7 +79,7 @@ class ItemProperty(Enum):
     Archery_Ego = 50
 
 
-class Cell():
+class Cell:
     '''
     Stores a cell of the map, not sure what all the information means yet
     '''
@@ -120,7 +120,7 @@ class Cell():
         pass
 
 
-class InventoryItem():
+class InventoryItem:
     ITEM_VECTOR_LENGTH = 5
 
     def __init__(self, id_num, name, quantity, base_type=None):
@@ -220,7 +220,7 @@ class InventoryItem():
         return self.name == other.name
 
 
-class TileFeatures():
+class TileFeatures:
     '''
     Contains feature data used per tile
 
@@ -242,7 +242,7 @@ class TileFeatures():
     # number of actions executed since last visit
 
 
-class GameState():
+class GameState:
     ID = 0
 
     def __init__(self):
@@ -349,6 +349,7 @@ class GameState():
                 if k == 'cells':
                     cells_x_y_g_data_only = self.get_x_y_g_cell_data(s[k])
                     self.update_map_obj(cells_x_y_g_data_only)
+                    #self.update_map_obj(s[k])
                 last_key = k
 
                 if k == 'messages':
@@ -745,7 +746,7 @@ class GameState():
 
         # print(self.asp_str)
 
-    def get_tiles_around_player_radius_1(self):
+    def get_tiles_around_player_radius(self, radius=1):
         '''
         A radius of 0 is only the players tile
         A radius of 1 would be 9 tiles, including
@@ -757,6 +758,8 @@ class GameState():
         Returns a factored state representation of the tiles around the player:
         Example w/ radius of 1
         - 9 tiles including the player's current position and all adjacent tiles in every cardinal direction
+        - tiles are ordered in a clockwise orientation, starting with N, then NE, then E, etc
+        - inner layers come before outer layers
         - each tile is represented as a factored state:
           <objType,monsterLetter,hasCorpse,hereBefore>
              * objType = 0 is empty, 1 is wall, 2 is monster
@@ -768,20 +771,30 @@ class GameState():
         :param radius: Int
         :return: a factored state representation of the tiles around the player
         '''
-        # TODO make a tile object that stores all the needed data, ... you know what to do
 
-        tiles = [[]]
+        tiles = []
         curr_radius = 0
 
+        # agent's tile
         tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x])
+        # N tile
         tiles.append(self.map_obj[self.map_obj_player_y - 1][self.map_obj_player_x])
-        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x])
-        tiles.append(self.map_obj[self.map_obj_player_y - 1][self.map_obj_player_x - 1])
+        # NE tile
         tiles.append(self.map_obj[self.map_obj_player_y - 1][self.map_obj_player_x + 1])
-        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x - 1])
-        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x + 1])
-        tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x - 1])
+        # E tile
         tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x + 1])
+        # SE tile
+        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x + 1])
+        # S tile
+        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x])
+        # SW tile
+        tiles.append(self.map_obj[self.map_obj_player_y + 1][self.map_obj_player_x - 1])
+        # W tile
+        tiles.append(self.map_obj[self.map_obj_player_y][self.map_obj_player_x - 1])
+        # NW tile
+        tiles.append(self.map_obj[self.map_obj_player_y - 1][self.map_obj_player_x - 1])
+
+        return tiles
 
     def draw_map(self):
         # print("in draw map!")
