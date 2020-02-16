@@ -79,18 +79,23 @@ class ItemProperty(Enum):
     Archery_Ego = 50
 
 
+class CellRawStrDatum(Enum):
+    """ These are the types of data that may appear in a raw str description of a cell from the server. """
+    x = 0
+    f = 1
+    y = 2
+    g = 3
+    t = 4
+    mf = 5
+    col = 6
+
+
 class Cell:
     '''
     Stores a cell of the map, not sure what all the information means yet
     '''
-    x = None
-    f = None
-    y = None
-    g = None
-    t = None
-    mf = None
-    col = None
-    raw = None  # raw data from the server
+
+    X_Y_to_CELLS = {}  # key is an (x,y) tuple, val is the cell at that spot
 
     def __init__(self, vals):
         '''
@@ -287,7 +292,7 @@ class GameState:
         self.died = False  # becomes true if agent has died
 
         self.more_prompt = False  # becomes true when there is more messages before the agent can act
-                                  #  and therefore must press enter to receive for messages
+        #  and therefore must press enter to receive for messages
 
         self.too_terrified_to_move = False  # idk what to do here, but agent can't move
 
@@ -348,7 +353,7 @@ class GameState:
             for k in s.keys():
                 if k == 'cells':
                     cell_objs = self.get_cell_objs_from_raw_data(s[k])
-                    #self.update_map_obj(cells_x_y_g_data_only)
+                    # self.update_map_obj(cells_x_y_g_data_only)
                     self.update_map_obj(cell_objs)
                 last_key = k
 
@@ -502,13 +507,23 @@ class GameState:
         num_at_signs = 0
         if cells:
             for cell_dict in cells:
-                if 'x' in cell_dict.keys():
+                # either x and y appear to mark the start of a new row, or ...
+                if 'x' in cell_dict.keys() and 'y' in cell_dict.keys():
                     curr_x = cell_dict['x']
-                if 'y' in cell_dict.keys():
                     curr_y = cell_dict['y']
+                else:  # ... just increment x, keeping y the same
+                    curr_x += 1
+
+                for datum_key in CellRawStrDatum:
+                    if str(datum_key) in cell_dict.keys():
+
+
+
                 if 'g' in cell_dict.keys():
                     g_var = cell_dict['g']  # this is the ascii symbol for whats drawn on the tile
 
+                if 'g' in cell_dict.keys():
+                    g_var = cell_dict['g']  # this is the ascii symbol for whats drawn on the tile
 
                 # if (curr_x and ('x' in i_dict.keys()) or (not ('y' in i_dict.keys()) and curr_y == -1):
                 #    raise Exception("ERROR: yeah I must be wrong")
@@ -564,7 +579,7 @@ class GameState:
         :param player_move_dir:
         '''
 
-        #print("cells data is {}".format(cell_data_raw))
+        # print("cells data is {}".format(cell_data_raw))
 
         at_sign_count = 0  # we should only see the @ in one location
 
@@ -583,9 +598,8 @@ class GameState:
             prev_x = None
             prev_y = None
             for cell_raw_str in cell_data_raw:
-
-                x, y, g = cell_raw_str['x']
-                print("  {}".format(cell))
+                # x, y, g = cell_raw_str['x']
+                print("  {}".format(cell_raw_str))
 
         for xyg_cell in cell_data_raw:
             x = int(xyg_cell[0])
@@ -817,8 +831,12 @@ class GameState:
     def draw_map(self):
         # print("in draw map!")
         s = ''
+        top_row_indexes = None
         for row in self.map_obj:
             row_s = ''
+            if top_row_indexes is None:
+                # not sure what I was doing here?
+                pass
             for spot in row:
                 if len(spot) != 0:
                     row_s += (str(spot))
