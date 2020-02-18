@@ -99,11 +99,21 @@ class Cell:
 
     def __init__(self, vals):
         '''
-        Vals is a dictionary containing attributes
+        Vals is a dictionary containing attributes, key must be a CellRawStrDatum
         '''
 
         self.raw = vals
+        self.x = None
+        self.f = None
+        self.y = None
+        self.g = None
+        self.t = None
+        self.mf = None
+        self.col = None
 
+        self.set_vals(vals)
+
+    def set_vals(self, vals):
         if 'x' in vals.keys():
             self.x = vals['x']
         if 'f' in vals.keys():
@@ -263,6 +273,7 @@ class GameState:
         # as it moves N,S,E,W, the coordinates of its mental map will shift
         self.agent_x = 0
         self.agent_y = 0
+        self.agent_z = 0  # which floor of the dungeon the agent is on
 
         self.map_obj_player_x = None  # this is the x of the map_obj where the player is
         self.map_obj_player_y = None  # this is the y of the map_obj where the player is
@@ -514,16 +525,20 @@ class GameState:
                 else:  # ... just increment x, keeping y the same
                     curr_x += 1
 
+                curr_cell = None
+                if (curr_x, curr_y) in Cell.X_Y_to_CELLS.keys():
+                    curr_cell = Cell.X_Y_to_CELLS[(curr_x, curr_y)]
+                else:
+                    curr_cell = Cell(vals={'x': curr_x, 'y': curr_y})
+
+                # store any other datums we have access to
                 for datum_key in CellRawStrDatum:
-                    if str(datum_key) in cell_dict.keys():
-
-
-
-                if 'g' in cell_dict.keys():
-                    g_var = cell_dict['g']  # this is the ascii symbol for whats drawn on the tile
-
-                if 'g' in cell_dict.keys():
-                    g_var = cell_dict['g']  # this is the ascii symbol for whats drawn on the tile
+                    if datum_key.name in cell_dict.keys():
+                        #input("datum_key {} is in cell_dict {}".format(datum_key.name, cell_dict))
+                        curr_cell.set_vals(vals={datum_key.name: cell_dict[datum_key.name]})
+                    else:
+                        pass
+                        #input("datum_key {} is NOT in cell_dict {}".format(datum_key.name, cell_dict))
 
                 # if (curr_x and ('x' in i_dict.keys()) or (not ('y' in i_dict.keys()) and curr_y == -1):
                 #    raise Exception("ERROR: yeah I must be wrong")
