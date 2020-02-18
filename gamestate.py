@@ -146,6 +146,8 @@ class CellMap:
         self.max_y = None
         self.num_cells = 0
         self.x_y_to_cells = {}  # key is an (x,y) tuple, val is the cell at that spot
+        self.agent_x = None
+        self.agent_y = None
 
     def add_or_update_cell(self, x, y, vals):
         if (x, y) in self.x_y_to_cells.keys():
@@ -161,8 +163,14 @@ class CellMap:
             if self.max_y is None or y > self.max_y:
                 self.max_y = y
 
+        if 'g' in vals.keys() and '@' in vals['g']:
+            self.agent_x = x
+            self.agent_y = y
+
     def draw_cell_map(self):
-        s = ""
+
+        s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
+                                                                      self.min_x, self.max_x, self.min_y, self.max_y)
         for curr_y in range(self.min_y, self.max_y+1):
             for curr_x in range(self.min_x, self.max_x+1):
                 if (curr_x, curr_y) in self.x_y_to_cells.keys():
@@ -185,12 +193,16 @@ class InventoryItem:
         self.item_bonus = 0
         self.properties = []
 
-        if '+' in self.name or '-' in self.name:
-            m = re.search('[+-][1-9][1-9]?', self.name)
-            if m:
-                self.item_bonus = int(m.group(0))
+        if self.name:
+            if '+' in self.name or '-' in self.name:
+                m = re.search('[+-][1-9][1-9]?', self.name)
+                if m:
+                    self.item_bonus = int(m.group(0))
+                else:
+                    self.item_bonus = 0
             else:
-                self.item_bonus = 0
+                print("self.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}".format(id_num, name, quantity, base_type))
+                exit(1)
 
         # TODO - figure out how to know if item is equipped
         self.equipped = False
