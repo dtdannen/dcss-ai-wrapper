@@ -3,7 +3,7 @@
 Demo of a human input user on the sonja sprint in crawl 23.1
 
 Make sure to run crawl before running this demo, see:
-    start_crawl_terminal.sh
+    start_crawl_terminal_sprint.sh
 
 """
 

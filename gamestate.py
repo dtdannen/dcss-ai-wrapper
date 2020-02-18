@@ -95,7 +95,6 @@ class Cell:
     Stores a cell of the map, not sure what all the information means yet
     '''
 
-    X_Y_to_CELLS = {}  # key is an (x,y) tuple, val is the cell at that spot
 
     def __init__(self, vals):
         '''
@@ -132,7 +131,47 @@ class Cell:
     def __str__(self):
         if self.g and len(self.g) >= 1:
             return self.g
-        pass
+        else:
+            return " "
+
+class CellMap:
+    """
+    Data structure that maintains the set of all cells currently seen in the game.
+    """
+
+    def __init__(self):
+        self.min_x = None
+        self.min_y = None
+        self.max_x = None
+        self.max_y = None
+        self.num_cells = 0
+        self.x_y_to_cells = {}  # key is an (x,y) tuple, val is the cell at that spot
+
+    def add_or_update_cell(self, x, y, vals):
+        if (x, y) in self.x_y_to_cells.keys():
+            self.x_y_to_cells[(x, y)].set_vals(vals=vals)
+        else:
+            self.x_y_to_cells[(x, y)] = Cell(vals=vals)
+            if self.min_x is None or x < self.min_x:
+                self.min_x = x
+            if self.max_x is None or x > self.max_x:
+                self.max_x = x
+            if self.min_y is None or y < self.min_y:
+                self.min_y = y
+            if self.max_y is None or y > self.max_y:
+                self.max_y = y
+
+    def draw_cell_map(self):
+        s = ""
+        for curr_y in range(self.min_y, self.max_y+1):
+            for curr_x in range(self.min_x, self.max_x+1):
+                if (curr_x, curr_y) in self.x_y_to_cells.keys():
+                    s += str(self.x_y_to_cells[(curr_x, curr_y)])
+                else:
+                    s += " "
+            s+= '\n'
+        return s
+
 
 
 class InventoryItem:
@@ -281,6 +320,7 @@ class GameState:
         self.map_obj = []
         self.map_dim = 24
         self.map_middle = 12
+        self.cellmap = CellMap()
 
         self.inventory_raw = {}
         self.inventory = []
@@ -363,9 +403,9 @@ class GameState:
         elif isinstance(s, dict):
             for k in s.keys():
                 if k == 'cells':
-                    cell_objs = self.get_cell_objs_from_raw_data(s[k])
+                    self.get_cell_objs_from_raw_data(s[k])
                     # self.update_map_obj(cells_x_y_g_data_only)
-                    self.update_map_obj(cell_objs)
+                    #self.update_map_obj()
                 last_key = k
 
                 if k == 'messages':
@@ -525,67 +565,20 @@ class GameState:
                 else:  # ... just increment x, keeping y the same
                     curr_x += 1
 
-                curr_cell = None
-                if (curr_x, curr_y) in Cell.X_Y_to_CELLS.keys():
-                    curr_cell = Cell.X_Y_to_CELLS[(curr_x, curr_y)]
-                else:
-                    curr_cell = Cell(vals={'x': curr_x, 'y': curr_y})
-
+                vals = {}
                 # store any other datums we have access to
                 for datum_key in CellRawStrDatum:
                     if datum_key.name in cell_dict.keys():
-                        #input("datum_key {} is in cell_dict {}".format(datum_key.name, cell_dict))
-                        curr_cell.set_vals(vals={datum_key.name: cell_dict[datum_key.name]})
+                        # input("datum_key {} is in cell_dict {}".format(datum_key.name, cell_dict))
+                        vals[datum_key.name] = cell_dict[datum_key.name]
                     else:
                         pass
-                        #input("datum_key {} is NOT in cell_dict {}".format(datum_key.name, cell_dict))
+                        # input("datum_key {} is NOT in cell_dict {}".format(datum_key.name, cell_dict))
 
-                # if (curr_x and ('x' in i_dict.keys()) or (not ('y' in i_dict.keys()) and curr_y == -1):
-                #    raise Exception("ERROR: yeah I must be wrong")
-                # print("i_dict is ",str(i_dict))
-                if 'x' in cell_dict.keys() and 'y' in cell_dict.keys() and 'g' in cell_dict.keys():
-                    curr_x = cell_dict['x']
-                    curr_y = cell_dict['y']
-                    only_xyg_cell_data.append([cell_dict['x'], cell_dict['y'], cell_dict['g']])
-                    # print("x={},y={},g={}".format(str(curr_x),str(curr_y),str(i_dict['g'])))
-                elif 'x' in cell_dict.keys() and 'y' in cell_dict.keys():
-                    ''' Sometimes there is only x and y and no g, often at the beginning of the cells list'''
-                    curr_x = cell_dict['x']
-                    curr_y = cell_dict['y']
-                    # print("x={},y={}".format(str(curr_x), str(curr_y)))
-                elif 'g' in cell_dict.keys() and len(cell_dict['g']) > 0:
-                    # print("x,y,g = ", str(curr_x), str(curr_y), str(i_dict['g']))
-                    try:
-                        curr_x += 1
-                        only_xyg_cell_data.append([curr_x, curr_y, cell_dict['g']])
-                        # print("added it just fine")
-                        if '@' in str(cell_dict['g']):
-                            num_at_signs += 1
-                            # print("Just added ({0},{1},{2}) to only_xyg_cell_data".format(curr_x,curr_y,i_dict['g']))
-                            if num_at_signs > 1:
-                                print("Whoa, too many @ signs, here's the cell data")
-                                print(cells)
-                        # print("x={},y={},g={}".format(str(curr_x), str(curr_y), str(i_dict['g'])))
-                    except:
-                        # TODO: test this more robustly
-                        #        right now I think that if this triggers, it means
-                        #        the player didn't move, so just keep old data and don't
-                        #        update
+                self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
 
-                        logging.warning("Failure with cell data: " + str(cell_dict))
-                        print("curr_x={0} and curr_y={1}".format(curr_x, curr_y))
-                        print("Cells are " + str(cells))
-                        input("Press enter to continue")
-                        pass
 
-                # else:
-                #    raise Exception("ERROR: no \'g\' found in cell data")
-            # for i in only_xyg_cell_data:
-            #    print(str(i))
-
-            return only_xyg_cell_data
-
-    def update_map_obj(self, cell_data_raw):
+    def update_map_obj(self):
         '''
         If we already have a map data, and we have new map data from the player moving,
         shift the map and update the cells
@@ -595,7 +588,9 @@ class GameState:
         '''
 
         # print("cells data is {}".format(cell_data_raw))
-
+        # todo - left off here, figure out how to update the global cells as the player moves
+        # todo - do we need to shift cells? or only change the player's current x and y? The latter
+        # todo - would be ideal.
         at_sign_count = 0  # we should only see the @ in one location
 
         # If map object isn't created yet, then initialize
@@ -862,6 +857,9 @@ class GameState:
                 s += row_s + '\n'
 
         print(s)
+
+    def draw_cell_map(self):
+        print(self.cellmap.draw_cell_map())
 
     def print_inventory(self):
         print("   Inventory:")

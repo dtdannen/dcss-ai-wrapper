@@ -3,7 +3,7 @@
 Demo of an RL agent on the sonja sprint in crawl 23.1
 
 Make sure to run crawl before running this demo, see:
-    start_crawl_terminal.sh
+    start_crawl_terminal_sprint.sh
 
 """
 
@@ -168,11 +168,21 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
     #         })
     #send_message(msg)
 
-    # select sprint and character build
-    send_and_receive('a')
-    send_and_receive('b')
-    send_and_receive('h')
-    send_and_receive('b')
+    def do_sprint():
+        # select sprint and character build
+        send_and_receive('a')
+        send_and_receive('b')
+        send_and_receive('h')
+        send_and_receive('b')
+
+    def do_dungeon():
+        # select sprint and character build
+        send_and_receive('b')
+        send_and_receive('h')
+        send_and_receive('b')
+
+    #do_sprint()
+    do_dungeon()
 
     # turn off auto pick-up
     control_input('A')
@@ -184,7 +194,7 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
     # move some random steps but don't walk into walls
     i = 0
-    while( i < 500 ):
+    while( i < 5000 ):
         action_str = "Action %3d - " % (i+1)
 
         if HUMAN_INPUT:
@@ -234,8 +244,9 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
                 send_and_receive('\r')
 
         #time.sleep(1)
-        game_state.draw_map()
-        print("Tiles around agent are: {}".format(game_state.get_tiles_around_player_radius()))
+        game_state.draw_cell_map()
+        print("Player's current position is {},{}".format(game_state.agent_x, game_state.agent_y))
+        #print("Tiles around agent are: {}".format(game_state.get_tiles_around_player_radius()))
         game_state.print_inventory()
         
         i = i + 1
