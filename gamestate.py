@@ -148,6 +148,8 @@ class CellMap:
         self.x_y_to_cells = {}  # key is an (x,y) tuple, val is the cell at that spot
         self.agent_x = None
         self.agent_y = None
+        #unknown_vals = {k:None for k in CellRawStrDatum} # test this
+        #self.unknown_cell = Cell(
 
     def add_or_update_cell(self, x, y, vals):
         if (x, y) in self.x_y_to_cells.keys():
@@ -181,6 +183,22 @@ class CellMap:
         return s
 
 
+    def print_radius_around_agent(self, r=8):
+        x_min = self.agent_x - r
+        x_max = self.agent_x + r
+        y_min = self.agent_y - r
+        y_max = self.agent_y - r
+        
+        for curr_y in range(y_min, y_max+1):
+            for curr_x in range(x_min, x_max+1):
+                if (curr_x, curr_y) in self.x_y_to_cells.keys():
+                    s += str(self.x_y_to_cells[(curr_x, curr_y)])
+                else:
+                    s += " "
+            s+= '\n'
+        return s
+        
+            
 
 class InventoryItem:
     ITEM_VECTOR_LENGTH = 5
@@ -872,6 +890,7 @@ class GameState:
 
     def draw_cell_map(self):
         print(self.cellmap.draw_cell_map())
+
 
     def print_inventory(self):
         print("   Inventory:")

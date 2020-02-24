@@ -181,8 +181,8 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
         send_and_receive('h')
         send_and_receive('b')
 
-    #do_sprint()
-    do_dungeon()
+    do_sprint()
+    #do_dungeon()
 
     # turn off auto pick-up
     control_input('A')
@@ -245,6 +245,8 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
         #time.sleep(1)
         game_state.draw_cell_map()
+        print("------------printing raduis of 8 around agent------------")
+        game_state.cellmap.print_radius_around_agent(r=8)
         print("Player's current position is {},{}".format(game_state.agent_x, game_state.agent_y))
         #print("Tiles around agent are: {}".format(game_state.get_tiles_around_player_radius()))
         game_state.print_inventory()
