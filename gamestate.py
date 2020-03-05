@@ -95,7 +95,6 @@ class Cell:
     Stores a cell of the map, not sure what all the information means yet
     '''
 
-
     def __init__(self, vals):
         '''
         Vals is a dictionary containing attributes, key must be a CellRawStrDatum
@@ -134,6 +133,7 @@ class Cell:
         else:
             return " "
 
+
 class CellMap:
     """
     Data structure that maintains the set of all cells currently seen in the game.
@@ -148,8 +148,8 @@ class CellMap:
         self.x_y_to_cells = {}  # key is an (x,y) tuple, val is the cell at that spot
         self.agent_x = None
         self.agent_y = None
-        #unknown_vals = {k:None for k in CellRawStrDatum} # test this
-        #self.unknown_cell = Cell(
+        # unknown_vals = {k:None for k in CellRawStrDatum} # test this
+        # self.unknown_cell = Cell(
 
     def add_or_update_cell(self, x, y, vals):
         if (x, y) in self.x_y_to_cells.keys():
@@ -173,32 +173,30 @@ class CellMap:
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
                                                                       self.min_x, self.max_x, self.min_y, self.max_y)
-        for curr_y in range(self.min_y, self.max_y+1):
-            for curr_x in range(self.min_x, self.max_x+1):
+        for curr_y in range(self.min_y, self.max_y + 1):
+            for curr_x in range(self.min_x, self.max_x + 1):
                 if (curr_x, curr_y) in self.x_y_to_cells.keys():
                     s += str(self.x_y_to_cells[(curr_x, curr_y)])
                 else:
                     s += " "
-            s+= '\n'
+            s += '\n'
         return s
-
 
     def print_radius_around_agent(self, r=8):
         x_min = self.agent_x - r
         x_max = self.agent_x + r
         y_min = self.agent_y - r
         y_max = self.agent_y - r
-        
-        for curr_y in range(y_min, y_max+1):
-            for curr_x in range(x_min, x_max+1):
+        s = ""
+        for curr_y in range(y_min, y_max + 1):
+            for curr_x in range(x_min, x_max + 1):
                 if (curr_x, curr_y) in self.x_y_to_cells.keys():
                     s += str(self.x_y_to_cells[(curr_x, curr_y)])
                 else:
                     s += " "
-            s+= '\n'
+            s += '\n'
         return s
-        
-            
+
 
 class InventoryItem:
     ITEM_VECTOR_LENGTH = 5
@@ -219,7 +217,9 @@ class InventoryItem:
                 else:
                     self.item_bonus = 0
             else:
-                print("self.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}".format(id_num, name, quantity, base_type))
+                print(
+                    "self.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}".format(
+                        id_num, name, quantity, base_type))
                 exit(1)
 
         # TODO - figure out how to know if item is equipped
@@ -435,7 +435,7 @@ class GameState:
                 if k == 'cells':
                     self.get_cell_objs_from_raw_data(s[k])
                     # self.update_map_obj(cells_x_y_g_data_only)
-                    #self.update_map_obj()
+                    # self.update_map_obj()
                 last_key = k
 
                 if k == 'messages':
@@ -606,7 +606,6 @@ class GameState:
                         # input("datum_key {} is NOT in cell_dict {}".format(datum_key.name, cell_dict))
 
                 self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
-
 
     def update_map_obj(self):
         '''
@@ -890,7 +889,6 @@ class GameState:
 
     def draw_cell_map(self):
         print(self.cellmap.draw_cell_map())
-
 
     def print_inventory(self):
         print("   Inventory:")
