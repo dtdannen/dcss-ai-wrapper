@@ -216,11 +216,11 @@ class InventoryItem:
                     self.item_bonus = int(m.group(0))
                 else:
                     self.item_bonus = 0
-            else:
-                print(
-                    "self.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}".format(
-                        id_num, name, quantity, base_type))
-                exit(1)
+        else:
+            print(
+                "\n\nself.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}\n\n".format(
+                    id_num, name, quantity, base_type))
+            exit(1)
 
         # TODO - figure out how to know if item is equipped
         self.equipped = False
@@ -303,6 +303,9 @@ class InventoryItem:
     def __eq__(self, other):
         return self.name == other.name
 
+    def __str__(self):
+        return "{}({}) - {} (#={}, base_type={})".format(self.get_letter(), self.id_num, self.get_name(),
+                                                             self.get_quantity(), self.get_base_type())
 
 class TileFeatures:
     '''
@@ -352,8 +355,7 @@ class GameState:
         self.map_middle = 12
         self.cellmap = CellMap()
 
-        self.inventory_raw = {}
-        self.inventory = []
+        self.inventory_by_id = {}
 
         self.last_recorded_movement = ''
 
@@ -558,27 +560,23 @@ class GameState:
                 quantity = int(data[inv_id]['quantity'])
             if 'base_type' in data[inv_id].keys():
                 base_type = data[inv_id]['base_type']
-            self.inventory_raw[inv_id] = [name, quantity, base_type]
-            inv_item = InventoryItem(inv_id, name, quantity, base_type)
-
-            items_to_remove = []
-            new_item = True
-            for prev_inv_item in self.inventory:
-                if quantity is not None:
-                    if int(inv_id) == prev_inv_item.get_num_id():
-                        new_item = False
-                        if quantity is not None:
-                            if quantity <= 0:
-                                items_to_remove.append(prev_inv_item)
-                            elif quantity < prev_inv_item.get_quantity():
-                                # TODO - this hasn't been tested yet
-                                prev_inv_item.set_quantity(quantity)
-
-            if new_item:
-                self.inventory.append(inv_item)
-
-            for item_to_remove in items_to_remove:
-                self.inventory.remove(item_to_remove)
+            if inv_id not in self.inventory_by_id.keys():
+                # new item
+                inv_item = InventoryItem(inv_id, name, quantity, base_type)
+                self.inventory_by_id[inv_id] = inv_item
+                print("***** Adding new item {}".format(inv_item))
+            else:
+                # existing item
+                inv_item = self.inventory_by_id[inv_id]
+                print("***** Updating item {}".format(inv_item))
+                prev_quantity = inv_item.get_quantity()
+                if quantity is not None and quantity <= prev_quantity:
+                    if quantity == 0:
+                        print("  **** Deleting item {} because quantity = 0".format(inv_item))
+                        del self.inventory_by_id[inv_id]
+                    else:
+                        print("  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
+                        self.inventory_by_id[inv_id].set_quantity(quantity)
 
     def get_cell_objs_from_raw_data(self, cells):
         only_xyg_cell_data = []
@@ -892,18 +890,13 @@ class GameState:
 
     def print_inventory(self):
         print("   Inventory:")
-        for inv_item in sorted(self.inventory, key=lambda i: i.get_num_id()):
+        for inv_item in sorted(self.inventory_by_id.values(), key=lambda i: i.get_num_id()):
             print("     {} - {} (#={}, base_type={})".format(inv_item.get_letter(), inv_item.get_name(),
                                                              inv_item.get_quantity(), inv_item.get_base_type()))
             print("     Vector: {}".format(inv_item.get_item_vector()))
 
     def get_inventory_vector(self):
         pass
-
-    def print_inventory_raw(self):
-        print("   Inventory:")
-        for inv_id, item_description in self.inventory_raw.items():
-            print("     {}-{}".format(inv_id, item_description))
 
     def _pretty_print(self, curr_state, offset=1, last_key=''):
         if not isinstance(curr_state, dict):
