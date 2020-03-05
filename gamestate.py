@@ -487,7 +487,6 @@ class GameState:
 
         # end: html stripping code
 
-        # need to store the message for current location so I can get quanitity of food items and stones for pickup action
         last_message_is_items_here = False
         for m in data:
             turn = m['turn']
