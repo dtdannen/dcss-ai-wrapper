@@ -1,0 +1,6 @@
+type = normal
+name = q
+species = Minotaur
+background = Berserker
+weapon = mace
+fully_random = no
