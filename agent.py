@@ -5,6 +5,7 @@ class Action:
         self.name = name
         self.msg = msg
         self.args = args
+
     def _ash__(self):
         return hash(self.name)
 

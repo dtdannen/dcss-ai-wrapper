@@ -1,5 +1,11 @@
-# Run crawl with the following command line
-# ./crawl -name midca -rc ./rcs/midca.rc -macro ./rcs/midca.macro -morgue ./rcs/midca -sprint -webtiles-socket ./rcs/midca:test.sock -await-connection
+"""
+
+Demo of a human input user on the sonja sprint in crawl 23.1
+
+Make sure to run crawl before running this demo, see:
+    start_crawl_terminal_sprint.sh
+
+"""
 
 import socket
 import json
@@ -7,33 +13,30 @@ from datetime import datetime, timedelta
 import warnings
 import os
 import random
+from gamestate import GameState
+import logging
 import time
 
-
-#crawl_socketpath = '/Users/Decker/Documents/Repos/crawl/crawl-ref/source/rcs/midca:test.sock'
-crawl_socketpath = '/home/dustin/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/AlexTheAgent:test.sock'
-
+logging.basicConfig(level=logging.DEBUG)
 
 crawl_socket = None
-
+game_state = GameState()
 
 dir_map = { 'NW' : 'y',  'N' : 'k', 'NE' : 'u',
              'W' : 'h',              'E' : 'l',
             'SW' : 'b',  'S' : 'j', 'SE' : 'n' }
 
-
 def json_encode(value):
     return json.dumps(value).replace("</", "<\\/")
-
 
 def close():
     global crawl_socket
     if crawl_socket:
+        print ("Closing socket...")
         crawl_socket.close()
         #socketpathobj.close()
-        os.remove(socketpath)
+        os.unlink(socketpath)
         crawl_socket = None
-
 
 def send_message(data):
     start = datetime.now()
@@ -41,7 +44,7 @@ def send_message(data):
         crawl_socket.sendto(data.encode('utf-8'), crawl_socketpath)
     except socket.timeout:
         #self.logger.warning("Game socket send timeout", exc_info=True)
-        print("Game socket send timeout")
+        print("ERROR: in send_message() - Game socket send timeout")
         close()
         return
     end = datetime.now()
@@ -53,18 +56,23 @@ def send_message(data):
 def control_input(c):
     send_message(json_encode({'msg':'key', 'keycode':ord(c)-ord('A')+1}))
 
-
 def send_input(input_str):
     for c in input_str:
         send_message(json_encode({'msg':'key', 'keycode':ord(c)}))
 
-
 msg_buffer = None
-
-
 def read_msg():
     global msg_buffer
-    data = crawl_socket.recv(128 * 1024, socket.MSG_DONTWAIT)
+    try:
+        data = crawl_socket.recv(128 * 1024, socket.MSG_DONTWAIT)
+    except socket.timeout:
+        print("ERROR: in read_msg() - Game socket send timeout")
+        close()
+        return ''
+
+    if isinstance(data,bytes):
+        data = data.decode("utf-8") 
+
     if msg_buffer is not None:
         data = msg_buffer + data
     if data[-1] != "\n":
@@ -76,6 +84,8 @@ def read_msg():
         return data
     return ''
 
+def handle_msgs(msgs):   
+    game_state.update(msgs)
 
 def read_msgs():
     msgs = []
@@ -84,20 +94,29 @@ def read_msgs():
     while "flush_messages" not in data:
         if len(data) > 0 and not data.startswith("*"): 
             msgs.append(json.loads(data))
+            #game_state.update(msgs[-1])
         elif data.startswith("*"): 
             server_msg = json.loads(data[1:])
             # TODO: Handle server messages (client_path,flush_messages,dump,exit_reason)
         data = read_msg()
-    return msgs
-
+    handle_msgs(msgs)
 
 def send_and_receive(input_str):
+    logging.debug("Sending {}".format(input_str))
     send_input(input_str)
     msgs = read_msgs()
-    return msg
+    handle_msgs(msgs)
 
+crawl_socketpath = '/home/dustin/Projects/dcss-ai-wrapper/crawl/crawl-ref/source/rcs/midca:test.sock'
+socketpath = '/var/tmp/crawl_socket'
 
-if os.path.exists(crawl_socketpath):
+try:
+    os.unlink(socketpath)
+except OSError:
+    if os.path.exists(socketpath):
+        raise
+
+if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
     primary = True
 
@@ -119,44 +138,68 @@ if os.path.exists(crawl_socketpath):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        socketpath = os.tempnam(None, "crawl")
-
 
     crawl_socket.bind(socketpath)
 
     send_message(msg)
+
     read_msgs()
 
-    print("Selecting game mode and choosing character configuration...")
+    # This will get all the state from the game at once
+    # Parsing error with json library
+    # msg = json_encode({
+    #         "msg": "spectator_joined"
+    #         })
+    #send_message(msg)
 
     # select sprint and character build
-    send_and_receive('a') # choose Sonja spring
-    send_and_receive('b') # choose Minotaur
-    send_and_receive('h') # choose Berserker
-    send_and_receive('a') # choose short sword
+    
+    send_and_receive('a')
+    send_and_receive('b')
+    send_and_receive('h')
+    send_and_receive('b')
 
-    # move some random steps
-    print("About to start sending random moves...")
+    # turn off auto pick-up
+    control_input('A')
+    read_msgs()
+
+    # # Get Stone
+    # send_and_receive(dir_map['NW'])
+    # send_and_receive('g')
+
+    # move some random steps but don't walk into walls
     i = 0
-    while i < 20:
-        direction = random.choice(dir_map.keys())
-        print("  moving {}".format(direction))
-        send_and_receive(dir_map[direction])
+    while( i < 1000 ):
+        action_str = "Action %3d - " % (i+1) 
+        human_pressed_key = input('Your Next Action')
+        if human_pressed_key == "":
+            human_pressed_key = '\r'
+        send_and_receive(human_pressed_key)
+        # if game_state.can_move_direction(direction):
+        #     action_str += " Moving %s..." % direction
+        #     send_and_receive(dir_map[direction])
+        # elif game_state.can_open_door(direction):
+        #     action_str += " Opening %s door..." % direction
+        #     send_and_receive(dir_map[direction])  
+        # elif game_state.can_attack_monster(direction):     
+        #     action_str += " Attacking monster %s..." % direction
+        #     send_and_receive(dir_map[direction])    
+        # else:
+        #     continue
+
+        #time.sleep(1)
+        game_state.draw_map()
+        game_state.print_inventory()
+        
         i = i + 1
-        time.sleep(0.25)
-    print("Done sending random moves...")
+        print(action_str)
 
     # Quit and delete the game
-    print("Quitting the game and deleting for fresh start next time...")
     control_input('Q')
-    time.sleep(0.25)
     send_input('yes\r')
-    time.sleep(0.25)
-    send_input('\r')
-    time.sleep(0.25)
-    send_input('\r')
-    time.sleep(0.25)
-    send_input('\r')
+
     close()
+
+    #print("Map Boundaries : %s" % str(game_state.map_obj.get_bounds()))
 else:
     print('%s does not exist' % crawl_socketpath)

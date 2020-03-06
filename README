@@ -24,13 +24,14 @@ This guide has been tested on Ubuntu 18.04 LTS and assumes you have the followin
     - pip2 (sudo apt-get install python-pip)
     - python3 (sudo apt-get install python3.6)
     - pip3 (sudo apt-get install python3-pip)
-    - A variety of packages required by Dungeon Crawl Stone Soup (sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core)
+    - A variety of packages required by Dungeon Crawl Stone Soup
+        - sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core
 
 ######################################################################
 # 1. Installing Dungeon Crawl Stone Soup
 ######################################################################
 
-While this API is likely to work with the current master branch, it has been tested with the 23.1 version, which
+While this API is likely to work with the current dcss master branch, it has been tested with the 23.1 version, which
 is the recommended version of crawl to use with this API. We recommend installing a local version of crawl inside this
 project's folder.
 
@@ -82,6 +83,9 @@ project's folder.
        > ./crawl -name AlexTheAgent -rc ./rcs/AlexTheAgent.rc -macro ./rcs/AlexTheAgent.macro -morgue ./rcs/midca -sprint -webtiles-socket ./rcs/AlexTheAgent:test.sock -await-connection
 
             This will now hang while waiting for out agent to connect
+
+	    Important Notes:
+	    - The terminal that runs this command must be minimum width, so try enlarging the terminal if it doesn't work. It will cause the terminal_test_demo.py script in the next step to fail silently.
 
             Note: Feel free to change AlexTheAgent to any other string, this is just the name of the agent. Be sure
             to change it in all four places.
