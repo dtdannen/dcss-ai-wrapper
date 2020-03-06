@@ -11,7 +11,6 @@ import time
 import string
 from enum import Enum
 
-
 class ItemProperty(Enum):
     """
     See crawl wiki for lists of these:
@@ -691,128 +690,6 @@ class GameState:
 
     def get_player_cell(self):
         return self.player_cell
-
-    def compute_asp_str(self, filename=None):
-        num_asp_cells = []
-        asp_comment_str = '%'
-
-        if filename:
-            pass  # TODO write to file
-
-        bg_asp_str = ''
-        training_asp_str = ''
-
-        # go through all the map data and add cells, xy coordinates, and any special objects
-        cell_id = 1
-        y = 0
-        FOUND_PLAYER = False
-        player_cell = None
-
-        for row in self.map_obj:
-            x = 0
-            for cell in row:
-                if cell == ' ' or cell == '':
-                    # ignore
-                    asp_comment_str += "|      |".format(cell_id)
-                    pass
-
-                else:
-
-                    bg_asp_str += 'cell(c{0}).\n'.format(cell_id)
-                    bg_asp_str += 'at(c{0},{1},{2}).\n'.format(cell_id, x, y)
-                    num_asp_cells.append('c{0}'.format(cell_id))
-
-                    if cell == '@':
-                        bg_asp_str += 'agentat(c{0}).\n'.format(cell_id)
-                        asp_comment_str += "| c{0:0=3d} |".format(cell_id)
-                        FOUND_PLAYER = True
-                        player_cell = 'c{0}'.format(cell_id)
-                    if cell == '#':
-                        bg_asp_str += 'wall(c{0}).\n'.format(cell_id)
-                        asp_comment_str += "|#c{0:0=3d}#|".format(cell_id)
-                    elif cell == '.':
-                        # do nothing
-                        asp_comment_str += "| c{0:0=3d} |".format(cell_id)
-                    elif cell == '$':
-                        bg_asp_str += 'gold(c{0}).\n'.format(cell_id)
-                        asp_comment_str += "|$c{0:0=3d}$|".format(cell_id)
-                    elif cell == '(':
-                        bg_asp_str += 'stone(c{0}).\n'.format(cell_id)
-                        asp_comment_str += "|(c{0:0=3d}(|".format(cell_id)
-                    elif cell == '≈':
-                        bg_asp_str += 'deepwater(c{0}).\n'.format(cell_id)
-                        asp_comment_str += "|~c{0:0=3d}~|".format(cell_id)
-                    elif cell == '%':
-                        bg_asp_str += 'food(c{0}).\n'.format(cell_id)
-                        asp_comment_str += "|%c{0:0=3d}%|".format(cell_id)
-                    elif cell == '0':
-                        # orb
-                        asp_comment_str += "| c{0:0=3d} |".format(cell_id)
-                    elif cell == '<':
-                        # exit
-                        asp_comment_str += "| c{0:0=3d} |".format(cell_id)
-                cell_id += 1
-                x += 1
-            asp_comment_str += '\n%' + '+------+' * len(row) + '\n%'
-            y += 1
-
-        # objects agent knows about
-        # TODO Put this somewhere else more global - probably ought to consider pddl to asp in a nicer implementation of
-        # TODO all this
-        agent_known_object_types = ['stone', 'ration', 'gold']
-        for obj_type in agent_known_object_types:
-            bg_asp_str += 'itemtype({}).\n'.format(obj_type)
-
-        # add inventory facts
-        object_types = []
-        for i in self.inventory_raw.keys():
-            name = self.inventory_raw[i][0]
-            name = ''.join([i for i in name if not i.isdigit() and not i in ['+', '-']])
-            name = name.strip().replace(' ', '')
-
-            # depluralize
-            name = name.replace('potions', 'potion').replace('scrolls', 'scroll').replace('stones', 'stone').replace(
-                'rations', 'ration')
-            quantity = self.inventory_raw[i][1]
-
-            if name not in object_types:
-                object_types.append(name)
-                bg_asp_str += 'itemtype({}).\n'.format(name)
-
-            bg_asp_str += 'inv_item({0},{1}).\n'.format(name, quantity)
-            bg_asp_str += 'inv_id({0},{1}).\n'.format(i, name)
-
-        # add facts about current tile
-        if len(self.messages.keys()) > 0:
-            max_turn = max(self.messages.keys())
-            logging.debug("max_turn is {}".format(max_turn))
-            for m in self.messages[max_turn]:
-                logging.debug("a message on turn {} is {}".format(max_turn, m))
-                if 'You see here a ' in m:
-                    for obj_type in agent_known_object_types:
-                        if obj_type in m:
-                            bg_asp_str += 'item({},{},{}).\n'.format(player_cell, obj_type, 1)
-
-                elif 'You see here ' in m:
-                    nums_in_m = list(map(int, re.findall(r'\d+', m)))
-                    print("nums_in_m is {}".format(nums_in_m))
-                    if len(nums_in_m) > 0:
-                        quantity = nums_in_m[0]
-                        for obj_type in agent_known_object_types:
-                            if obj_type in m:
-                                bg_asp_str += 'item({},{},{}).\n'.format(player_cell, obj_type, quantity)
-                else:
-                    pass  # just ignore
-
-        self.asp_comment_str = '%Map Picture:\n' + asp_comment_str + '\n'
-        self.player_cell = player_cell
-        self.asp_str = bg_asp_str
-        if FOUND_PLAYER:
-            self.training_asp_str = training_asp_str
-
-        self.all_asp_cells = set(num_asp_cells)
-
-        # print(self.asp_str)
 
     def get_tiles_around_player_radius(self, radius=1):
         '''

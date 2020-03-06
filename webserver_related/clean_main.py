@@ -30,7 +30,7 @@ async def send_agent_actions():
     delay = 1
     while True:
 
-    pass
+        pass
 
 async def startup(server_uri):
     ws = await websockets.connect(server_uri)
