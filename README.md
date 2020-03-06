@@ -1,13 +1,14 @@
 # AI Wrapper for Dungeon Crawl Stone Soup
 
 ![](dcss-ai-wrapper-terminal-demo.gif)
+
 (Demo of a random agent playing DCSS in the terminal)
 
 # About
 
-**dcss-ai-wrapper** aims to create an API for Dungeon Crawl Stone Soup for Artificial Intelligence research. This effort started with this paper: 
+**dcss-ai-wrapper** aims to create an API for Dungeon Crawl Stone Soup for Artificial Intelligence research. This effort started with the following paper: 
 
-"Dannenhauer, D., Floyd, M., Decker, J., Aha D. W. [Dungeon Crawl Stone Soup as an Evaluation Domain for Artificial Intelligence.](https://arxiv.org/pdf/1902.01769) Workshop on Games and Simulations for Artificial Intelligence. Thirty-Third AAAI Conference on Artificial Intelligence. Honolulu, Hawaii, USA. 2019."
+*Dannenhauer, D., Floyd, M., Decker, J., Aha D. W. [Dungeon Crawl Stone Soup as an Evaluation Domain for Artificial Intelligence.](https://arxiv.org/pdf/1902.01769) Workshop on Games and Simulations for Artificial Intelligence. Thirty-Third AAAI Conference on Artificial Intelligence. Honolulu, Hawaii, USA. 2019.*
 
 If you use this repository in your research, please cite the above paper.
 
@@ -39,27 +40,56 @@ project's folder.
     
 2. Grab a copy of the 23.1 version of crawl, by cloning the repo and then resetting to the 23.1 version
 
-   `> cd ~/dcss-ai-wrapper/`  (assuming this is the directory where you cloned this project - dcss-ai-wrapper)
-   `> git clone https://github.com/crawl/crawl.git`
-   `> cd ~/dcss-ai-wrapper/crawl/`
-   `> git reset --hard d6e21ad81dcba7f7f8c15336e0e985f070ce85fb`
-   `> git submodule update --init`
+   `cd ~/dcss-ai-wrapper/`  (assuming this is the directory where you cloned this project - dcss-ai-wrapper)
+   
+   `git clone https://github.com/crawl/crawl.git`
+   
+   `cd ~/dcss-ai-wrapper/crawl/`
+   
+   `git reset --hard d6e21ad81dcba7f7f8c15336e0e985f070ce85fb`
+   
+   `git submodule update --init`
 
 3. Compile crawl with the following flags
 
-    `> cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/`
-    `> sudo make install prefix=/usr/local/ WEBTILES=y`
+    `cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/`
+    
+    `sudo make install prefix=/usr/local/ WEBTILES=y`
 
-4. (optional - only for running the agent in the browser) Install requirements to run the webserver version of the game
+# How to Run an agent in the terminal
 
-    `> sudo pip2 install tornado==3.0.2`
-    `> sudo pip3 install asyncio`
-    `> sudo pip3 install websockets`
+1. Open a new terminal, cd into dcss-ai-wrapper/ and run:
 
-5. Test that the browser version of the game is working
+    `./start_crawl_terminal_dungeon.sh`
 
-    `> cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/`
-    `> python2 webserver/server.py`
+   Note that nothing will happen until an agent connects.
+   
+   The terminal that runs this command must be a minimum width, so try enlarging the terminal if it doesn't work and you are using a small monitor/screen. (Only try changing the width after completing the next step).
+
+2. Open a new terminal, cd into dcss-ai-wrapper/ and run:
+
+    `python3 rl_sonja_sprint_demo.py`
+	    
+3. You should now be able to watch the agent in the terminal as this script is running, as shown in the demo gif at the top of this readme.
+
+
+## Web browser setup
+The following steps enable the API to connect to DCSS running on a webserver on the local host, which means you can watch
+your AI agent play DCSS in the tile version that runs in the web browser.
+
+1. Install requirements to run the webserver version of the game
+
+    `sudo pip2 install tornado==3.0.2`
+    
+    `sudo pip3 install asyncio`
+    
+    `sudo pip3 install websockets`
+
+2. Test that the browser version of the game is working
+
+    `cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/`
+    
+    `python2 webserver/server.py` 
 
      Now open your web browser and go to http://localhost:8080/
 
@@ -70,140 +100,23 @@ project's folder.
      Once you proceed through the menus you should find yourself in a newly generated world. If you've reached this
      step (and can see the tiles) you have successfully installed the game.
 
+# Troubleshooting
 
-# How to Run an agent in the terminal
-
-1. Start a terminal version of crawl with a socket for our agent to connect to
-
-       > cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/
-       > ./crawl -name AlexTheAgent -rc ./rcs/AlexTheAgent.rc -macro ./rcs/AlexTheAgent.macro -morgue ./rcs/midca -sprint -webtiles-socket ./rcs/AlexTheAgent:test.sock -await-connection
-
-            This will now hang while waiting for out agent to connect
-
-	    Important Notes:
-	    - The terminal that runs this command must be minimum width, so try enlarging the terminal if it doesn't work. It will cause the terminal_test_demo.py script in the next step to fail silently.
-
-            Note: Feel free to change AlexTheAgent to any other string, this is just the name of the agent. Be sure
-            to change it in all four places.
-
-    2. Open up terminal_test_demo.py and change the variable 'crawl_socketpath' (line 14) to point to the location
-       of the socket you just created.
-
-    3. Run the demo script:
-
-       > python2 terminal_test_demo.py
-
-    4. You should now be able to watch the agent in the terminal as this script is running
-
-
-######################################################################
-# 3. Creating and using custom levels
-######################################################################
-
-# TODO...
-
-######################################################################
-# 4. Troubleshooting
-######################################################################
 
   Problem: Errors during compiling
   Solution: Double check you installed all the packages listed at the
   beginning that crawl needs. These come from the install instructions
   for crawl itself.
 
-
   Problem: No images showing up and getting errors from the webserver like:
     'HTTPOutputError: Tried to write X number of bytes but error with content length'
     
   Solution: Make sure you are using tornado 3.0 (not the version that installs by default)
 
-#### End README ######################################################
-
-######################################################################
-# Old README - might be useful
-######################################################################
-
-
-# Install
-
-<<<<<<< HEAD
-0. TODO: make a note about installing crawl first before testing webserver add info from INSTALL.txt, I had to sudo
-make install prefix=/usr/local/ WEBTILES=y
-=======
-0. Clone the recent version of crawl from their github repository
-
-1. copy over files for custom levels from our repo (under custom_sprint/) into crawl-ref/source/dat/des/sprint/
-
-2. compile the crawl from step 0 by
-    > cd crawl-ref/source
-    > sudo make install prefix=/usr/local WEBTILES=y
-
-* Note: anytime you change one of the custom sprint levels in source/dat/des/sprint/ you need to recompile the whole crawl game
-
->>>>>>> 371306fafd14d3907c21d755983935015ca8be36
-
-
-1. For webserver (which uses python2)
-
-pip install tornado==3.0.2
-
-2. For Agent-based API (which uses python3)
-
-sudo pip3 install asyncio
-sudo pip3 install websockets 
-
-# Problems that may arise:
-
-[1] No images showing up and getting errors from the webserver like:
-HTTPOutputError: Tried to write X number of bytes but error with content length
-[SOLUTION:] use tornado 3.0 instead of the current version
-
-[2] My custom sprint map isn't showing up!
-[SOLUTION] Recompile the code (when you compile, it moves the maps to the install directory, and that's where the
-webserver looks for the maps)
-
-3. For learning, we need to install ILASP and the potassco asp tools (clingo, gringo, etc):
-
-    a. Download ILASP here: https://sourceforge.net/projects/spikeimperial/files/ILASP/ILASP%20v3.1.0/
-
-    - mv the ILASP executable somewhere system-wide (like /usr/local/bin/ ) or just make sure they are on the path
-
-    - test the installation by running ILASP on the command line
-      $ ILASP
-
-
-    b. Download Potassco ASP tools from the most recent release here: https://github.com/potassco/clingo/releases/
-
-    - mv the executables somewhere system-wide (like /usr/local/bin/ ) or just make sure they are on the path
-
-     - test the installation by running clingo on the command line
-      $ clingo
-
-
-    c. Make sure there are empty folders named 'agent_data' and 'ilasp_data' and 'asp_data'
-
-
-Resources:
------------
-# Induction Learner Tools:
-
-[1] Download ILASP here:
-https://sourceforge.net/projects/spikeimperial/?source=directory
-
-
-sudo cp ILASP /usr/local/bin/             #(or somewhere else on your path)
-
-[2] Download clingo and put all executables on the path
-Clingo 5 release on github: https://github.com/potassco/clingo/releases
-
-Choose the linux-x86_64.tar.gz
-
-sudo cp clingo /usr/local/bin/
-... (do the same for reify, gringo, clasp, and lpconvert)
-
-
-# Running
+# Running the webserver
 ----------
+
+Note these instructions may be outdated - they need to be double checked.
 
 # 1. Start webserver
 
@@ -225,8 +138,6 @@ sudo cp clingo /usr/local/bin/
   to import it)
 
 > python3 main.py
-
-
 
 # Watching the Agent Play
 
