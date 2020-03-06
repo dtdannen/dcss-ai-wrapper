@@ -1,85 +1,79 @@
 # AI Wrapper for Dungeon Crawl Stone Soup
 
 ![](dcss-ai-wrapper-terminal-demo.gif)
+(Demo of a random agent playing DCSS in the terminal)
 
-#### Overview of this document: ######################################
-#
-# 1. Installing Dungeon Crawl Stone Soup
-#
-# 2. How to Run an agent in the terminal
-#
-# 3. Creating and using custom levels
-#
-# 4. Troubleshooting
-#
-######################################################################
+# About
 
+**dcss-ai-wrapper** aims to create an API for Dungeon Crawl Stone Soup for Artificial Intelligence research. This effort started with this paper: 
 
-######################################################################
-# 0. Pre-requisites
-######################################################################
+"Dannenhauer, D., Floyd, M., Decker, J., Aha D. W. [Dungeon Crawl Stone Soup as an Evaluation Domain for Artificial Intelligence.](https://arxiv.org/pdf/1902.01769) Workshop on Games and Simulations for Artificial Intelligence. Thirty-Third AAAI Conference on Artificial Intelligence. Honolulu, Hawaii, USA. 2019."
+
+If you use this repository in your research, please cite the above paper.
+
+# Development Community
+
+Join the chat at https://gitter.im/dcss-ai-wrapper/community
+
+# Installation
+
+## Pre-requisites
 
 This guide has been tested on Ubuntu 18.04 LTS and assumes you have the following installed:
 
-    - git (sudo apt-get install git)
-    - python2 (sudo apt-get install python2.7)
-    - pip2 (sudo apt-get install python-pip)
-    - python3 (sudo apt-get install python3.6)
-    - pip3 (sudo apt-get install python3-pip)
-    - A variety of packages required by Dungeon Crawl Stone Soup
-        - sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core
+- git (sudo apt-get install git)
+- python2 (sudo apt-get install python2.7)
+- pip2 (sudo apt-get install python-pip)
+- python3 (sudo apt-get install python3.6)
+- pip3 (sudo apt-get install python3-pip)
+- A variety of packages required by Dungeon Crawl Stone Soup
+    - sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core
 
-######################################################################
-# 1. Installing Dungeon Crawl Stone Soup
-######################################################################
+## Installing Dungeon Crawl Stone Soup
 
 While this API is likely to work with the current dcss master branch, it has been tested with the 23.1 version, which
 is the recommended version of crawl to use with this API. We recommend installing a local version of crawl inside this
 project's folder.
 
-    0. Make sure you have cloned this repository (dcss-ai-wrapper)
+1. Make sure you have cloned this repository (dcss-ai-wrapper)
     
-    1. Grab a copy of the 23.1 version of crawl, by cloning the repo and then resetting to the 23.1 version
+2. Grab a copy of the 23.1 version of crawl, by cloning the repo and then resetting to the 23.1 version
 
-       > cd ~/dcss-ai-wrapper/  (assuming this is the directory where you cloned this project - dcss-ai-wrapper)
-       > git clone https://github.com/crawl/crawl.git
-       > cd ~/dcss-ai-wrapper/crawl/
-       > git reset --hard d6e21ad81dcba7f7f8c15336e0e985f070ce85fb
-       > git submodule update --init
+   `> cd ~/dcss-ai-wrapper/`  (assuming this is the directory where you cloned this project - dcss-ai-wrapper)
+   `> git clone https://github.com/crawl/crawl.git`
+   `> cd ~/dcss-ai-wrapper/crawl/`
+   `> git reset --hard d6e21ad81dcba7f7f8c15336e0e985f070ce85fb`
+   `> git submodule update --init`
 
-    2. Compile crawl with the following flags
+3. Compile crawl with the following flags
 
-       > cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/
-       > sudo make install prefix=/usr/local/ WEBTILES=y
+    `> cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/`
+    `> sudo make install prefix=/usr/local/ WEBTILES=y`
 
-    3. Install requirements to run the webserver version of the game
+4. (optional - only for running the agent in the browser) Install requirements to run the webserver version of the game
 
-       > sudo pip2 install tornado==3.0.2
-       > sudo pip3 install asyncio
-       > sudo pip3 install websockets
+    `> sudo pip2 install tornado==3.0.2`
+    `> sudo pip3 install asyncio`
+    `> sudo pip3 install websockets`
 
-    4. Test that the browser version of the game is working
+5. Test that the browser version of the game is working
 
-       > cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/
-       > python2 webserver/server.py
+    `> cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/`
+    `> python2 webserver/server.py`
 
-       Now open your web browser and go to http://localhost:8080/
+     Now open your web browser and go to http://localhost:8080/
 
-       Click register at the top right (not necessary to enter an email).
+     Click register at the top right (not necessary to enter an email).
 
-       Then after logging in, click the leftmost link under "Play now:" which is "DCSS trunk".
-       You should then go to a menu where you choose your character configuration (i.e. species > background > weapon)
-       Once you proceed through the menus you should find yourself in a newly generated world. If you've reached this
-       step (and can see the tiles) you have successfully installed the game.
-
-       Make sure you test the game is working in the browser before moving to Step 2.
+     Then after logging in, click the leftmost link under "Play now:" which is "DCSS trunk".
+     You should then go to a menu where you choose your character configuration (i.e. species > background > weapon)
+     Once you proceed through the menus you should find yourself in a newly generated world. If you've reached this
+     step (and can see the tiles) you have successfully installed the game.
 
 
-######################################################################
-# 2. How to Run an agent in the terminal
-######################################################################
+# How to Run an agent in the terminal
 
-    1. Start a terminal version of crawl with a socket for our agent to connect to
+1. Start a terminal version of crawl with a socket for our agent to connect to
 
        > cd ~/dcss-ai-wrapper/crawl/crawl-ref/source/
        > ./crawl -name AlexTheAgent -rc ./rcs/AlexTheAgent.rc -macro ./rcs/AlexTheAgent.macro -morgue ./rcs/midca -sprint -webtiles-socket ./rcs/AlexTheAgent:test.sock -await-connection
@@ -240,4 +234,4 @@ sudo cp clingo /usr/local/bin/
 
 # 2. You should see a list of agents playing, click on the agent's name to spectate (note, you do not need to log in
 # for this). If you don't see the agent on the list, try refreshing the page.
-Join the chat at https://gitter.im/dcss-ai-wrapper/community
+
