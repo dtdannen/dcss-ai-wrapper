@@ -12,6 +12,8 @@
 
 If you use this repository in your research, please cite the above paper.
 
+If you'd like to contribute to the research effort aligned with this project, see [Research Effort](ResearchEffort.md)
+
 # Development Community
 
 Join the chat at https://gitter.im/dcss-ai-wrapper/community
