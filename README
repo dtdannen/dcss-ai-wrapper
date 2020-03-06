@@ -238,3 +238,4 @@ sudo cp clingo /usr/local/bin/
 
 # 2. You should see a list of agents playing, click on the agent's name to spectate (note, you do not need to log in
 # for this). If you don't see the agent on the list, try refreshing the page.
+Join the chat at https://gitter.im/dcss-ai-wrapper/community
