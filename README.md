@@ -2,7 +2,7 @@
 
 ![](dcss-ai-wrapper-terminal-demo.gif)
 
-(Demo of a random agent playing DCSS in the terminal)
+(Demo of an agent taking random actions to play DCSS in the terminal)
 
 # About
 
@@ -64,7 +64,7 @@ project's folder.
 
    Note that nothing will happen until an agent connects.
    
-   The terminal that runs this command must be a minimum width, so try enlarging the terminal if it doesn't work and you are using a small monitor/screen. (Only try changing the width after completing the next step).
+   The terminal that runs this command must be a minimum width, so try enlarging the terminal if it doesn't work and you are using a small monitor/screen. (Only try changing the width if the next step fails).
 
 2. Open a new terminal, cd into dcss-ai-wrapper/ and run:
 
@@ -118,31 +118,30 @@ your AI agent play DCSS in the tile version that runs in the web browser.
 
 Note these instructions may be outdated - they need to be double checked.
 
-# 1. Start webserver
+## Start webserver
 
-> cd crawl_18/crawl/crawl-ref/source/
-> python2 webserver/server.py
+   `cd crawl_18/crawl/crawl-ref/source/`
+   `python2 webserver/server.py`
 
-# 2. now check to see if its up using a browser at localhost:8080
+## now check to see if its up using a browser at localhost:8080
 
-# 2.5. If this is the first time you are running this on your machine,
+### If this is the first time you are running this on your machine,
   you will need to register an account on the webserver (in the
   browser). Keep track of the username and password, as you will enter
   this into the code file, which the agent will use to connect to the
   server.
 
-# 3. In a new terminal, go back to top level dir 
+## In a new terminal, go back to top level dir 
 
-# 4. run the test_interface script using python3 (sidenote: installing asyncio
+## run the test_interface script using python3 (sidenote: installing asyncio
   on python2.x will initially work but then you get errors when trying
   to import it)
 
-> python3 main.py
+    `python3 main.py`
 
 # Watching the Agent Play
 
-# 1. Navigate your browser to localhost:8080
+1. Navigate your browser to localhost:8080
 
-# 2. You should see a list of agents playing, click on the agent's name to spectate (note, you do not need to log in
-# for this). If you don't see the agent on the list, try refreshing the page.
+2. You should see a list of agents playing, click on the agent's name to spectate (note, you do not need to log in for this). If you don't see the agent on the list, try refreshing the page.
 
