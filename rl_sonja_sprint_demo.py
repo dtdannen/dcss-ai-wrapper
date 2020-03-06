@@ -67,6 +67,7 @@ num_times_pressed_enter = 0
 msg_buffer = None
 def read_msg():
     global msg_buffer
+    global num_times_pressed_enter
     try:
         data = crawl_socket.recv(128 * 1024, socket.MSG_DONTWAIT)
         num_times_pressed_enter = 0
@@ -181,8 +182,8 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
         send_and_receive('h')
         send_and_receive('b')
 
-    do_sprint()
-    #do_dungeon()
+    #do_sprint()
+    do_dungeon()
 
     # turn off auto pick-up
     control_input('A')
