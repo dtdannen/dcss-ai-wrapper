@@ -70,7 +70,7 @@ project's folder.
 
 2. Open a new terminal, cd into dcss-ai-wrapper/ and run:
 
-    `python3 rl_sonja_sprint_demo.py`
+    `python3 main.py`
 	    
 3. You should now be able to watch the agent in the terminal as this script is running, as shown in the demo gif at the top of this readme.
 
