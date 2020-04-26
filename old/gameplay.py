@@ -13,7 +13,7 @@ import sys
 
 # custom
 import actions
-import agent
+from old import agent
 import simple_planning_agent
 import relational_learning_agent
 
@@ -30,7 +30,7 @@ class WebTilesConnection():
 
     last_msg_from_server = {}
 
-    def __init__(self, ai:agent.CrawlAIAgent):
+    def __init__(self, ai: agent.CrawlAIAgent):
         self.websocket = None
         self.logged_in = False
         self.ai = ai
