@@ -110,6 +110,7 @@ class Cell:
 
         self.set_vals(vals)
 
+
     def set_vals(self, vals):
         if 'x' in vals.keys():
             self.x = vals['x']
@@ -126,11 +127,28 @@ class Cell:
         if 'col' in vals.keys():
             self.col = vals['col']
 
+
+    def get_cell_vector(self):
+        """Do something similar to get_item_vector"""
+
+        # cell vector should contain:
+        # corpse? 0 or 1
+        # monster? (can only be one monster on a tile) - monster vector with
+            # monster vector
+            # current health? (may be in the form of weak, almost dead, bloodied, etc)
+            # maximum health?
+            # monster name
+            # is unique?
+        # items?
+        # special tile features (like water, lava, wall, door, etc)
+
+
     def __str__(self):
         if self.g and len(self.g) >= 1:
             return self.g
         else:
             return " "
+
 
 
 class CellMap:
