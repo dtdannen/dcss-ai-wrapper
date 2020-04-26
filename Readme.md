@@ -75,7 +75,9 @@ project's folder.
 3. You should now be able to watch the agent in the terminal as this script is running, as shown in the demo gif at the top of this readme.
 
 
-## Web browser setup
+## Web browser setup (see ISSUE #8)
+The following instructions need to be updated - see issue 8.
+
 The following steps enable the API to connect to DCSS running on a webserver on the local host, which means you can watch
 your AI agent play DCSS in the tile version that runs in the web browser.
 
