@@ -1,6 +1,6 @@
 # AI Wrapper for Dungeon Crawl Stone Soup
 
-![](dcss-ai-wrapper-terminal-demo.gif)
+![](contribute/dcss-ai-wrapper-terminal-demo.gif)
 
 (Demo of an agent taking random actions to play DCSS in the terminal)
 
@@ -12,7 +12,7 @@
 
 If you use this repository in your research, please cite the above paper.
 
-If you'd like to contribute to the research effort aligned with this project, see [Research Effort](ResearchEffort.md)
+If you'd like to contribute to the research effort aligned with this project, see [Research Effort](contribute/ResearchEffort.md)
 
 # Development Community
 
