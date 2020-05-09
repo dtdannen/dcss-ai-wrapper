@@ -119,72 +119,54 @@ class Command(Enum):
     DROP_EXACT_NUMBER_OF_ITEMS = 75
     DROP_LAST_ITEMS_PICKED_UP = 76
 
+    #  Additional Actions
+    EXIT_MENU = 77
+    SHOW_PREVIOUS_GAME_MESSAGES = 78
+    RESPOND_YES_TO_PROMPT = 79
+    RESPOND_NO_TO_PROMPT = 80
+    CLEAR_GAME_TEXT_MESSAGES = 81
 
-# key is a text description of the action
-# value is the exact dict that will be sent to the server as JSON
 
-key_actions = {}
+class Action:
+    """
+    This class represents an action that the agent can take.
+    """
 
-# movement
-key_actions['move_N'] = {'msg': 'key', "keycode": -254}
-key_actions['move_S'] = {'msg': 'key', "keycode": -253}
-key_actions['move_E'] = {'msg': 'key', "keycode": -251}
-key_actions['move_W'] = {'msg': 'key', "keycode": -252}
-key_actions['move_NW'] = {'msg': 'key', "keycode": -1007}
-key_actions['move_SW'] = {'msg': 'key', "keycode": -1001}
-key_actions['move_SE'] = {'msg': 'key', "keycode": -1003}
-key_actions['move_NE'] = {'msg': 'key', "keycode": -1009}
+    command_to_msg = \
+        {Command.MOVE_OR_ATTACK_N: {'msg': 'key', "keycode": -254},
+         Command.MOVE_OR_ATTACK_S: {'msg': 'key', "keycode": -253},
+         Command.MOVE_OR_ATTACK_E: {'msg': 'key', "keycode": -251},
+         Command.MOVE_OR_ATTACK_W: {'msg': 'key', "keycode": -252},
+         Command.MOVE_OR_ATTACK_NW: {'msg': 'key', "keycode": -1007},
+         Command.MOVE_OR_ATTACK_SW: {'msg': 'key', "keycode": -1001},
+         Command.MOVE_OR_ATTACK_SE: {'msg': 'key', "keycode": -1003},
+         Command.MOVE_OR_ATTACK_NE: {'msg': 'key', "keycode": -1009},
 
-# menu escape
-key_actions['exit_via_esc'] = {'msg': 'key', 'keycode': 27}
+         # todo figure out message structure for the rest of the commands and add them here
 
-# combat other than movement
-key_actions['tab_auto_attack'] = {'msg': 'key', 'keycode': 9}
+         Command.TRAVEL_STAIRCASE_UP: {'text': '<', 'msg': 'input'},
+         Command.TRAVEL_STAIRCASE_DOWN: {'text': '<', 'msg': 'input'},
+         Command.RESPOND_YES_TO_PROMPT: {'text': 'Y', 'msg': 'input'},
+         Command.RESPOND_NO_TO_PROMPT: {'text': 'N', 'msg': 'input'},
+         Command.CLEAR_GAME_TEXT_MESSAGES: {'text': '\r', 'msg': 'input'},
+         Command.QUAFF: {'text': 'q', 'msg': 'input'},
+         Command.EAT: {'text': 'e', 'msg': 'input'},
+         Command.PICKUP_ITEM: {'text': 'g', 'msg': 'input'},
+         Command.REST_AND_LONG_WAIT: {'text': '5', 'msg': 'input'},
+         Command.AUTO_EXPLORE: {'text': 'o', 'msg': 'input'},
+         Command.AUTO_FIGHT: {'msg': 'key', 'keycode': 9},
+         Command.SHOW_ABILITIES_AND_MUTATIONS: {'text': 'a', 'msg': 'input'},
+         Command.SHOW_INVENTORY_LIST: {'text': 'i', 'msg': 'input'},
+         Command.EXIT_MENU: {'msg': 'key', 'keycode': 27},
+         Command.SHOW_PREVIOUS_GAME_MESSAGES: {'msg': 'key', 'keycode': 16}}
 
-# show history of messages
-key_actions['show_previous_messages'] = {'msg': 'key', 'keycode': 16}
+    @staticmethod
+    def get_execution_repr(self, command: Command):
+        """
+        Given a command, return the data that can be sent directly to the game to execute the command.
+        :return: a message data structure that can be sent directly to the game to execute the command.
+        """
 
-# End key_actions
+        return Action.command_to_msg[command]
 
-'''
-Text actions have multiple uses, and are only concerned what
-letter will be sent to the webserver. For example, a Berserker can
-press 'a' to open up the abilities menu and then press 'a' again to
-activate Berserk mode. The same 'a' has many different uses (by default, 'a' opens the special ability menu; however when the user opens the inventory, 'a' corresponds to a specific item in the inventory).
 
-'''
-
-text_actions = {}
-
-# pickup an item in current location
-text_actions['g'] = {'text': 'g', 'msg': 'input'}
-
-# auto explore command
-text_actions['o'] = {'text': 'o', 'msg': 'input'}
-
-# access abilities
-text_actions['a'] = {'text': 'a', 'msg': 'input'}
-
-# inventory
-text_actions['i'] = {'text': 'i', 'msg': 'input'}
-
-# wait
-text_actions['5'] = {'text': '5', 'msg': 'input'}
-
-# eat
-text_actions['e'] = {'text': 'e', 'msg': 'input'}
-
-# exit up
-text_actions['<'] = {'text': '<', 'msg': 'input'}
-
-# yes
-text_actions['y'] = {'text': 'Y', 'msg': 'input'}
-
-# no
-text_actions['n'] = {'text': 'N', 'msg': 'input'}
-
-# enter key for clearing game text messages
-key_actions['enter_key'] = {'text': '\r', 'msg': 'input'}
-
-# quaff
-text_actions['q'] = {'text': 'q', 'msg': 'input'}
