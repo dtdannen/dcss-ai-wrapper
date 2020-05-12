@@ -40,8 +40,8 @@ class SimpleRandomAgent(Agent):
                            Command.MOVE_OR_ATTACK_NE,
                            Command.MOVE_OR_ATTACK_NW,
                            Command.MOVE_OR_ATTACK_SW,
-                           Command.MOVE_OR_ATTACK_SE,
-                           Command.REST_AND_LONG_WAIT]
+                           Command.MOVE_OR_ATTACK_SE]
+                           #Command.REST_AND_LONG_WAIT]
         return random.choice(simple_commands)
 
 
