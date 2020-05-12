@@ -6,10 +6,10 @@ the current state of the dcss game
 import actions
 import logging
 import re
-import threading
 import time
 import string
 from enum import Enum
+
 
 class ItemProperty(Enum):
     """
@@ -110,7 +110,6 @@ class Cell:
 
         self.set_vals(vals)
 
-
     def set_vals(self, vals):
         if 'x' in vals.keys():
             self.x = vals['x']
@@ -127,7 +126,6 @@ class Cell:
         if 'col' in vals.keys():
             self.col = vals['col']
 
-
     def get_cell_vector(self):
         """Do something similar to get_item_vector"""
 
@@ -142,13 +140,11 @@ class Cell:
         # items?
         # special tile features (like water, lava, wall, door, etc)
 
-
     def __str__(self):
         if self.g and len(self.g) >= 1:
             return self.g
         else:
             return " "
-
 
 
 class CellMap:
@@ -385,7 +381,7 @@ class GameState:
         self.messages = {}  # key is turn, value is list of messages received on this turn in order,
         # where first is oldest message
 
-        # intiliaze values of state variables
+        # initialize values of state variables
         for k in self.state_keys:
             self.state[k] = None
 
