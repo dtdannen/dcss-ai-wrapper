@@ -7,6 +7,9 @@ class Agent:
     def __init__(self):
         pass
 
+    def get_game_mode_setup_actions(self):
+        raise NotImplementedError()
+
     def get_action(self, gamestate: GameState):
         raise NotImplementedError()
 
@@ -15,7 +18,6 @@ class SimpleRandomAgent(Agent):
     def __init__(self):
         super().__init__()
         self.name = "SimpleRandomAgent"
-        self.curr_gamesetup_action_id = 0
 
     def do_sprint(self):
         # select sprint and character build
@@ -32,6 +34,9 @@ class SimpleRandomAgent(Agent):
                 {'msg': 'key', 'keycode': ord('b')},
                 ]
 
+    def get_game_mode_setup_actions(self):
+        return self.do_dungeon()
+
     def get_action(self, gamestate):
         simple_commands = [Command.MOVE_OR_ATTACK_N,
                            Command.MOVE_OR_ATTACK_S,
@@ -43,5 +48,6 @@ class SimpleRandomAgent(Agent):
                            Command.MOVE_OR_ATTACK_SE]
                            #Command.REST_AND_LONG_WAIT]
         return random.choice(simple_commands)
+
 
 

@@ -17,7 +17,7 @@ def main():
     print("\n\nconnected!\n\n")
     agent = SimpleRandomAgent()
 
-    setup_actions = agent.do_dungeon()
+    setup_actions = agent.get_game_mode_setup_actions()
     for action in setup_actions:
         print("\n\nexecution action {}\n\n".format(action))
         game.send_and_receive_dict(action)
