@@ -162,9 +162,11 @@ class GameConnection:
         msgs = self._read_msgs()
         self._handle_msgs(msgs)
 
-    def send_and_receive_command(self, command):
+    def send_and_receive_command(self, command, sleep_secs=2):
         logging.debug("Sending {}".format(command.name))
         self._send_command(command)
+        if sleep_secs > 0:
+            time.sleep(sleep_secs)
         msgs = self._read_msgs()
         self._handle_msgs(msgs)
 

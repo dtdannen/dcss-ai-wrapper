@@ -8,26 +8,43 @@ Make sure to run crawl before running this demo, see:
 """
 
 from game_connection import GameConnection
-from agent import SimpleRandomAgent
+from agent import SimpleRandomAgent, TestAllCommandsAgent
+from actions import Command, Action
 
 
 def main():
     game = GameConnection()
     game.connect()
     print("\n\nconnected!\n\n")
-    agent = SimpleRandomAgent()
+    agent = TestAllCommandsAgent()
 
     setup_actions = agent.get_game_mode_setup_actions()
     for action in setup_actions:
         print("\n\nexecution action {}\n\n".format(action))
         game.send_and_receive_dict(action)
 
+    # turn
+
     print("\n\nAbout to start playing the game \n\n")
     game_state = game.get_gamestate()
     while not game_state.has_agent_died():
         next_action = agent.get_action(game_state)
+        if next_action not in Action.command_to_msg.keys():
+            print("Action {} is not implemented yet, skipping for now".format(next_action))
+            continue
+
         game.send_and_receive_command(next_action)
         game_state = game.get_gamestate()
+
+    if game_state.has_agent_died():
+        # Quit and delete the game
+        game.send_and_receive_command(Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME)
+        game.send_and_receive_command(Command.RESPOND_YES_TO_PROMPT)
+        game.send_and_receive_command(Command.ENTER_KEY)
+        game.send_and_receive_command(Command.ENTER_KEY)
+        game.send_and_receive_command(Command.ENTER_KEY)
+
+    game.close()
 
 if __name__ == "__main__":
     main()

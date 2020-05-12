@@ -535,6 +535,10 @@ class GameState:
             if 'Things that are here' in message_only:
                 last_message_is_items_here = True
 
+            if 'Unknown command.' in message_only:
+                print("Error with last command - game did not recognize it... sleeping for 30 seconds")
+                time.sleep(30)
+
             print("Just added message for turn {}: {}".format(turn, message_only))
 
     def has_agent_died(self):
