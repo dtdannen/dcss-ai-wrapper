@@ -108,6 +108,12 @@ class Cell:
         self.mf = None
         self.col = None
 
+        self.has_wall = False
+        self.has_player = False
+        self.has_stairs_down = False
+        self.has_stairs_up = False
+        self.has_closed_door = False
+        self.has_open_door = False
         self.set_vals(vals)
 
     def set_vals(self, vals):
@@ -119,6 +125,20 @@ class Cell:
             self.y = vals['y']
         if 'g' in vals.keys():
             self.g = vals['g']
+            if self.g == '#':
+                self.has_wall = True
+            if self.g == '>':
+                self.has_stairs_down = True
+            if self.g == '<':
+                self.has_stairs_up = True
+            if self.g == '@':
+                self.has_player = True
+            if self.g == '+':
+                self.has_closed_door = True
+                self.has_closed_door = False
+            if self.g == '\'':
+                self.has_closed_door = False
+                self.has_open_door = True
         if 't' in vals.keys():
             self.t = vals['t']
         if 'mf' in vals.keys():
@@ -139,6 +159,16 @@ class Cell:
             # is unique?
         # items?
         # special tile features (like water, lava, wall, door, etc)
+
+    def get_pddl_facts(self, cellsymbol):
+        pddl_facts = []
+        if self.has_wall:
+            pddl_facts.append('wall({})'.format(cellsymbol))
+        if self.has_closed_door:
+            pddl_facts.append('closeddoor({})'.format(cellsymbol))
+        if self.has_player:
+            pddl_facts.append('playerat({})'.format(cellsymbol))
+        return pddl_facts
 
     def __str__(self):
         if self.g and len(self.g) >= 1:
@@ -209,6 +239,23 @@ class CellMap:
                     s += " "
             s += '\n'
         return s
+
+    def get_cell_map_pddl(self, goal_str):
+
+        objects_str = ""  # todo
+        facts_str = ""  # todo
+
+        pddl_str = """(define (problem dcss-test-prob)
+                      (:domain dcss)
+                      (:objects {}
+                      )
+                      (:init {}
+                      )
+                      (:goal {}
+                      )
+                      )""".format(objects_str, facts_str, goal_str)
+
+        return pddl_str
 
 
 class InventoryItem:

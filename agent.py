@@ -88,3 +88,31 @@ class TestAllCommandsAgent(Agent):
 
         return next_command
 
+class FastDownwardPlanningAgent(Agent):
+    """
+    Agent that uses fast downward to solve planning problems to explore a floor. Ignores monsters.
+    """
+
+    pddl_domain_file = ""
+
+    def __init__(self):
+        super().__init__()
+        self.next_command_id = 1
+        self.plan = []
+
+    def do_dungeon(self):
+        # select dungeon and character build
+        return [{'msg': 'key', 'keycode': ord('b')},
+                {'msg': 'key', 'keycode': ord('h')},
+                {'msg': 'key', 'keycode': ord('b')},
+                ]
+
+    def get_game_mode_setup_actions(self):
+        return self.do_dungeon()
+
+    def get_plan_from_fast_downward(self, pddl_state, pddl_domain_file):
+        pass
+
+    def get_action(self, gamestate: GameState):
+        pass
+

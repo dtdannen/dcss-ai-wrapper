@@ -16,7 +16,7 @@ def main():
     game = GameConnection()
     game.connect()
     print("\n\nconnected!\n\n")
-    agent = TestAllCommandsAgent()
+    agent = SimpleRandomAgent()
 
     setup_actions = agent.get_game_mode_setup_actions()
     for action in setup_actions:
@@ -25,9 +25,12 @@ def main():
 
     # turn
 
+
+
     print("\n\nAbout to start playing the game \n\n")
     game_state = game.get_gamestate()
     while not game_state.has_agent_died():
+        print(game_state.draw_cell_map())
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():
             print("Action {} is not implemented yet, skipping for now".format(next_action))
