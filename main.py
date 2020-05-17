@@ -31,6 +31,7 @@ def main():
     game_state = game.get_gamestate()
     while not game_state.has_agent_died():
         print(game_state.draw_cell_map())
+        print(game_state.get_pddl_current_state())
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():
             print("Action {} is not implemented yet, skipping for now".format(next_action))

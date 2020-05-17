@@ -8,6 +8,7 @@ import logging
 import re
 import time
 import string
+import random
 from enum import Enum
 
 
@@ -163,14 +164,14 @@ class Cell:
         # items?
         # special tile features (like water, lava, wall, door, etc)
 
-    def get_pddl_facts(self, cellsymbol):
+    def get_pddl_facts(self):
         pddl_facts = []
         if self.has_wall:
-            pddl_facts.append('wall({})'.format(cellsymbol))
+            pddl_facts.append('wall({})'.format(self.get_pddl_name()))
         if self.has_closed_door:
-            pddl_facts.append('closeddoor({})'.format(cellsymbol))
+            pddl_facts.append('closeddoor({})'.format(self.get_pddl_name()))
         if self.has_player:
-            pddl_facts.append('playerat({})'.format(cellsymbol))
+            pddl_facts.append('playerat({})'.format(self.get_pddl_name()))
         return pddl_facts
 
     def __str__(self):
@@ -256,20 +257,85 @@ class CellMap:
             s += '\n'
         return s
 
-    def get_cell_map_pddl(self, goal_str):
+    def get_cell_map_pddl(self):
 
-        objects_str = ""  # todo
-        facts_str = ""  # todo
+        object_strs = []
+        fact_strs = []
+        for curr_y in range(self.min_y, self.max_y + 1):
+            for curr_x in range(self.min_x, self.max_x + 1):
+                if (curr_x, curr_y) in self.x_y_to_cells.keys():
+                    cell = self.x_y_to_cells[(curr_x, curr_y)]
+                    object_strs.append(cell.get_pddl_name())
+
+                    for f in cell.get_pddl_facts():
+                        fact_strs.append(f)
+
+                    northcellxy = (cell.x, cell.y - 1)
+                    if northcellxy in self.x_y_to_cells.keys():
+                        northcell = self.x_y_to_cells[northcellxy]
+                        fact_strs.append("northof({},{})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
+
+                    southcellxy = (cell.x, cell.y + 1)
+                    if southcellxy in self.x_y_to_cells.keys():
+                        southcell = self.x_y_to_cells[southcellxy]
+                        fact_strs.append("southof({},{})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
+
+                    westcellxy = (cell.x+1, cell.y)
+                    if westcellxy in self.x_y_to_cells.keys():
+                        westcell = self.x_y_to_cells[westcellxy]
+                        fact_strs.append("westof({},{})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
+
+                    eastcellxy = (cell.x - 1, cell.y)
+                    if eastcellxy in self.x_y_to_cells.keys():
+                        eastcell = self.x_y_to_cells[eastcellxy]
+                        fact_strs.append("eastof({},{})".format(cell.get_pddl_name(), eastcell.get_pddl_name()))
+
+                    northeastcellxy = (cell.x - 1, cell.y - 1)
+                    if northeastcellxy in self.x_y_to_cells.keys():
+                        northeastcell = self.x_y_to_cells[northeastcellxy]
+                        fact_strs.append("northeastof({},{})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
+
+                    northwestcellxy = (cell.x + 1, cell.y - 1)
+                    if northwestcellxy in self.x_y_to_cells.keys():
+                        northwestcell = self.x_y_to_cells[northwestcellxy]
+                        fact_strs.append(
+                            "northwestof({},{})".format(cell.get_pddl_name(), northwestcell.get_pddl_name()))
+
+                    southeastcellxy = (cell.x - 1, cell.y + 1)
+                    if southeastcellxy in self.x_y_to_cells.keys():
+                        southeastcell = self.x_y_to_cells[southeastcellxy]
+                        fact_strs.append(
+                            "southeastof({},{})".format(cell.get_pddl_name(), southeastcell.get_pddl_name()))
+
+                    southwestcellxy = (cell.x + 1, cell.y + 1)
+                    if southwestcellxy in self.x_y_to_cells.keys():
+                        southwestcell = self.x_y_to_cells[southwestcellxy]
+                        fact_strs.append(
+                            "southwestof({},{})".format(cell.get_pddl_name(), southwestcell.get_pddl_name()))
+
+        object_strs = list(set(object_strs))
+        fact_strs = list(set(fact_strs))
 
         pddl_str = """(define (problem dcss-test-prob)
                       (:domain dcss)
-                      (:objects {}
-                      )
-                      (:init {}
-                      )
-                      (:goal {}
-                      )
-                      )""".format(objects_str, facts_str, goal_str)
+                      (:objects
+                   """
+        for obj in object_strs:
+            pddl_str+= "  {}\n".format(obj)
+        pddl_str += ")\n"
+
+        pddl_str += "(:init \n"
+        for fact in fact_strs:
+            pddl_str+= "  {}\n".format(fact)
+        pddl_str += ")\n"
+
+        goalcell = random.choice(object_strs)
+
+        pddl_str += "(:goal \n"
+        pddl_str += "  playerat({})\n".format(goalcell)
+        pddl_str += ")"
+
+        print(pddl_str)
 
         return pddl_str
 
@@ -599,6 +665,9 @@ class GameState:
                 time.sleep(30)
 
             print("Just added message for turn {}: {}".format(turn, message_only))
+
+    def get_pddl_current_state(self):
+        return self.cellmap.get_cell_map_pddl()
 
     def has_agent_died(self):
         return self.died
