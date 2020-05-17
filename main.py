@@ -16,7 +16,8 @@ def main():
     game = GameConnection()
     game.connect()
     print("\n\nconnected!\n\n")
-    agent = FastDownwardPlanningAgent()
+    agent = SimpleRandomAgent()
+    #agent = FastDownwardPlanningAgent()
 
     setup_actions = agent.get_game_mode_setup_actions()
     for action in setup_actions:
