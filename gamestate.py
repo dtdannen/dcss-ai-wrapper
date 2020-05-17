@@ -689,6 +689,14 @@ class GameState:
     def get_pddl_current_state(self):
         return self.cellmap.get_cell_map_pddl()
 
+    def write_pddl_current_state_to_file(self, filename):
+        """Filename is assumed to be a relevant filename from the folder that the main script is running"""
+
+        with open(filename.format(), 'w') as f:
+            f.write(self.get_pddl_current_state())
+
+        return True
+
     def has_agent_died(self):
         return self.died
 

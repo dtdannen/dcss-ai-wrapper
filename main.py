@@ -8,7 +8,7 @@ Make sure to run crawl before running this demo, see:
 """
 
 from game_connection import GameConnection
-from agent import SimpleRandomAgent, TestAllCommandsAgent
+from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningAgent
 from actions import Command, Action
 
 
@@ -16,7 +16,7 @@ def main():
     game = GameConnection()
     game.connect()
     print("\n\nconnected!\n\n")
-    agent = SimpleRandomAgent()
+    agent = FastDownwardPlanningAgent()
 
     setup_actions = agent.get_game_mode_setup_actions()
     for action in setup_actions:
@@ -33,8 +33,7 @@ def main():
     while not game_state.has_agent_died():
         print(game_state.draw_cell_map())
 
-        with open('models/temp/gamestate{}.pddl'.format(i), 'w') as f:
-            f.write(game_state.get_pddl_current_state())
+
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():
             print("Action {} is not implemented yet, skipping for now".format(next_action))
