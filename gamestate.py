@@ -115,6 +115,7 @@ class Cell:
         self.has_stairs_up = False
         self.has_closed_door = False
         self.has_open_door = False
+        self.has_statue = False
         self.set_vals(vals)
 
     def set_vals(self, vals):
@@ -148,6 +149,9 @@ class Cell:
             if self.g == '\'':
                 self.has_closed_door = False
                 self.has_open_door = True
+
+            if self.g == '8':
+                self.has_statue = True
 
         if 't' in vals.keys():
             self.t = vals['t']
@@ -278,7 +282,7 @@ class CellMap:
             s += '\n'
         return s
 
-    def get_cell_map_pddl(self):
+    def get_cell_map_pddl(self, goals):
 
         object_strs = []
         fact_strs = []
@@ -351,13 +355,16 @@ class CellMap:
             pddl_str+= "  {}\n".format(fact)
         pddl_str += ")\n"
 
-        goalcell = random.choice(object_strs)
-
-        pddl_str += "(:goal \n"
-        pddl_str += "  (and (playerat {}))\n".format(goalcell)
+        pddl_str += "(:goal \n  (and \n"
+        for goal in goals:
+            pddl_str += "    {}\n".format(goal)
+        pddl_str += ")\n"
         pddl_str += ")\n\n)"
 
         return pddl_str
+
+    def get_xy_to_cells_dict(self):
+        return self.x_y_to_cells
 
 
 class InventoryItem:
@@ -588,6 +595,9 @@ class GameState:
         '''
         self.agent_y += change
 
+    def get_cell_map(self):
+        return self.cellmap
+
     def _process_raw_state(self, s, last_key=''):
         # print("processing {}\n\n".format(s))
         if isinstance(s, list):
@@ -686,14 +696,14 @@ class GameState:
 
             print("Just added message for turn {}: {}".format(turn, message_only))
 
-    def get_pddl_current_state(self):
-        return self.cellmap.get_cell_map_pddl()
+    def get_pddl_current_state(self, goals):
+        return self.cellmap.get_cell_map_pddl(goals)
 
-    def write_pddl_current_state_to_file(self, filename):
+    def write_pddl_current_state_to_file(self, filename, goals):
         """Filename is assumed to be a relevant filename from the folder that the main script is running"""
 
         with open(filename.format(), 'w') as f:
-            f.write(self.get_pddl_current_state())
+            f.write(self.get_pddl_current_state(goals))
 
         return True
 

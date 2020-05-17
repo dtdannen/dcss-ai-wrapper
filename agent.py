@@ -117,26 +117,42 @@ class FastDownwardPlanningAgent(Agent):
     def get_game_mode_setup_actions(self):
         return self.do_dungeon()
 
-    def get_plan_from_fast_downward(self):
+    def get_random_nonwall_playerat_goal(self):
+        available_cells = []
+        for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
+            if not cell.has_wall and not cell.has_player and cell.g:
+                print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
+                available_cells.append(cell)
+
+        goal_cell = random.choice(available_cells)
+        print("GOAL IS : {}".format(goal_cell.get_pddl_name()))
+        return "(playerat {})".format(goal_cell.get_pddl_name())
+
+    def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename)
+            self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename, goals=goals)
         else:
             print("WARNING current game state is null when trying to call fast downward planner")
             return
 
         # step 2: run fastdownward
-        fast_downward_process_call = ["./FastDownward/fast-downward.py",
-                                      "--plan-file {}".format(self.plan_result_filename),
-                                      "{}".format(self.plan_domain_filename),
-                                      "{}".format(self.plan_current_pddl_state_filename),
-                                      "--search \"astar(lmcut())\""]
+        # fast_downward_process_call = ["./FastDownward/fast-downward.py",
+        #                               "--plan-file {}".format(self.plan_result_filename),
+        #                               "{}".format(self.plan_domain_filename),
+        #                               "{}".format(self.plan_current_pddl_state_filename),
+        #                               "--search \"astar(lmcut())\""]
+        fast_downward_process_call = [
+            "./FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
+                self.plan_result_filename,
+                self.plan_domain_filename,
+                self.plan_current_pddl_state_filename),]
         print("About to call fastdownward like:")
         print(str(fast_downward_process_call))
-        subprocess.run(fast_downward_process_call)
+        subprocess.run(fast_downward_process_call, shell=True)
 
         # step 3: read in the resulting plan
-        plan_steps = []
+        plan = []
         with open(self.plan_result_filename, 'r') as f:
             for line in f.readlines():
                 line = line.strip()
@@ -144,24 +160,25 @@ class FastDownwardPlanningAgent(Agent):
                     if line[0] == '(':
                         pddl_action_name = line.split()[0][1:]
                         command_name = pddl_action_name.upper()
-                    plan_steps.append(command_name)
-
+                        plan.append(Command[command_name])
                 else:
                     # we have a comment, ignore
                     pass
-        for ps in plan_steps:
+        for ps in plan:
             print("Plan step: {}".format(ps))
+
+        self.plan = plan
 
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
-        self.get_plan_from_fast_downward()
 
-        simple_commands = [Command.MOVE_OR_ATTACK_N,
-                           Command.MOVE_OR_ATTACK_S,
-                           Command.MOVE_OR_ATTACK_E,
-                           Command.MOVE_OR_ATTACK_W,
-                           Command.MOVE_OR_ATTACK_NE,
-                           Command.MOVE_OR_ATTACK_NW,
-                           Command.MOVE_OR_ATTACK_SW,
-                           Command.MOVE_OR_ATTACK_SE]
-        return random.choice(simple_commands)
+        if len(self.plan) == 0:
+            goals = [self.get_random_nonwall_playerat_goal()]
+            self.get_plan_from_fast_downward(goals=goals)
+
+        if len(self.plan) > 0:
+            next_action = self.plan.pop(0)
+
+        input("Proceed with executing action {}?".format(next_action))
+
+        return next_action
