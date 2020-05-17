@@ -75,6 +75,18 @@ project's folder.
 3. You should now be able to watch the agent in the terminal as this script is running, as shown in the demo gif at the top of this readme.
 
 
+# Run the fastdownward planning and goalreasoning agent
+
+1. Download and compile the [fastdownward planner](http://www.fast-downward.org/ObtainingAndRunningFastDownward) and put it in a folder under dcss-ai-wrapper so the folder structure looks like this:
+
+    `dcss-ai-wrapper/FastDownward/fast-downward.py`
+
+2. Switch the agent in `main.py` to be the `FastDownwardPlanningAgent` agent, like:
+
+    `agent = FastDownwardPlanningAgent()`
+
+3. Run main.py and it should work. There's a chance that the fastdownward planner will fail to find a plan. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess.
+
 ## Web browser setup (see ISSUE #8)
 The following instructions need to be updated - see issue 8.
 
