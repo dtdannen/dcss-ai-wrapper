@@ -265,7 +265,7 @@ class Action:
         Given a command, return the data that can be sent directly to the game to execute the command.
         :return: a message data structure that can be sent directly to the game to execute the command.
         """
-        print("Command is {}".format(command))
+        #print("Command is {}".format(command))
         return Action.command_to_msg[command]
 
 
