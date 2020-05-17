@@ -146,6 +146,9 @@ class Cell:
         if 'col' in vals.keys():
             self.col = vals['col']
 
+    def get_pddl_name(self):
+        return "cellx{}y{}".format(self.x, self.y)
+
     def get_cell_vector(self):
         """Do something similar to get_item_vector"""
 
@@ -195,6 +198,10 @@ class CellMap:
         # self.unknown_cell = Cell(
 
     def add_or_update_cell(self, x, y, vals):
+        if 'x' not in vals.keys():
+            vals['x'] = x
+        if 'y' not in vals.keys():
+            vals['y'] = x
         if (x, y) in self.x_y_to_cells.keys():
             self.x_y_to_cells[(x, y)].set_vals(vals=vals)
         else:
@@ -215,14 +222,23 @@ class CellMap:
     def draw_cell_map(self):
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
-                                                                      self.min_x, self.max_x, self.min_y, self.max_y)
+                                                              self.min_x, self.max_x, self.min_y, self.max_y)
+        non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
             for curr_x in range(self.min_x, self.max_x + 1):
                 if (curr_x, curr_y) in self.x_y_to_cells.keys():
-                    s += str(self.x_y_to_cells[(curr_x, curr_y)])
+                    cell = self.x_y_to_cells[(curr_x, curr_y)]
+                    s += str(cell)
+                    if cell.g != "." and cell.g != "#" and cell.g is not None:
+                        non_empty_cells.append(cell)
                 else:
                     s += " "
             s += '\n'
+
+        print("non-empty cells are:")
+        for c in non_empty_cells:
+            print("X={},Y={}, Cell is: {}".format(c.x, c.y, c.g))
+
         return s
 
     def print_radius_around_agent(self, r=8):
