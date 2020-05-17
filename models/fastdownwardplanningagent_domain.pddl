@@ -14,6 +14,8 @@
     (wall ?cell)
     ; closed door
     (closeddoor ?cell)
+    ; statue is basically like a wall
+    (statue ?cell)
     ; player loc
     (playerat ?cell)
 )
@@ -24,6 +26,7 @@
     (and
         (northof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -40,6 +43,7 @@
     (and
         (southof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -56,6 +60,7 @@
     (and
         (eastof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -72,6 +77,7 @@
     (and
         (westof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -88,6 +94,7 @@
     (and
         (northwestof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -104,6 +111,7 @@
     (and
         (southwestof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -120,6 +128,7 @@
     (and
         (northeastof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -136,6 +145,7 @@
     (and
         (southeastof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
@@ -152,6 +162,7 @@
     (and
         (northof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )
@@ -167,6 +178,7 @@
     (and
         (southof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )
@@ -182,6 +194,7 @@
     (and
         (eastof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )
@@ -197,6 +210,7 @@
     (and
         (westof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )
@@ -212,6 +226,7 @@
     (and
         (northwestof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )
@@ -227,6 +242,7 @@
     (and
         (southwestof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )
@@ -242,6 +258,7 @@
     (and
         (northeastof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )
@@ -257,6 +274,7 @@
     (and
         (southeastof ?currcell ?destcell)
         (not (wall ?destcell))
+        (not (statue ?destcell))
         (closeddoor ?destcell)
         (playerat ?currcell)
     )

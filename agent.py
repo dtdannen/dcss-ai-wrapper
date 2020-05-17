@@ -120,7 +120,7 @@ class FastDownwardPlanningAgent(Agent):
     def get_random_nonwall_playerat_goal(self):
         available_cells = []
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
-            if not cell.has_wall and not cell.has_player and cell.g:
+            if not cell.has_wall and not cell.has_player and not cell.has_statue and cell.g:
                 print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
                 available_cells.append(cell)
 
@@ -176,9 +176,10 @@ class FastDownwardPlanningAgent(Agent):
             goals = [self.get_random_nonwall_playerat_goal()]
             self.get_plan_from_fast_downward(goals=goals)
 
+        next_action = None
         if len(self.plan) > 0:
             next_action = self.plan.pop(0)
-
-        input("Proceed with executing action {}?".format(next_action))
+        else:
+            print("warning - no plan!")
 
         return next_action

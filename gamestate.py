@@ -187,6 +187,8 @@ class Cell:
             pddl_facts.append('(closeddoor {})'.format(self.get_pddl_name()))
         if self.has_player:
             pddl_facts.append('(playerat {})'.format(self.get_pddl_name()))
+        if self.has_statue:
+            pddl_facts.append('(statue {})'.format(self.get_pddl_name()))
         return pddl_facts
 
     def __str__(self):
