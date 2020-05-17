@@ -117,21 +117,28 @@ class FastDownwardPlanningAgent(Agent):
     def get_game_mode_setup_actions(self):
         return self.do_dungeon()
 
-    def get_random_nonwall_playerat_goal(self):
+    def get_random_nonvisited_nonwall_playerat_goal(self):
         available_cells = []
+        cells_visited = 0
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
-            if not cell.has_wall and not cell.has_player and not cell.has_statue and cell.g:
-                print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
+            if cell.has_player_visited:
+                cells_visited += 1
+            elif not cell.has_wall and not cell.has_player and not cell.has_statue and not cell.has_lava and cell.g:
+                #print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
                 available_cells.append(cell)
+            else:
+                pass
 
         goal_cell = random.choice(available_cells)
-        print("GOAL IS : {}".format(goal_cell.get_pddl_name()))
+
+        print("Visited {} cells - Goal is now {}".format(cells_visited, goal_cell.get_pddl_name()))
         return "(playerat {})".format(goal_cell.get_pddl_name())
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename, goals=goals)
+            self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
+                                                                     goals=goals)
         else:
             print("WARNING current game state is null when trying to call fast downward planner")
             return
@@ -146,10 +153,10 @@ class FastDownwardPlanningAgent(Agent):
             "./FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
                 self.plan_result_filename,
                 self.plan_domain_filename,
-                self.plan_current_pddl_state_filename),]
-        print("About to call fastdownward like:")
-        print(str(fast_downward_process_call))
-        subprocess.run(fast_downward_process_call, shell=True)
+                self.plan_current_pddl_state_filename), ]
+        #print("About to call fastdownward like:")
+        #print(str(fast_downward_process_call))
+        subprocess.run(fast_downward_process_call, shell=True, stdout=subprocess.DEVNULL)
 
         # step 3: read in the resulting plan
         plan = []
@@ -164,8 +171,9 @@ class FastDownwardPlanningAgent(Agent):
                 else:
                     # we have a comment, ignore
                     pass
-        for ps in plan:
-            print("Plan step: {}".format(ps))
+
+        #for ps in plan:
+        #    print("Plan step: {}".format(ps))
 
         self.plan = plan
 
@@ -173,7 +181,7 @@ class FastDownwardPlanningAgent(Agent):
         self.current_game_state = gamestate
 
         if len(self.plan) == 0:
-            goals = [self.get_random_nonwall_playerat_goal()]
+            goals = [self.get_random_nonvisited_nonwall_playerat_goal()]
             self.get_plan_from_fast_downward(goals=goals)
 
         next_action = None

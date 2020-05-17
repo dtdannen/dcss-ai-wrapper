@@ -31,7 +31,7 @@ def main():
     game_state = game.get_gamestate()
     i = 0
     while not game_state.has_agent_died():
-        print(game_state.draw_cell_map())
+        #print(game_state.draw_cell_map())
 
 
         next_action = agent.get_action(game_state)

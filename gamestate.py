@@ -116,6 +116,9 @@ class Cell:
         self.has_closed_door = False
         self.has_open_door = False
         self.has_statue = False
+        self.has_player_visited = False
+        self.has_lava = False
+        self.has_plant = False
         self.set_vals(vals)
 
     def set_vals(self, vals):
@@ -139,6 +142,7 @@ class Cell:
 
             if self.g == '@':
                 self.has_player = True
+                self.has_player_visited = True
             else:
                 self.has_player = False
 
@@ -152,6 +156,12 @@ class Cell:
 
             if self.g == '8':
                 self.has_statue = True
+
+            if self.g == '≈' or self.g == '§':
+                self.has_lava = True
+
+            if self.g == 'P':
+                self.has_plant = True
 
         if 't' in vals.keys():
             self.t = vals['t']
@@ -189,6 +199,10 @@ class Cell:
             pddl_facts.append('(playerat {})'.format(self.get_pddl_name()))
         if self.has_statue:
             pddl_facts.append('(statue {})'.format(self.get_pddl_name()))
+        if self.has_lava:
+            pddl_facts.append('(lava {})'.format(self.get_pddl_name()))
+        if self.has_plant:
+            pddl_facts.append('(plant {})'.format(self.get_pddl_name()))
         return pddl_facts
 
     def __str__(self):
@@ -263,9 +277,9 @@ class CellMap:
                     s += " "
             s += '\n'
 
-        print("non-empty cells are:")
-        for c in non_empty_cells:
-            print("X={},Y={}, Cell is: {}".format(c.x, c.y, c.g))
+        #print("non-empty cells are:")
+        #for c in non_empty_cells:
+        #    print("X={},Y={}, Cell is: {}".format(c.x, c.y, c.g))
 
         return s
 
