@@ -24,7 +24,7 @@
     (and
         (northof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -40,7 +40,7 @@
     (and
         (southof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -56,7 +56,7 @@
     (and
         (eastof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -72,7 +72,7 @@
     (and
         (westof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -88,7 +88,7 @@
     (and
         (northwestof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -104,7 +104,7 @@
     (and
         (southwestof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -120,7 +120,7 @@
     (and
         (northeastof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -136,7 +136,7 @@
     (and
         (southeastof ?currcell ?destcell)
         (not (wall ?destcell))
-        (now (closeddoor ?destcell))
+        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect

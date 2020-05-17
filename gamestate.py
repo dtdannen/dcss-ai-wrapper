@@ -126,26 +126,37 @@ class Cell:
             self.y = vals['y']
         if 'g' in vals.keys():
             self.g = vals['g']
+
             if self.g == '#':
                 self.has_wall = True
+
             if self.g == '>':
                 self.has_stairs_down = True
+
             if self.g == '<':
                 self.has_stairs_up = True
+
             if self.g == '@':
                 self.has_player = True
+            else:
+                self.has_player = False
+
             if self.g == '+':
                 self.has_closed_door = True
                 self.has_closed_door = False
+
             if self.g == '\'':
                 self.has_closed_door = False
                 self.has_open_door = True
+
         if 't' in vals.keys():
             self.t = vals['t']
         if 'mf' in vals.keys():
             self.mf = vals['mf']
         if 'col' in vals.keys():
             self.col = vals['col']
+
+        self.raw = vals
 
     def get_pddl_name(self):
         return "cellx{}y{}".format(self.x, self.y)
@@ -167,11 +178,11 @@ class Cell:
     def get_pddl_facts(self):
         pddl_facts = []
         if self.has_wall:
-            pddl_facts.append('wall({})'.format(self.get_pddl_name()))
+            pddl_facts.append('(wall {})'.format(self.get_pddl_name()))
         if self.has_closed_door:
-            pddl_facts.append('closeddoor({})'.format(self.get_pddl_name()))
+            pddl_facts.append('(closeddoor {})'.format(self.get_pddl_name()))
         if self.has_player:
-            pddl_facts.append('playerat({})'.format(self.get_pddl_name()))
+            pddl_facts.append('(playerat {})'.format(self.get_pddl_name()))
         return pddl_facts
 
     def __str__(self):
@@ -199,13 +210,23 @@ class CellMap:
         # self.unknown_cell = Cell(
 
     def add_or_update_cell(self, x, y, vals):
+        #print("vals={}".format(str(vals)))
+
         if 'x' not in vals.keys():
             vals['x'] = x
+        elif x != vals['x']:
+            print("WARNING potential issue with coordinates, x={} and vals[x]={}".format(x, vals['x']))
         if 'y' not in vals.keys():
             vals['y'] = x
+        elif y != vals['y']:
+            print("WARNING potential with coordinates, y={} and vals[y]={}".format(y, vals['y']))
+
         if (x, y) in self.x_y_to_cells.keys():
+            #print("updating existing cell x={},y={}".format(x,y))
+            #print("previous vals={}, new vals={}".format(self.x_y_to_cells[(x, y)].raw, vals))
             self.x_y_to_cells[(x, y)].set_vals(vals=vals)
         else:
+            #print("adding new cell x={},y={} with vals={}".format(x, y, vals))
             self.x_y_to_cells[(x, y)] = Cell(vals=vals)
             if self.min_x is None or x < self.min_x:
                 self.min_x = x
@@ -270,56 +291,57 @@ class CellMap:
                     for f in cell.get_pddl_facts():
                         fact_strs.append(f)
 
+                    #print('cellxy = {}, cellname is {}'.format(str((curr_x, curr_y)), cell.get_pddl_name()))
                     northcellxy = (cell.x, cell.y - 1)
+                    #print("northcellxy = {}".format(northcellxy))
                     if northcellxy in self.x_y_to_cells.keys():
                         northcell = self.x_y_to_cells[northcellxy]
-                        fact_strs.append("northof({},{})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
+                        #print("northcell = {}".format(northcell.get_pddl_name()))
+                        fact_strs.append("(northof {} {})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
 
                     southcellxy = (cell.x, cell.y + 1)
                     if southcellxy in self.x_y_to_cells.keys():
                         southcell = self.x_y_to_cells[southcellxy]
-                        fact_strs.append("southof({},{})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
+                        fact_strs.append("(southof {} {})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
 
-                    westcellxy = (cell.x+1, cell.y)
+                    westcellxy = (cell.x-1, cell.y)
                     if westcellxy in self.x_y_to_cells.keys():
                         westcell = self.x_y_to_cells[westcellxy]
-                        fact_strs.append("westof({},{})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
+                        fact_strs.append("(westof {} {})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
 
-                    eastcellxy = (cell.x - 1, cell.y)
+                    eastcellxy = (cell.x + 1, cell.y)
                     if eastcellxy in self.x_y_to_cells.keys():
                         eastcell = self.x_y_to_cells[eastcellxy]
-                        fact_strs.append("eastof({},{})".format(cell.get_pddl_name(), eastcell.get_pddl_name()))
+                        fact_strs.append("(eastof {} {})".format(cell.get_pddl_name(), eastcell.get_pddl_name()))
 
-                    northeastcellxy = (cell.x - 1, cell.y - 1)
+                    northeastcellxy = (cell.x + 1, cell.y - 1)
                     if northeastcellxy in self.x_y_to_cells.keys():
                         northeastcell = self.x_y_to_cells[northeastcellxy]
-                        fact_strs.append("northeastof({},{})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
+                        fact_strs.append("(northeastof {} {})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
 
-                    northwestcellxy = (cell.x + 1, cell.y - 1)
+                    northwestcellxy = (cell.x - 1, cell.y - 1)
                     if northwestcellxy in self.x_y_to_cells.keys():
                         northwestcell = self.x_y_to_cells[northwestcellxy]
                         fact_strs.append(
-                            "northwestof({},{})".format(cell.get_pddl_name(), northwestcell.get_pddl_name()))
+                            "(northwestof {} {})".format(cell.get_pddl_name(), northwestcell.get_pddl_name()))
 
-                    southeastcellxy = (cell.x - 1, cell.y + 1)
+                    southeastcellxy = (cell.x + 1, cell.y + 1)
                     if southeastcellxy in self.x_y_to_cells.keys():
                         southeastcell = self.x_y_to_cells[southeastcellxy]
                         fact_strs.append(
-                            "southeastof({},{})".format(cell.get_pddl_name(), southeastcell.get_pddl_name()))
+                            "(southeastof {} {})".format(cell.get_pddl_name(), southeastcell.get_pddl_name()))
 
-                    southwestcellxy = (cell.x + 1, cell.y + 1)
+                    southwestcellxy = (cell.x - 1, cell.y + 1)
                     if southwestcellxy in self.x_y_to_cells.keys():
                         southwestcell = self.x_y_to_cells[southwestcellxy]
                         fact_strs.append(
-                            "southwestof({},{})".format(cell.get_pddl_name(), southwestcell.get_pddl_name()))
+                            "(southwestof {} {})".format(cell.get_pddl_name(), southwestcell.get_pddl_name()))
 
         object_strs = list(set(object_strs))
         fact_strs = list(set(fact_strs))
 
-        pddl_str = """(define (problem dcss-test-prob)
-                      (:domain dcss)
-                      (:objects
-                   """
+        pddl_str = "(define (problem dcss-test-prob)\n(:domain dcss)\n(:objects \n"
+
         for obj in object_strs:
             pddl_str+= "  {}\n".format(obj)
         pddl_str += ")\n"
@@ -332,10 +354,8 @@ class CellMap:
         goalcell = random.choice(object_strs)
 
         pddl_str += "(:goal \n"
-        pddl_str += "  playerat({})\n".format(goalcell)
-        pddl_str += ")"
-
-        print(pddl_str)
+        pddl_str += "  (and (playerat {}))\n".format(goalcell)
+        pddl_str += ")\n\n)"
 
         return pddl_str
 
@@ -733,6 +753,7 @@ class GameState:
         g_var = None
         num_at_signs = 0
         if cells:
+            # Note: in the first iteration of this loop, x and y will exist in cell_dict.keys()
             for cell_dict in cells:
                 # either x and y appear to mark the start of a new row, or ...
                 if 'x' in cell_dict.keys() and 'y' in cell_dict.keys():
@@ -741,15 +762,22 @@ class GameState:
                 else:  # ... just increment x, keeping y the same
                     curr_x += 1
 
+                #print("x={},y={}".format(curr_x, curr_y))
+
                 vals = {}
+
                 # store any other datums we have access to
                 for datum_key in CellRawStrDatum:
                     if datum_key.name in cell_dict.keys():
-                        # input("datum_key {} is in cell_dict {}".format(datum_key.name, cell_dict))
+                        #input("datum_key {} is in cell_dict {} with value {}".format(datum_key.name, cell_dict, cell_dict[datum_key.name]))
                         vals[datum_key.name] = cell_dict[datum_key.name]
                     else:
                         pass
                         # input("datum_key {} is NOT in cell_dict {}".format(datum_key.name, cell_dict))
+                if 'x' not in vals.keys():
+                    vals['x'] = curr_x
+                if 'y' not in vals.keys():
+                    vals['y'] = curr_y
 
                 self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
 

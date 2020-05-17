@@ -29,9 +29,12 @@ def main():
 
     print("\n\nAbout to start playing the game \n\n")
     game_state = game.get_gamestate()
+    i = 0
     while not game_state.has_agent_died():
         print(game_state.draw_cell_map())
-        print(game_state.get_pddl_current_state())
+
+        with open('models/temp/gamestate{}.pddl'.format(i), 'w') as f:
+            f.write(game_state.get_pddl_current_state())
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():
             print("Action {} is not implemented yet, skipping for now".format(next_action))
@@ -39,6 +42,7 @@ def main():
 
         game.send_and_receive_command(next_action)
         game_state = game.get_gamestate()
+        i+=1
 
     if game_state.has_agent_died():
         # Quit and delete the game
