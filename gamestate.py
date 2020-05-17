@@ -119,6 +119,7 @@ class Cell:
         self.has_player_visited = False
         self.has_lava = False
         self.has_plant = False
+        self.has_tree = False
         self.set_vals(vals)
 
     def set_vals(self, vals):
@@ -163,6 +164,9 @@ class Cell:
             if self.g == 'P':
                 self.has_plant = True
 
+            if self.g == '☘':
+                self.has_tree = True
+
         if 't' in vals.keys():
             self.t = vals['t']
         if 'mf' in vals.keys():
@@ -203,6 +207,8 @@ class Cell:
             pddl_facts.append('(lava {})'.format(self.get_pddl_name()))
         if self.has_plant:
             pddl_facts.append('(plant {})'.format(self.get_pddl_name()))
+        if self.has_tree:
+            pddl_facts.append('(tree {})'.format(self.get_pddl_name()))
         return pddl_facts
 
     def __str__(self):

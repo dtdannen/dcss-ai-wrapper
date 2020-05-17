@@ -123,7 +123,7 @@ class FastDownwardPlanningAgent(Agent):
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.has_player_visited:
                 cells_visited += 1
-            elif not cell.has_wall and not cell.has_player and not cell.has_statue and not cell.has_lava and cell.g:
+            elif not cell.has_wall and not cell.has_player and not cell.has_statue and not cell.has_lava and not cell.has_plant and not cell.has_tree and cell.g:
                 #print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
                 available_cells.append(cell)
             else:
