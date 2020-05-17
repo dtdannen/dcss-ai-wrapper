@@ -85,7 +85,7 @@ project's folder.
 
     `agent = FastDownwardPlanningAgent()`
 
-3. Run main.py and it should work. There's a chance that the fastdownward planner will fail to find a plan. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess.
+3. Run main.py and it should work. There's a chance that the fastdownward planner will fail to find a plan because of a missing feature of our api. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess.
 
 ## Web browser setup (see ISSUE #8)
 The following instructions need to be updated - see issue 8.
