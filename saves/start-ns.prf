@@ -1,5 +1,5 @@
-type = normal
-name = q
+type = seeded
+name = Fengull
 species = Minotaur
 background = Berserker
 weapon = mace

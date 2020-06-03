@@ -158,8 +158,8 @@ class Cell:
             if self.g == '8':
                 self.has_statue = True
 
-            if self.g == '≈' or self.g == '§':
-                self.has_lava = True
+            #if self.g == '≈':# or self.g == '§':
+            #    self.has_lava = True
 
             if self.g == 'P':
                 self.has_plant = True
