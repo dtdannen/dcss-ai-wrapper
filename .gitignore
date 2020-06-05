@@ -139,3 +139,6 @@ dmypy.json
 
 # crawl related
 saves/
+
+# planner related
+FastDownward/

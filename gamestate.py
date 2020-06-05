@@ -79,6 +79,51 @@ class ItemProperty(Enum):
     Archery_Ego = 50
 
 
+class MapFeature(Enum):
+    # MapFeature is also referred to "mini-map categorization" of a cell. It is designed to
+    #
+    # Priority of Map Feature (from get_cell_map_feature() on line 226 of map-knowledge.cc)
+    #
+    #  1. Monster in cell - MF_MONS_HOSTILE
+    #  2. Item in cell - MF_ITEM
+    #  3. MF_MAP_WALL or MF_MAP_FLOOR
+    #  4. MF_WALL or MF_FLOOR or MF_LAVA or MF_DEEP_WATER
+    #  5. Cloud feature, but it seems they are set to MF_SKIP, meaning we proceed to 6.
+    #  6. Look-up for item-specific map features, which appears to always be MF_ITEM.
+    #  7. MF_MONS_NO_EXP - "Firewood monsters" - passive mobs that don't give exp.
+    #  8. MF_UNSEEN - default when nothing else is known or seen.
+
+    MF_UNSEEN              =  0
+    MF_FLOOR               =  1
+    MF_WALL                =  2
+    MF_MAP_FLOOR           =  3
+    MF_MAP_WALL            =  4
+    MF_DOOR                =  5
+    MF_ITEM                =  6
+    MF_MONS_FRIENDLY       =  7 # Unused?
+    MF_MONS_PEACEFUL       =  8 # Unused?
+    MF_MONS_NEUTRAL        =  9 # Unused?
+    MF_MONS_HOSTILE        = 10
+    MF_MONS_NO_EXP         = 11
+    MF_STAIR_UP            = 12
+    MF_STAIR_DOWN          = 13
+    MF_STAIR_BRANCH        = 14
+    MF_FEATURE             = 15
+    MF_WATER               = 16
+    MF_LAVA                = 17
+    MF_TRAP                = 18
+    MF_EXCL_ROOT           = 19
+    MF_EXCL                = 20
+    MF_PLAYER              = 21
+    MF_DEEP_WATER          = 22
+    MF_PORTAL              = 23
+    MF_TRANSPORTER         = 24
+    MF_TRANSPORTER_LANDING = 25
+    MF_EXPLORE_HORIZON     = 26
+    MF_MAX                 = 27
+    MF_SKIP                = 28
+
+
 class CellRawStrDatum(Enum):
     """ These are the types of data that may appear in a raw str description of a cell from the server. """
     x = 0
@@ -210,6 +255,19 @@ class Cell:
         if self.has_tree:
             pddl_facts.append('(tree {})'.format(self.get_pddl_name()))
         return pddl_facts
+
+
+    def get_vector_accessible_visited(self):
+        """ Returns a two-element vector """
+        accessible = 1
+        if self.has_tree or self.has_tree or self.has_plant or self.has_statue or self.has_wall:
+            accessible = 0
+
+        has_visited = 0
+        if self.has_player_visited:
+            has_visited = 1
+
+        return [accessible, has_visited]
 
     def __str__(self):
         if self.g and len(self.g) >= 1:
@@ -384,6 +442,9 @@ class CellMap:
         pddl_str += ")\n\n)"
 
         return pddl_str
+
+    def get_cell_map_vector(self, radius=8):
+        pass
 
     def get_xy_to_cells_dict(self):
         return self.x_y_to_cells
@@ -591,7 +652,7 @@ class GameState:
 
     def record_movement(self, dir):
         self.last_recorded_movement = dir
-        print('last recorded movement is ' + str(self.last_recorded_movement))
+        #print('last recorded movement is ' + str(self.last_recorded_movement))
         if dir in actions.key_actions.keys():
             if dir is 'move_N':
                 self.shift_agent_y(-1)
@@ -619,6 +680,13 @@ class GameState:
 
     def get_cell_map(self):
         return self.cellmap
+
+    def get_tiles_visited(self):
+        cells_visited = 0
+        for cell in self.get_cell_map().get_xy_to_cells_dict().values():
+            if cell.has_player_visited:
+                cells_visited += 1
+        return cells_visited
 
     def _process_raw_state(self, s, last_key=''):
         # print("processing {}\n\n".format(s))
@@ -654,9 +722,9 @@ class GameState:
 
     def _process_items_agent_location(self, message):
         items = message.split(';')
-        print("Found {} items, they are:".format(len(items)))
-        for i in items:
-            print("   {}".format(i))
+        #print("Found {} items, they are:".format(len(items)))
+        #for i in items:
+        #    print("   {}".format(i))
 
     def process_messages(self, data):
         # begin: this is just for html stripping
@@ -716,7 +784,7 @@ class GameState:
                 print("Error with last command - game did not recognize it... sleeping for 30 seconds")
                 time.sleep(30)
 
-            print("Just added message for turn {}: {}".format(turn, message_only))
+            #print("Just added message for turn {}: {}".format(turn, message_only))
 
     def get_pddl_current_state(self, goals):
         return self.cellmap.get_cell_map_pddl(goals)
@@ -757,7 +825,7 @@ class GameState:
         return more_prompt
 
     def process_inv(self, data):
-        print("Data is {}".format(data))
+        #print("Data is {}".format(data))
         for inv_id in data.keys():
             name = None
             quantity = None
@@ -772,18 +840,18 @@ class GameState:
                 # new item
                 inv_item = InventoryItem(inv_id, name, quantity, base_type)
                 self.inventory_by_id[inv_id] = inv_item
-                print("***** Adding new item {}".format(inv_item))
+                #print("***** Adding new item {}".format(inv_item))
             else:
                 # existing item
                 inv_item = self.inventory_by_id[inv_id]
-                print("***** Updating item {}".format(inv_item))
+                #print("***** Updating item {}".format(inv_item))
                 prev_quantity = inv_item.get_quantity()
                 if quantity is not None and quantity <= prev_quantity:
                     if quantity == 0:
-                        print("  **** Deleting item {} because quantity = 0".format(inv_item))
+                        #print("  **** Deleting item {} because quantity = 0".format(inv_item))
                         del self.inventory_by_id[inv_id]
                     else:
-                        print("  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
+                        #print("  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
                         self.inventory_by_id[inv_id].set_quantity(quantity)
 
     def get_cell_objs_from_raw_data(self, cells):
@@ -847,12 +915,13 @@ class GameState:
             return
 
         if cell_data_raw:
-            print("Raw cells data:")
+            #print("Raw cells data:")
             prev_x = None
             prev_y = None
             for cell_raw_str in cell_data_raw:
                 # x, y, g = cell_raw_str['x']
-                print("  {}".format(cell_raw_str))
+                #print("  {}".format(cell_raw_str))
+                pass
 
         for xyg_cell in cell_data_raw:
             x = int(xyg_cell[0])

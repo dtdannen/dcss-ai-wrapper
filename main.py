@@ -6,32 +6,33 @@ Make sure to run crawl before running this demo, see:
     start_crawl_terminal_sprint.sh
 
 """
-
+import sys
 from game_connection import GameConnection
 from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningAgent
 from actions import Command, Action
+import time
+
+max_number_of_actions = 500
 
 
-def main():
+def main(data_filename=None):
     game = GameConnection()
     game.connect()
     print("\n\nconnected!\n\n")
-    agent = SimpleRandomAgent()
-    #agent = FastDownwardPlanningAgent()
+    #agent = SimpleRandomAgent()
+    agent = FastDownwardPlanningAgent()
 
     setup_actions = agent.get_game_mode_setup_actions()
     for action in setup_actions:
         print("\n\nexecution action {}\n\n".format(action))
         game.send_and_receive_dict(action)
 
-    # turn
-
 
 
     print("\n\nAbout to start playing the game \n\n")
     game_state = game.get_gamestate()
     i = 0
-    while not game_state.has_agent_died():
+    while not game_state.has_agent_died() and i < max_number_of_actions:
         #print(game_state.draw_cell_map())
 
 
@@ -44,6 +45,9 @@ def main():
         game_state = game.get_gamestate()
         i+=1
 
+        print(game_state.get_cell_map().print_radius_around_agent())
+        time.sleep(5)
+
     if game_state.has_agent_died():
         # Quit and delete the game
         game.send_and_receive_command(Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME)
@@ -52,11 +56,34 @@ def main():
         game.send_and_receive_command(Command.ENTER_KEY)
         game.send_and_receive_command(Command.ENTER_KEY)
 
+    if data_filename:
+        actions_executed = []
+        tiles_visited = []
+        for actions_executed_i, tiles_visited_i in agent.get_actions_executed_vs_tiles_visited_data().items():
+            actions_executed.append(actions_executed_i)
+            tiles_visited.append(tiles_visited_i)
+
+        with open(data_filename, 'w') as f:
+            f.write("actions_executed, tiles_visited,\n")
+            for i in range(len(actions_executed)):
+                f.write("{},{},\n".format(actions_executed[i], tiles_visited[i]))
+
+        print("Wrote out data to {}".format(data_filename))
+        f.close()
+
+
     game.close()
 
-if __name__ == "__main__":
-    main()
 
+seed = None
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        seed = int(sys.argv[1])
+
+    if seed:
+        main(data_filename='fastdownward_agent_seed_{}.csv'.format(seed))
+    else:
+        main()
 
 #
 # HUMAN_INPUT = False

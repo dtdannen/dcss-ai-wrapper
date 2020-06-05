@@ -20,6 +20,12 @@ class SimpleRandomAgent(Agent):
     Agent that takes random cardinal actions to move/attack.
     """
 
+    def __init__(self):
+        Agent.__init__(self)
+        self.num_actions_executed = 0
+        self.num_tiles_visited = 0
+        self.actions_executed_va_tiles_visited = {}  # key is tiles visited, val is actions executed
+
     def do_sprint(self):
         # select sprint and character build
         return [{'msg': 'key', 'keycode': ord('a')},
@@ -47,7 +53,14 @@ class SimpleRandomAgent(Agent):
                            Command.MOVE_OR_ATTACK_NW,
                            Command.MOVE_OR_ATTACK_SW,
                            Command.MOVE_OR_ATTACK_SE]
+
+        self.num_actions_executed+=1
+        self.num_tiles_visited = gamestate.get_tiles_visited()
+        self.actions_executed_va_tiles_visited[self.num_actions_executed] = self.num_tiles_visited
         return random.choice(simple_commands)
+
+    def get_actions_executed_vs_tiles_visited_data(self):
+        return self.actions_executed_va_tiles_visited
 
 
 class TestAllCommandsAgent(Agent):
@@ -106,6 +119,10 @@ class FastDownwardPlanningAgent(Agent):
         self.plan_current_pddl_state_filename = "models/fdtempfiles/gamestate.pddl"
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
+
+        self.num_actions_executed = 0
+        self.num_tiles_visited = 0
+        self.actions_executed_va_tiles_visited = {}  # key is tiles visited, val is actions executed
 
     def do_dungeon(self):
         # select dungeon and character build
@@ -190,4 +207,38 @@ class FastDownwardPlanningAgent(Agent):
         else:
             print("warning - no plan!")
 
+        self.num_actions_executed += 1
+        self.num_tiles_visited = gamestate.get_tiles_visited()
+        self.actions_executed_va_tiles_visited[self.num_actions_executed] = self.num_tiles_visited
         return next_action
+
+    def get_actions_executed_vs_tiles_visited_data(self):
+        return self.actions_executed_va_tiles_visited
+
+
+class RLAgent(Agent):
+
+    """
+    this RL agent will be designed as follows:
+    The agent gets a positive reward for visiting a tile it has not visited before
+    The agent gets a zero/negative reward for visiting a tile it has visited before
+    the state space is N grid around the agent
+
+    state vector is a grid of all tiles
+    Each tile is represented as a vector containing:
+      - accessible? 0 or 1   # wall, laval = 0, anything else = 1
+      - visited before? 0 or 1
+    """
+
+    def do_dungeon(self):
+        # select dungeon and character build
+        return [{'msg': 'key', 'keycode': ord('b')},
+                {'msg': 'key', 'keycode': ord('h')},
+                {'msg': 'key', 'keycode': ord('b')},
+                ]
+
+    def get_game_mode_setup_actions(self):
+        return self.do_dungeon()
+
+    def get_action(self, gamestate: GameState):
+        pass
