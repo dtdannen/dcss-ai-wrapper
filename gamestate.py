@@ -203,14 +203,8 @@ class Cell:
             if self.g == '8':
                 self.has_statue = True
 
-            #if self.g == '≈':# or self.g == '§':
-            #    self.has_lava = True
-
             if self.g == 'P':
                 self.has_plant = True
-
-            if self.g == '☘':
-                self.has_tree = True
 
         if 't' in vals.keys():
             self.t = vals['t']
@@ -1122,11 +1116,11 @@ class GameState:
             #    map_obj[new_cell.y+map_middle][curr_x] = new_cell.g
             # map_obj[curr_x][abs(new_cell.y)] = new_cell.g
 
-        def print_map_obj(self):
-            for row in self.map_obj:
-                for spot in row:
-                    print(str(spot), end='')
-                print('')
+        # def print_map_obj(self):
+        #     for row in self.map_obj:
+        #         for spot in row:
+        #             print(str(spot), end='')
+        #         print('')
 
 
 class FactoredState():

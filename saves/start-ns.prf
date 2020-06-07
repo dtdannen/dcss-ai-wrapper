@@ -1,5 +1,5 @@
-type = seeded
-name = Fengull
+type = normal
+name = midca
 species = Minotaur
 background = Berserker
 weapon = mace

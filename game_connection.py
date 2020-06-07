@@ -13,10 +13,12 @@ import sys
 
 
 class GameConnection:
+    crawl_directory = '/home/dustin/test'  # change this if you have crawl in another folder
     socketpath = '/var/tmp/crawl_socket'
-    crawl_socketpath = '/home/dustin/crawl/crawl-ref/source/rcs/midca:test.sock'
+    crawl_socketpath = '{}/crawl/crawl-ref/source/rcs/midca:test.sock'.format(crawl_directory)
 
     def __init__(self):
+        #assert GameConnection.current_dir.endswith('dcss-ai-wrapper')
         self.crawl_socket = None
         self.game_state = GameState()
         self.msg_buffer = None
