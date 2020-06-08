@@ -341,6 +341,41 @@ class CellMap:
 
         return s
 
+    def draw_cell_map_radius(self, radius=4):
+
+        s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
+                                                              self.min_x, self.max_x, self.min_y, self.max_y)
+
+        min_y = self.agent_y - radius
+        if min_y < self.min_y:
+            min_y = self.min_y
+
+        min_x = self.agent_x - radius
+        if min_x < self.min_x:
+            min_x = self.min_x
+
+        max_y = self.agent_y + radius
+        if max_y > self.max_y:
+            max_y = self.max_y
+
+        max_x = self.agent_x + radius
+        if max_x > self.max_x:
+            max_x = self.max_x
+
+        non_empty_cells = []
+        for curr_y in range(min_y, max_y + 1):
+            for curr_x in range(min_x, max_x + 1):
+                if (curr_x, curr_y) in self.x_y_to_cells.keys():
+                    cell = self.x_y_to_cells[(curr_x, curr_y)]
+                    s += str(cell)
+                    if cell.g != "." and cell.g != "#" and cell.g is not None:
+                        non_empty_cells.append(cell)
+                else:
+                    s += " "
+            s += '\n'
+
+        return s
+
     def print_radius_around_agent(self, r=8):
         x_min = self.agent_x - r
         x_max = self.agent_x + r
@@ -437,8 +472,31 @@ class CellMap:
 
         return pddl_str
 
-    def get_cell_map_vector(self, radius=8):
-        pass
+    def get_cell_map_vector(self, radius=4):
+        min_y = self.agent_y - radius
+        if min_y < self.min_y:
+            min_y = self.min_y
+
+        min_x = self.agent_x - radius
+        if min_x < self.min_x:
+            min_x = self.min_x
+
+        max_y = self.agent_y + radius
+        if max_y > self.max_y:
+            max_y = self.max_y
+
+        max_x = self.agent_x + radius
+        if max_x > self.max_x:
+            max_x = self.max_x
+
+        tiles = []
+        for curr_y in range(min_y, max_y+1):
+            for curr_x in range(min_x, max_x + 1):
+                if (curr_x, curr_y) in self.x_y_to_cells.keys():
+                    cell = self.x_y_to_cells[(curr_x, curr_y)]
+                    tiles.append(cell.get_vector_accessible_visited())
+
+        return tiles
 
     def get_xy_to_cells_dict(self):
         return self.x_y_to_cells

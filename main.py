@@ -45,7 +45,8 @@ def main(data_filename=None):
         game_state = game.get_gamestate()
         i+=1
 
-        print(game_state.get_cell_map().print_radius_around_agent())
+        print(game_state.get_cell_map().draw_cell_map_radius(radius=2))
+        #print(game_state.get_cell_map().print_radius_around_agent())
         time.sleep(5)
 
     if game_state.has_agent_died():
