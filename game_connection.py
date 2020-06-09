@@ -13,7 +13,7 @@ import sys
 
 
 class GameConnection:
-    crawl_directory = '/home/dustin/test'  # change this if you have crawl in another folder
+    crawl_directory = '/home/aaamosbi/git/dcss-ai-wrapper'  # change this if you have crawl in another folder
     socketpath = '/var/tmp/crawl_socket'
     crawl_socketpath = '{}/crawl/crawl-ref/source/rcs/midca:test.sock'.format(crawl_directory)
 
