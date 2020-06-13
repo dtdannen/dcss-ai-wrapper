@@ -40,6 +40,7 @@ class DCSSMDP(MDP):
         self.gamma = gamma
         self.visibility_radius = visibility_radius
         self.name = name
+        self.action_count = 0
         self.game = self.setup_game()
         game_state = self.game.get_gamestate()
 
@@ -87,7 +88,7 @@ class DCSSMDP(MDP):
         state_visited_cells = state.num_visited_cells(self.visibility_radius)
         next_state_visited_cells = next_state.num_visited_cells(self.visibility_radius)
 
-        return next_state_visited_cells - state_visited_cells
+        return next_state_visited_cells #- state_visited_cells
         
     def _reward_func(self, state, action, next_state=None):
         '''
@@ -100,8 +101,8 @@ class DCSSMDP(MDP):
         '''
 
         reward_value = 0
-        reward_value = self._reward_calc_num_visited_cells(state, action, next_state)
-
+        #reward_value = self._reward_calc_num_visited_cells(state, action, next_state)
+        reward_value = next_state.data[0].get_tiles_visited()
         return reward_value
 
 
@@ -114,13 +115,13 @@ class DCSSMDP(MDP):
             (State)
         '''
         #this is to make sure the server can keep up with the commands
-        time.sleep(.1)
+        #time.sleep(.1)
 
         #translate action from simple-RL to DCSS wrapper
         dcss_next_action = Command[action]
 
-        #TODO this could be removed if we wanted to agent to learn the transitions
-        #in this setup trying to execute an invalid transition results in a reward of zero because no new tiles are visited
+        ######
+        #This code (and an elif below it) is an efficiency, it reduces comms overhead by not submitting actions that cannot be executed
         valid_transition = False
         adj_cells = state.data[0].cellmap.get_cell_map_vector(1)
         game_state = self.game.get_gamestate()
@@ -146,7 +147,7 @@ class DCSSMDP(MDP):
             elif (cell_counter == 8 and dcss_next_action is Command.MOVE_OR_ATTACK_SE and adj_cell[0] == 1):
                 valid_transition = True
             cell_counter += 1
-        #####end possible removal
+        #####
 
         if dcss_next_action not in Action.command_to_msg.keys():
             print("Action {} is not implemented yet, skipping for now".format(dcss_next_action))
@@ -154,15 +155,19 @@ class DCSSMDP(MDP):
         elif not valid_transition:
             #print("Not valid transition: " + action + ", " + str(dcss_next_action))
             next_state = state
+            self.action_count += 1
+            print(str(self.action_count) + "," + str(next_state.data[0].get_tiles_visited()))
         else:
             #print("Executing: " + action + ", " + str(dcss_next_action))
             self.game.send_and_receive_command(dcss_next_action)
             game_state = self.game.get_gamestate()
             next_state = DCSSState(game_state)
+            self.action_count += 1
+            print(str(self.action_count) + "," + str(next_state.data[0].get_tiles_visited()))
         
         #check if ternminal
         if game_state.has_agent_died():
-            print("Agent has died, shutting down gracefully...: ")
+            print("Agent has died, shutting down gracefully...")
             next_state.set_terminal(True)
 
         return next_state
@@ -186,18 +191,40 @@ class DCSSMDP(MDP):
         # self.cur_state = self.init_state
 
         self.game.send_and_receive_command(Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME)
-        self.game.send_and_receive_command(Command.RESPOND_YES_TO_PROMPT)
-        self.game.send_and_receive_command(Command.ENTER_KEY)
-        self.game.send_and_receive_command(Command.ENTER_KEY)
-        self.game.send_and_receive_command(Command.ENTER_KEY)
+        #self.game.send_and_receive_command(Command.RESPOND_YES_TEXT_TO_PROMPT)
+        self.game.send_and_receive_str("yes\r")     
+        # time.sleep(.1)
+        # self.game._send_input('yes\r')
+        time.sleep(1)
+        self.game._send_input('\r')
+        time.sleep(1)
+        self.game._send_input('\r')
+        time.sleep(1)
+        self.game._send_input('\r')
+        # time.sleep(.1)
 
-        #TODO figure out if this is the right way ie resample vs reset, may need a bunch of stuff from constructor
-        #crude way to resample
+#        self.game.send_and_receive_command(Command.ENTER_KEY)
+#        self.game.send_and_receive_command(Command.ENTER_KEY)
+#        self.game.send_and_receive_command(Command.ENTER_KEY)
+
         self.game.close()
+#        self.reset_game_server()
+        print("Waiting to see if socket resets...")
+        time.sleep(10)
+        self.action_count = 0
         self.game = self.setup_game()
         game_state = self.game.get_gamestate()
         self.init_state = DCSSState(game_state)
         self.cur_state = self.init_state
+
+    def reset_game_server(self):
+        import shlex, subprocess
+        import time
+
+        working_directory = "./crawl/crawl-ref/source/"
+        command = "./crawl -name midca -seed 01 -rc .rcs/midca.rc -macro ./rcs/midca.macro -morgue ./rcs/midca -webtiles-socket ./rcs/midca:test.sock -await-connection"
+        args = shlex.split(command)
+        p = subprocess.Popen(args, cwd=working_directory)
 
 def main():
     dcss = DCSSMDP()

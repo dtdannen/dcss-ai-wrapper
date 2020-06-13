@@ -26,7 +26,6 @@ class DCSSState(State):
     def num_visited_cells(self, visibility=2):
         cell_map = self.data[0].cellmap.get_cell_map_vector(visibility)
         num_visited_cells = 0
-        
         for cell in cell_map:
             if cell[1] == 1:
                 num_visited_cells += 1
