@@ -45,7 +45,7 @@ class DCSSMDP(MDP):
         game_state = self.game.get_gamestate()
 
         if init_state_params is None:
-            init_state = DCSSState(game_state)
+            init_state = DCSSState(game_state, self.visibility_radius)
         else:
             init_state = DCSSState(init_state_params["game_state"])
 
@@ -102,7 +102,7 @@ class DCSSMDP(MDP):
 
         reward_value = 0
         #reward_value = self._reward_calc_num_visited_cells(state, action, next_state)
-        reward_value = next_state.data[0].get_tiles_visited()
+        reward_value = next_state.total_visited_cells
         return reward_value
 
 
@@ -123,7 +123,7 @@ class DCSSMDP(MDP):
         ######
         #This code (and an elif below it) is an efficiency, it reduces comms overhead by not submitting actions that cannot be executed
         valid_transition = False
-        adj_cells = state.data[0].cellmap.get_cell_map_vector(1)
+        adj_cells = state.game_state.cellmap.get_cell_map_vector(1)
         game_state = self.game.get_gamestate()
         cell_counter = 0
         for adj_cell in adj_cells:
@@ -156,14 +156,14 @@ class DCSSMDP(MDP):
             #print("Not valid transition: " + action + ", " + str(dcss_next_action))
             next_state = state
             self.action_count += 1
-            print(str(self.action_count) + "," + str(next_state.data[0].get_tiles_visited()))
+            print(str(self.action_count) + "," + str(next_state.total_visited_cells))
         else:
             #print("Executing: " + action + ", " + str(dcss_next_action))
             self.game.send_and_receive_command(dcss_next_action)
             game_state = self.game.get_gamestate()
-            next_state = DCSSState(game_state)
+            next_state = DCSSState(game_state, self.visibility_radius)
             self.action_count += 1
-            print(str(self.action_count) + "," + str(next_state.data[0].get_tiles_visited()))
+            print(str(self.action_count) + "," + str(next_state.total_visited_cells))
         
         #check if ternminal
         if game_state.has_agent_died():
@@ -214,7 +214,7 @@ class DCSSMDP(MDP):
         self.action_count = 0
         self.game = self.setup_game()
         game_state = self.game.get_gamestate()
-        self.init_state = DCSSState(game_state)
+        self.init_state = DCSSState(game_state, self.visibility_radius)
         self.cur_state = self.init_state
 
     def reset_game_server(self):
