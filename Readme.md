@@ -24,13 +24,14 @@ Join the chat at https://gitter.im/dcss-ai-wrapper/community
 
 This guide has been tested on Ubuntu 18.04 LTS and assumes you have the following installed:
 
-- git (sudo apt-get install git)
-- python2 (sudo apt-get install python2.7)
-- pip2 (sudo apt-get install python-pip)
-- python3 (sudo apt-get install python3.6)
-- pip3 (sudo apt-get install python3-pip)
+- git | `sudo apt-get install git`
+- python2 | `sudo apt-get install python2.7`
+- pip2  | `sudo apt-get install python-pip`
+- python3 | `sudo apt-get install python3.6`
+- pip3 | `sudo apt-get install python3-pip`
 - A variety of packages required by Dungeon Crawl Stone Soup
-    - sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core
+
+    `sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core`
 
 ## Installing Dungeon Crawl Stone Soup
 
@@ -58,9 +59,21 @@ project's folder.
     
     `sudo make install prefix=/usr/local/ WEBTILES=y`
 
+    __Note for installing on Ubuntu 20.04:__
+    
+    If you get an error saying "/usr/bin/env cannot find python", then one possible fix is to the do the following (but beware this may change the default python on your system)
+
+    `sudo ln --symbolic \usr\bin\python2.7 \usr\bin\python`    
+    
+4. Check that the `crawl/crawl-ref/source/.rcs' folder exists, if not create it:
+
+    `mkdir crawl/crawl-ref/source/rcs`
+
 # How to Run a simple agent in the terminal
 
 1. Open a new terminal, cd into dcss-ai-wrapper/ and run:
+
+    First time running the following script may require: `chmod +x start_crawl_terminal_dungeon.sh`
 
     `./start_crawl_terminal_dungeon.sh`
 

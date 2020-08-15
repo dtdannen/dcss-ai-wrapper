@@ -10,11 +10,13 @@ import random
 import logging
 import time
 import sys
+import config
 
 
 class GameConnection:
-    socketpath = '/var/tmp/crawl_socket'
-    crawl_socketpath = '/home/dustin/crawl/crawl-ref/source/rcs/midca:test.sock'
+    socketpath = config.socketpath
+    crawl_socketpath = config.crawl_socketpath
+    #crawl_socketpath = '/home/dustin/crawl/crawl-ref/source/rcs/midca:test.sock'
 
     def __init__(self):
         self.crawl_socket = None
