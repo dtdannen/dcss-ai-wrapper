@@ -17,8 +17,8 @@ import pprint
 import actions
 import gamestate
 
-import simple_planning_agent
-import relational_learning_agent
+#import simple_planning_agent
+#import relational_learning_agent
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,7 +27,7 @@ server_uri = 'ws://localhost:8080/socket'
 ### CHANGE USERNAME AND PASSWORD HERE ###
 login_msg = {'msg':'login',
              'username':'midca',
-             'password':'meta'}
+             'password':'midca'}
 
 decomp = zlib.decompressobj(-zlib.MAX_WBITS)
 

@@ -14,11 +14,12 @@ import config
 
 
 class GameConnection:
-    socketpath = config.socketpath
-    crawl_socketpath = config.crawl_socketpath
+    #socketpath = config.socketpath
+    #crawl_socketpath = config.crawl_socketpath
     #crawl_socketpath = '/home/dustin/crawl/crawl-ref/source/rcs/midca:test.sock'
 
-    def __init__(self):
+    def __init__(self, config=config.DefaultConfig()):
+        self.config = config
         self.crawl_socket = None
         self.game_state = GameState()
         self.msg_buffer = None
@@ -31,6 +32,9 @@ class GameConnection:
     @staticmethod
     def json_encode(value):
         return json.dumps(value).replace("</", "<\\/")
+
+    def connect_webserver(self):
+        pass
 
     def connect(self):
         try:

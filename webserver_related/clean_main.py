@@ -43,7 +43,7 @@ if __name__ == "__main__":
     ### CHANGE USERNAME AND PASSWORD HERE ###
     login_msg = {'msg': 'login',
                  'username': 'midca',
-                 'password': 'meta'}
+                 'password': 'midca'}
 
     decomp = zlib.decompressobj(-zlib.MAX_WBITS)
 
