@@ -1,19 +1,13 @@
-
-
 class DefaultConfig:
-
     socketpath = '/var/tmp/crawl_socket'
     agent_name = 'aiagent'
-    crawl_socketpath = 'crawl/crawl-ref/source/rcs/'+agent_name+':test.sock'
-
-    def __init__(self):
-        pass
+    crawl_socketpath = 'crawl/crawl-ref/source/rcs/' + agent_name + ':test.sock'
 
 
 class WebserverConfig:
-    socketpath = 'https://localhost:8080'
+    server_uri = 'ws://localhost:8080/socket'
     agent_name = 'midca'
-    crawl_socketpath = 'crawl/crawl-ref/source/rcs/' + agent_name + ':test.sock'
+    agent_password = 'midca'
+    game_id = 'sprint-web-trunk'
 
-    def __init__(self):
-        pass
+

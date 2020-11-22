@@ -11,6 +11,9 @@ import logging
 import time
 import sys
 import config
+import asyncio
+import websockets
+import zlib
 
 
 class GameConnection:
@@ -26,12 +29,131 @@ class GameConnection:
         self.num_times_to_try_pressing_enter_read_msg = 5
         self.num_times_pressed_enter_read_msg = 0
 
+        self.websocket = None
+        self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
+
     @staticmethod
     def json_encode(value):
         return json.dumps(value).replace("</", "<\\/")
 
-    def connect_webserver(self):
-        pass
+    async def login_webserver(self):
+        assert isinstance(self.config, config.WebserverConfig)
+
+        # connect
+        logging.debug("Connecting to URI " + str(self.config.server_uri) + " ...")
+        # print("AWAITING ON WEBSOCKET_3 CONNECT")
+        self.websocket = await websockets.connect(self.config.server_uri)
+        # print("POST-AWAITING ON WEBSOCKET_3 CONNECT")
+        logging.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
+
+        # login
+        logging.debug("Sending login message...")
+        login_msg = {'msg': 'login',
+                     'username': self.config.agent_name,
+                     'password': self.config.agent_password}
+        await self.send_and_receive(login_msg)
+
+        # break apart msg from server
+        # msgs = []
+        # if 'msgs' in msg_from_server.keys():
+        #    msgs = msg_from_server['msgs']
+
+        logging.debug("Sending pong")
+
+        # send pong
+        # for msg_i in msgs:
+        #    if msg_i['msg'] == 'ping':
+        #        logging.debug("Received message ping from server, about to send pong")
+        await self.websocket.send(json.dumps({'msg': 'pong'}))
+
+    async def load_game_on_webserver(self):
+        assert isinstance(self.config, config.WebserverConfig)
+
+        play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
+        await self.send_and_receive(play_game_msg)
+
+    async def get_all_server_messages(self):
+        i = 0
+        SERVER_READY_FOR_INPUT = False
+        request_pong = False
+        while not SERVER_READY_FOR_INPUT:
+            try:
+                future = self.websocket.recv()
+                # print("** AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
+                data_recv = await asyncio.wait_for(future, timeout=0.5)
+
+                # print("** POST-AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
+
+                data_recv += bytes([0, 0, 255, 255])
+                json_message = self.decomp.decompress(data_recv)
+                json_message = json_message.decode("utf-8")
+
+                msg_from_server = json.loads(json_message)
+                self._handle_msgs(msg_from_server)
+
+                # if 'msgs' in msg_from_server:
+                #     for msg in msg_from_server['msgs']:
+                #         if 'msg' in msg:
+                #             if msg['msg'] == "ping":
+                #                 request_pong = True
+                #
+                # # json_messages_from_server_file.write(pprint.pformat(msg_from_server,indent=2)+'\n')
+                # # json_messages_from_server_file.flush()
+                #
+                # logging.debug("i=" + str(i) + "Received Message:\n" + str(msg_from_server))
+                #
+                # if self.ai:
+                #     self.ai.add_server_message(msg_from_server)
+                #
+                # # {'msgs': [{'mode': 1, 'msg': 'input_mode'}]}
+                # # if 'msgs' in msg_from_server.keys():
+                # #     for msg in msg_from_server['msgs']:
+                # #         if 'msg' in msg.keys() and 'mode' in msg.keys():
+                # #             if msg['msg'] == 'input_mode' and msg['mode'] == 1:
+                # #                 SERVER_READY_FOR_INPUT = True
+                # #                 print("Server is now ready for input!")
+
+            except ValueError as e:
+                logging.warning("i=" + str(i) + "Ignoring unparseable JSON (error: %s): %s.", e.args[0], json_message)
+            except asyncio.CancelledError:
+                logging.info('Received message to cancel - ignoring so recv can finish up')
+                self.begin_shutdown = True
+            except asyncio.TimeoutError:
+                # server is now ready for input
+                SERVER_READY_FOR_INPUT = True
+            # except Exception as e:
+            #    logging.warning("Caught exception {} in get_all_server_messages()".format(e))
+            i += 1
+
+        if request_pong:
+            await self.websocket.send(json.dumps({"msg": "pong"}))
+
+    async def send_and_receive(self, message):
+        # send data to server
+        # print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
+        await self.websocket.send(json.dumps(message))
+        # print("POST-AWAITING ON WEBSOCKET_1 SEND")
+        # wait for server to get back
+
+        await self.get_all_server_messages()
+
+    # Todo remove this or fix it
+    # async def end_session_and_quit_game(self):
+    #     '''
+    #     Sends the ctrl-q signal to the webserver to permamently end the game.
+    #     :return:
+    #     '''
+    #     if not self.game_ended:
+    #         for quit_msg in quit_messages_sequence:
+    #             await self.send_and_receive(quit_msg)
+    #
+    #         self.game_ended = True
+    #
+    #     logging.info("Sent all quit messages, game is deleted...")
+
+    async def connect_webserver(self):
+        await self.login_webserver()
+        await self.load_game_on_webserver()
 
     def connect(self):
         try:
@@ -157,6 +279,12 @@ class GameConnection:
         logging.debug("Sending {}".format(input_dict))
         self._send_message(GameConnection.json_encode(input_dict))
         msgs = self._read_msgs()
+        self._handle_msgs(msgs)
+
+    async def send_and_receive_dict_ws(self, input_dict):
+        logging.debug("Sending {}".format(input_dict))
+        self._send_message_ws(GameConnection.json_encode(input_dict))
+        msgs = self._read_msgs_ws()
         self._handle_msgs(msgs)
 
     def send_and_receive_str(self, input_str):
