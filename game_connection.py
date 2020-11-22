@@ -14,9 +14,6 @@ import config
 
 
 class GameConnection:
-    #socketpath = config.socketpath
-    #crawl_socketpath = config.crawl_socketpath
-    #crawl_socketpath = '/home/dustin/crawl/crawl-ref/source/rcs/midca:test.sock'
 
     def __init__(self, config=config.DefaultConfig()):
         self.config = config
@@ -38,9 +35,9 @@ class GameConnection:
 
     def connect(self):
         try:
-            os.unlink(GameConnection.socketpath)
+            os.unlink(self.config.socketpath)
         except OSError:
-            if os.path.exists(GameConnection.socketpath):
+            if os.path.exists(self.config.socketpath):
                 raise
 
         if self.ready_to_connect():
@@ -65,27 +62,27 @@ class GameConnection:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
 
-            self.crawl_socket.bind(GameConnection.socketpath)
+            self.crawl_socket.bind(self.config.socketpath)
 
             self._send_message(msg)
 
             self._read_msgs()
 
     def ready_to_connect(self):
-        return os.path.exists(GameConnection.crawl_socketpath) and not os.path.exists(GameConnection.socketpath)
+        return os.path.exists(self.config.crawl_socketpath) and not os.path.exists(self.config.socketpath)
 
     def close(self):
         if self.crawl_socket:
             print("Closing socket...")
             self.crawl_socket.close()
             # socketpathobj.close()
-            os.unlink(GameConnection.socketpath)
+            os.unlink(self.config.socketpath)
             crawl_socket = None
 
     def _send_message(self, data):
         start = datetime.now()
         try:
-            self.crawl_socket.sendto(data.encode('utf-8'), GameConnection.crawl_socketpath)
+            self.crawl_socket.sendto(data.encode('utf-8'), self.config.crawl_socketpath)
         except socket.timeout:
             # self.logger.warning("Game socket send timeout", exc_info=True)
             print("ERROR: in send_message() - Game socket send timeout")
