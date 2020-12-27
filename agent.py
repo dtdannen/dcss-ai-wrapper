@@ -2,6 +2,8 @@ from gamestate import GameState
 from actions import Command, Action
 import subprocess
 import random
+import platform
+import os
 
 
 class Agent:
@@ -169,14 +171,25 @@ class FastDownwardPlanningAgent(Agent):
         #                               "{}".format(self.plan_domain_filename),
         #                               "{}".format(self.plan_current_pddl_state_filename),
         #                               "--search \"astar(lmcut())\""]
+        # This is used for linux
         fast_downward_process_call = [
             "./FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
                 self.plan_result_filename,
                 self.plan_domain_filename,
                 self.plan_current_pddl_state_filename), ]
+        # This is used for windows
+        fast_downward_system_call = "python FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
+                self.plan_result_filename,
+                self.plan_domain_filename,
+                self.plan_current_pddl_state_filename)
+
         #print("About to call fastdownward like:")
         #print(str(fast_downward_process_call))
-        subprocess.run(fast_downward_process_call, shell=True, stdout=subprocess.DEVNULL)
+        print("platform is {}".format(platform))
+        if platform.system() == 'Windows':
+            os.system(fast_downward_system_call)
+        elif platform.system() == 'Linux':
+            subprocess.run(fast_downward_process_call, shell=True, stdout=subprocess.DEVNULL)
 
         # step 3: read in the resulting plan
         plan = []

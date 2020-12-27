@@ -52,11 +52,11 @@ def main():
 
     if game_state.has_agent_died():
         # Quit and delete the game
-        game.send_and_receive_command(Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME)
-        game.send_and_receive_command(Command.RESPOND_YES_TO_PROMPT)
-        game.send_and_receive_command(Command.ENTER_KEY)
-        game.send_and_receive_command(Command.ENTER_KEY)
-        game.send_and_receive_command(Command.ENTER_KEY)
+        game.send_and_receive_command_ws(Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME)
+        game.send_and_receive_command_ws(Command.RESPOND_YES_TO_PROMPT)
+        game.send_and_receive_command_ws(Command.ENTER_KEY)
+        game.send_and_receive_command_ws(Command.ENTER_KEY)
+        game.send_and_receive_command_ws(Command.ENTER_KEY)
 
     game.close()
 
