@@ -1,0 +1,1 @@
+This directory should be empty, but this directory is needed to write temporary files for the planning agent.

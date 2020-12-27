@@ -597,13 +597,13 @@ class GameState:
         self.last_recorded_movement = dir
         print('last recorded movement is ' + str(self.last_recorded_movement))
         if dir in actions.key_actions.keys():
-            if dir is 'move_N':
+            if dir == 'move_N':
                 self.shift_agent_y(-1)
-            elif dir is 'move_S':
+            elif dir == 'move_S':
                 self.shift_agent_y(1)
-            elif dir is 'move_E':
+            elif dir == 'move_E':
                 self.shift_agent_x(1)
-            elif dir is 'move_W':
+            elif dir == 'move_W':
                 self.shift_agent_x(-1)
             else:
                 pass  # do nothing if the agent didn't move
@@ -761,7 +761,7 @@ class GameState:
         return more_prompt
 
     def process_inv(self, data):
-        print("Data is {}".format(data))
+        #print("Data is {}".format(data))
         for inv_id in data.keys():
             name = None
             quantity = None
@@ -770,6 +770,9 @@ class GameState:
                 name = data[inv_id]['name']
             if 'quantity' in data[inv_id].keys():
                 quantity = int(data[inv_id]['quantity'])
+                if quantity == 0:
+                    # This item doesn't really exist, don't add it
+                    continue
             if 'base_type' in data[inv_id].keys():
                 base_type = data[inv_id]['base_type']
             if inv_id not in self.inventory_by_id.keys():

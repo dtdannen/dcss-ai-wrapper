@@ -22,8 +22,8 @@ def main():
     game = GameConnection(config=config.WebserverConfig())
     asyncio.get_event_loop().run_until_complete(game.connect_webserver())
     print("Connected!")
-    agent = SimpleRandomAgent()
-    # agent = FastDownwardPlanningAgent()
+    #agent = SimpleRandomAgent()
+    agent = FastDownwardPlanningAgent()
 
     print("Waiting 3 seconds....")
     time.sleep(3)
@@ -39,7 +39,7 @@ def main():
     game_state = game.get_gamestate()
     i = 0
     while not game_state.has_agent_died():
-        # print(game_state.draw_cell_map())
+        print(game_state.draw_cell_map())
 
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():

@@ -87,6 +87,7 @@ class GameConnection:
 
                 data_recv += bytes([0, 0, 255, 255])
                 json_message = self.decomp.decompress(data_recv)
+                print("Just received json_message:\n{}".format(json_message))
                 json_message = json_message.decode("utf-8")
 
                 msg_from_server = json.loads(json_message)
@@ -129,6 +130,8 @@ class GameConnection:
         if request_pong:
             await self.websocket.send(json.dumps({"msg": "pong"}))
 
+    # Todo - add function for send_and_receive to a crawl socket when running via a terminal
+
     async def send_and_receive(self, message):
         # send data to server
         # print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
@@ -140,8 +143,8 @@ class GameConnection:
 
     async def send_and_receive_ws(self, message):
         # send data to server
-        # print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
-        await self.websocket.send(GameConnection.json_encode((message)))
+        print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
+        await self.websocket.send(GameConnection.json_encode(message))
         # print("POST-AWAITING ON WEBSOCKET_1 SEND")
         # wait for server to get back
 
@@ -149,7 +152,7 @@ class GameConnection:
 
     async def send_and_receive_command_ws(self, command):
         # send data to server
-        # print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
+        print("AWAITING ON WEBSOCKET_1 SEND - sending command: "+str(command))
         await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
         # print("POST-AWAITING ON WEBSOCKET_1 SEND")
         # wait for server to get back
@@ -237,9 +240,6 @@ class GameConnection:
             print("Slow socket send: " + str(end - start))
             # self.logger.warning("Slow socket send: " + str(end - start))
 
-
-
-
     def _control_input(self, c):
         self._send_message(GameConnection.json_encode({'msg': 'key', 'keycode': ord(c) - ord('A') + 1}))
 
@@ -311,7 +311,7 @@ class GameConnection:
 
     async def send_and_receive_dict_ws(self, input_dict):
         logging.debug("Sending {}".format(input_dict))
-        await self.send_and_receive(GameConnection.json_encode(input_dict))
+        await self.send_and_receive(input_dict)
 
     def send_and_receive_str(self, input_str):
         logging.debug("Sending {}".format(input_str))
