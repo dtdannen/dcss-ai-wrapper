@@ -408,10 +408,14 @@ class InventoryItem:
                 else:
                     self.item_bonus = 0
         else:
-            print(
-                "\n\nself.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}\n\n".format(
-                    id_num, name, quantity, base_type))
-            exit(1)
+            if self.quantity == 0:
+                # Might just be an empty slot that the server is telling us about
+                pass
+            else:
+                print(
+                    "\n\nself.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}\n\n".format(
+                        id_num, name, quantity, base_type))
+                exit(1)
 
         # TODO - figure out how to know if item is equipped
         self.equipped = False

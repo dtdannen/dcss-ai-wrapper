@@ -12,33 +12,43 @@ from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningA
 from actions import Command, Action
 import config
 import asyncio
+import logging
+import time
+
+#logging.basicConfig(level=logging.DEBUG)
+
 
 def main():
     game = GameConnection(config=config.WebserverConfig())
     asyncio.get_event_loop().run_until_complete(game.connect_webserver())
-    print("\n\nconnected!\n\n")
+    print("Connected!")
     agent = SimpleRandomAgent()
-    #agent = FastDownwardPlanningAgent()
+    # agent = FastDownwardPlanningAgent()
 
-    setup_actions = agent.get_game_mode_setup_actions()
+    print("Waiting 3 seconds....")
+    time.sleep(3)
+
+    setup_actions = agent.get_game_mode_setup_actions_webserver()
     for action in setup_actions:
-        print("\n\nexecution action {}\n\n".format(action))
+        print("Sending setup action {}".format(action))
         asyncio.get_event_loop().run_until_complete(game.send_and_receive_dict_ws(action))
+        print("Waiting 3 seconds....")
+        time.sleep(3)
 
-    print("\n\nAbout to start playing the game \n\n")
+    print("About to start playing the game")
     game_state = game.get_gamestate()
     i = 0
     while not game_state.has_agent_died():
-        #print(game_state.draw_cell_map())
+        # print(game_state.draw_cell_map())
 
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():
             print("Action {} is not implemented yet, skipping for now".format(next_action))
             continue
-
+        print("Sending next action {}".format(next_action))
         asyncio.get_event_loop().run_until_complete(game.send_and_receive_command_ws(next_action))
         game_state = game.get_gamestate()
-        i+=1
+        i += 1
 
     if game_state.has_agent_died():
         # Quit and delete the game
@@ -50,9 +60,9 @@ def main():
 
     game.close()
 
+
 if __name__ == "__main__":
     main()
-
 
 #
 # HUMAN_INPUT = False

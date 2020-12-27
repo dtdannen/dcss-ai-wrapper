@@ -8,6 +8,6 @@ class WebserverConfig:
     server_uri = 'ws://localhost:8080/socket'
     agent_name = 'midca'
     agent_password = 'midca'
-    game_id = 'sprint-web-trunk'
+    game_id = 'dcss-web-trunk'
 
 

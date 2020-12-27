@@ -16,6 +16,7 @@ import websockets
 import zlib
 
 
+
 class GameConnection:
 
     def __init__(self, config=config.DefaultConfig()):
@@ -137,6 +138,25 @@ class GameConnection:
 
         await self.get_all_server_messages()
 
+    async def send_and_receive_ws(self, message):
+        # send data to server
+        # print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
+        await self.websocket.send(GameConnection.json_encode((message)))
+        # print("POST-AWAITING ON WEBSOCKET_1 SEND")
+        # wait for server to get back
+
+        await self.get_all_server_messages()
+
+    async def send_and_receive_command_ws(self, command):
+        # send data to server
+        # print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
+        await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
+        # print("POST-AWAITING ON WEBSOCKET_1 SEND")
+        # wait for server to get back
+
+        await self.get_all_server_messages()
+
+
     # Todo remove this or fix it
     # async def end_session_and_quit_game(self):
     #     '''
@@ -152,7 +172,9 @@ class GameConnection:
     #     logging.info("Sent all quit messages, game is deleted...")
 
     async def connect_webserver(self):
+        print("Logging in...")
         await self.login_webserver()
+        print("Loading game...")
         await self.load_game_on_webserver()
 
     def connect(self):
@@ -215,6 +237,9 @@ class GameConnection:
             print("Slow socket send: " + str(end - start))
             # self.logger.warning("Slow socket send: " + str(end - start))
 
+
+
+
     def _control_input(self, c):
         self._send_message(GameConnection.json_encode({'msg': 'key', 'keycode': ord(c) - ord('A') + 1}))
 
@@ -275,6 +300,9 @@ class GameConnection:
     def _send_command(self, command):
         self._send_message(GameConnection.json_encode(Action.get_execution_repr(command)))
 
+    async def _send_command_ws(self, command):
+        await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
+
     def send_and_receive_dict(self, input_dict):
         logging.debug("Sending {}".format(input_dict))
         self._send_message(GameConnection.json_encode(input_dict))
@@ -283,9 +311,7 @@ class GameConnection:
 
     async def send_and_receive_dict_ws(self, input_dict):
         logging.debug("Sending {}".format(input_dict))
-        self._send_message_ws(GameConnection.json_encode(input_dict))
-        msgs = self._read_msgs_ws()
-        self._handle_msgs(msgs)
+        await self.send_and_receive(GameConnection.json_encode(input_dict))
 
     def send_and_receive_str(self, input_str):
         logging.debug("Sending {}".format(input_str))

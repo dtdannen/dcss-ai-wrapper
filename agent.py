@@ -31,12 +31,23 @@ class SimpleRandomAgent(Agent):
     def do_dungeon(self):
         # select dungeon and character build
         return [{'msg': 'key', 'keycode': ord('b')},
-                {'msg': 'key', 'keycode': ord('h')},
-                {'msg': 'key', 'keycode': ord('b')},
+                {'msg': 'key', 'keycode': ord('i')},
+                {'msg': 'key', 'keycode': ord('c')},
                 ]
+
+    def do_dungeon_webserver(self):
+        # select dungeon and character build
+        return [{'msg': 'input', 'keycode': 'b'},
+                {'msg': 'input', 'keycode': 'i'},
+                {'msg': 'input', 'keycode': 'c'},
+                ]
+
 
     def get_game_mode_setup_actions(self):
         return self.do_dungeon()
+
+    def get_game_mode_setup_actions_webserver(self):
+        return self.do_dungeon_webserver()
 
     def get_action(self, gamestate):
         simple_commands = [Command.MOVE_OR_ATTACK_N,
