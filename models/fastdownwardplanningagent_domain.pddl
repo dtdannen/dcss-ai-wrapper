@@ -1,5 +1,6 @@
 (define (domain dcss)
 (:requirements :strips :negative-preconditions)
+(:types goblin kobold rat - monster)
 (:predicates
     ; N,S,E,W,NE,NW,SE,SW of a cell
     (northof ?cell1 ?cell2) ; ?cell2 is north of ?cell1
@@ -24,6 +25,8 @@
     (tree ?cell)
     ; player loc
     (playerat ?cell)
+    ; simple monster information
+    (monsterat ?monstername ?monsterid ?cell)
 )
 
 (:action move_or_attack_n

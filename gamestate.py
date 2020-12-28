@@ -79,6 +79,46 @@ class ItemProperty(Enum):
     Archery_Ego = 50
 
 
+class Monster:
+    """
+
+    Sample monster data:
+
+    'mon': {
+        'id': 1,
+        'name': 'kobold',
+        'plural': 'kobolds',
+        'type': 187,
+        'typedata': {
+            'avghp': 3
+        },
+        'att': 0,
+        'btype': 187,
+        'threat': 1
+    }
+
+
+    """
+
+    def __init__(self, vals, ascii_sym):
+        self.vals = vals
+        self.ascii_sym = ascii_sym
+        self.name = None
+        self.type = None
+
+        if 'id' in vals.keys():
+            self.id = vals['id']
+
+        if 'name' in vals.keys():
+            self.name = vals['name']
+
+        if 'type' in vals.keys():
+            self.type = vals['type']
+
+    def get_pddl_str(self, pddl_cell_str):
+        return "(monsterat {} {} {})".format(self.name, self.id, pddl_cell_str)
+
+
 class CellRawStrDatum(Enum):
     """ These are the types of data that may appear in a raw str description of a cell from the server. """
     x = 0
@@ -120,6 +160,7 @@ class Cell:
         self.has_lava = False
         self.has_plant = False
         self.has_tree = False
+        self.monster = None
         self.set_vals(vals)
 
     def set_vals(self, vals):
@@ -129,6 +170,8 @@ class Cell:
             self.f = vals['f']
         if 'y' in vals.keys():
             self.y = vals['y']
+        if 'mon' in vals.keys():
+            self.monster = Monster(vals['mon'])
         if 'g' in vals.keys():
             self.g = vals['g']
 
@@ -161,11 +204,17 @@ class Cell:
             if self.g == '≈' or self.g == '§':
                 self.has_lava = True
 
+            if self.g == '☘':
+                self.has_tree = True
+
+            # now check for monsters
             if self.g == 'P':
                 self.has_plant = True
 
-            if self.g == '☘':
-                self.has_tree = True
+            elif self.g in string.ascii_lowercase+string.ascii_uppercase:
+                print("We may have a monster represented by g={}, vals are {}".format(self.g, vals))
+                time.sleep(10)
+
 
         if 't' in vals.keys():
             self.t = vals['t']
@@ -625,7 +674,7 @@ class GameState:
         return self.cellmap
 
     def _process_raw_state(self, s, last_key=''):
-        # print("processing {}\n\n".format(s))
+        print("processing {}\n\n".format(s))
         if isinstance(s, list):
             for i in s:
                 self._process_raw_state(i)
