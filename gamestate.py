@@ -103,32 +103,50 @@ class Monster:
     # current theory: each monster has a unique id, so use this class variable to track them
     ids_to_monsters = {}
 
-    def __init__(self, vals, ascii_sym):
+    def __init__(self):
+        self.name = None
+        self.vals = None
+        self.ascii_sym = None
+        self.id = None
+        self.cell = None  # if the monster is on a cell, update it here (note that this could become outdated and we wouldn't know about it)
+
+    @staticmethod
+    def create_or_update_monster(vals, ascii_sym):
         if 'id' in vals.keys():
             mon_id = vals['id']
             if mon_id in Monster.ids_to_monsters.keys():
                 # if this monster already exists, update instead of creating new one
                 Monster.ids_to_monsters[mon_id].update(vals, ascii_sym)
+                return Monster.ids_to_monsters[mon_id]
             else:
                 # create a new monster and insert into Monster.ids_to_monsters
-                self.id = mon_id
-                self.name = None
-                self.vals = None
-                self.ascii_sym = None
-                self.update(vals, ascii_sym)
-                Monster.ids_to_monsters[self.id] = self
+                new_monster = Monster()
+                new_monster.update(vals, ascii_sym)
+                Monster.ids_to_monsters[new_monster.id] = new_monster
+                return new_monster
         else:
             raise Exception("Monster with no id, here's the vals: {}".format(vals))
 
     def update(self, vals, ascii_sym):
         self.vals = vals
         self.ascii_sym = ascii_sym
+        if 'id' in vals.keys():
+            self.id = vals['id']
+        else:
+            raise Exception("Monster with no id, other vals are: {}".format(vals))
 
         if 'name' in vals.keys():
             self.name = vals['name']
 
         if 'type' in vals.keys():
             self.type = vals['type']
+
+    def set_cell(self, cell):
+        self.cell = cell
+
+    def remove_cell(self):
+        # this should happen when a monster dies or is no longer in view
+        self.cell = None
 
     def get_pddl_str(self, pddl_cell_str):
         return "(monsterat {} {} {})".format(self.name, self.id, pddl_cell_str)
@@ -176,7 +194,7 @@ class Cell:
         self.has_lava = False
         self.has_plant = False
         self.has_tree = False
-        self.monster = None
+        self.monster = None # there can only be up to 1 monster in a cell
         self.set_vals(vals)
 
     def set_vals(self, vals):
@@ -186,9 +204,17 @@ class Cell:
             self.f = vals['f']
         if 'y' in vals.keys():
             self.y = vals['y']
-        if 'mon' in vals.keys() and vals['mon']:
-            self.monster = Monster(vals['mon'], ascii_sym=self.g)
-            print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x,self.y))))
+        if 'mon' in vals.keys():
+            if vals['mon']:
+                # we have a live monster in this cell
+                self.monster = Monster.create_or_update_monster(vals['mon'], ascii_sym=self.g)
+                self.monster.set_cell(self)
+                print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x,self.y))))
+            else:
+                # a monster either died here or moved to a different cell, either way it's not in this cell
+                # so we need to update the monster to tell it it's no longer in this cell
+                self.monster.remove_cell()
+                self.monster = None
 
         if 'g' in vals.keys():
             self.g = vals['g']
@@ -693,7 +719,7 @@ class GameState:
         return self.cellmap
 
     def _process_raw_state(self, s, last_key=''):
-        print("processing {}\n\n".format(s))
+        print("processing {}\n".format(s))
         if isinstance(s, list):
             for i in s:
                 self._process_raw_state(i)

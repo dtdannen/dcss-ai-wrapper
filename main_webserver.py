@@ -41,9 +41,16 @@ def main():
     i = 0
     while not game_state.has_agent_died():
         print(game_state.draw_cell_map())
-        print("Monsters are:")
+        print("Visible Monsters are:")
         for m_id, mon in Monster.ids_to_monsters.items():
-            print("  {} with id {} and symbol {}".format(mon.name, m_id, mon.ascii_sym))
+            if mon.cell:
+                print("  {} with id {} and symbol {} on cell {}".format(mon.name, m_id, mon.ascii_sym, "{},{}".format(mon.cell.x, mon.cell.y)))
+        print("Monsters away from us (or dead) are:")
+        for m_id, mon in Monster.ids_to_monsters.items():
+            if mon.cell:
+                pass
+            else:
+                print("  {} with id {} and symbol {}".format(mon.name, m_id, mon.ascii_sym))
 
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():
