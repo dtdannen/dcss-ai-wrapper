@@ -4,7 +4,7 @@ import subprocess
 import random
 import platform
 import os
-
+import time
 
 class Agent:
     def __init__(self):
@@ -146,7 +146,7 @@ class FastDownwardPlanningAgent(Agent):
             if cell.has_player_visited:
                 cells_visited += 1
             elif not cell.has_wall and not cell.has_player and not cell.has_statue and not cell.has_lava and not cell.has_plant and not cell.has_tree and cell.g:
-                #print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
+                # print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
                 available_cells.append(cell)
             else:
                 pass
@@ -155,6 +155,22 @@ class FastDownwardPlanningAgent(Agent):
 
         print("Visited {} cells - Goal is now {}".format(cells_visited, goal_cell.get_pddl_name()))
         return "(playerat {})".format(goal_cell.get_pddl_name())
+
+    def get_first_monster_goal(self):
+        """
+        This picks a the first available monster and chooses that monsters cell to be the goal. In the process of trying to move
+        into the monsters cell, the agent should end up attacking the monster, because movement and attacking are the
+        same thing (for melee).
+        """
+
+        for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
+            if cell.monster:
+                monster_goal_str = "(playerat {})".format(cell.get_pddl_name())
+                print("about to return monster goal: {}".format(monster_goal_str))
+                time.sleep(1)
+                return monster_goal_str
+
+        return None
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
@@ -179,12 +195,12 @@ class FastDownwardPlanningAgent(Agent):
                 self.plan_current_pddl_state_filename), ]
         # This is used for windows
         fast_downward_system_call = "python FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
-                self.plan_result_filename,
-                self.plan_domain_filename,
-                self.plan_current_pddl_state_filename)
+            self.plan_result_filename,
+            self.plan_domain_filename,
+            self.plan_current_pddl_state_filename)
 
-        #print("About to call fastdownward like:")
-        #print(str(fast_downward_process_call))
+        # print("About to call fastdownward like:")
+        # print(str(fast_downward_process_call))
         print("platform is {}".format(platform))
         if platform.system() == 'Windows':
             os.system(fast_downward_system_call)
@@ -205,7 +221,7 @@ class FastDownwardPlanningAgent(Agent):
                     # we have a comment, ignore
                     pass
 
-        #for ps in plan:
+        # for ps in plan:
         #    print("Plan step: {}".format(ps))
 
         self.plan = plan
@@ -214,8 +230,13 @@ class FastDownwardPlanningAgent(Agent):
         self.current_game_state = gamestate
 
         if len(self.plan) == 0:
-            goals = [self.get_random_nonvisited_nonwall_playerat_goal()]
-            self.get_plan_from_fast_downward(goals=goals)
+            # attack monsters first
+            monster_goal = self.get_first_monster_goal()
+            if monster_goal:
+                self.get_plan_from_fast_downward(goals=[monster_goal])
+            else:
+                goals = [self.get_random_nonvisited_nonwall_playerat_goal()]
+                self.get_plan_from_fast_downward(goals=goals)
 
         next_action = None
         if len(self.plan) > 0:

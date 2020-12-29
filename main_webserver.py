@@ -14,6 +14,7 @@ import config
 import asyncio
 import logging
 import time
+from gamestate import Monster
 
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -26,20 +27,23 @@ def main():
     agent = FastDownwardPlanningAgent()
 
     print("Waiting 3 seconds....")
-    time.sleep(3)
+    time.sleep(1)
 
     setup_actions = agent.get_game_mode_setup_actions_webserver()
     for action in setup_actions:
         print("Sending setup action {}".format(action))
         asyncio.get_event_loop().run_until_complete(game.send_and_receive_dict_ws(action))
         print("Waiting 3 seconds....")
-        time.sleep(3)
+        time.sleep(1)
 
     print("About to start playing the game")
     game_state = game.get_gamestate()
     i = 0
     while not game_state.has_agent_died():
         print(game_state.draw_cell_map())
+        print("Monsters are:")
+        for m_id, mon in Monster.ids_to_monsters.items():
+            print("  {} with id {} and symbol {}".format(mon.name, m_id, mon.ascii_sym))
 
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():

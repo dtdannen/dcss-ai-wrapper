@@ -100,14 +100,29 @@ class Monster:
 
     """
 
+    # current theory: each monster has a unique id, so use this class variable to track them
+    ids_to_monsters = {}
+
     def __init__(self, vals, ascii_sym):
+        if 'id' in vals.keys():
+            mon_id = vals['id']
+            if mon_id in Monster.ids_to_monsters.keys():
+                # if this monster already exists, update instead of creating new one
+                Monster.ids_to_monsters[mon_id].update(vals, ascii_sym)
+            else:
+                # create a new monster and insert into Monster.ids_to_monsters
+                self.id = mon_id
+                self.name = None
+                self.vals = None
+                self.ascii_sym = None
+                self.update(vals, ascii_sym)
+                Monster.ids_to_monsters[self.id] = self
+        else:
+            raise Exception("Monster with no id, here's the vals: {}".format(vals))
+
+    def update(self, vals, ascii_sym):
         self.vals = vals
         self.ascii_sym = ascii_sym
-        self.name = None
-        self.type = None
-
-        if 'id' in vals.keys():
-            self.id = vals['id']
 
         if 'name' in vals.keys():
             self.name = vals['name']
@@ -128,6 +143,7 @@ class CellRawStrDatum(Enum):
     t = 4
     mf = 5
     col = 6
+    mon = 7
 
 
 class Cell:
@@ -170,8 +186,10 @@ class Cell:
             self.f = vals['f']
         if 'y' in vals.keys():
             self.y = vals['y']
-        if 'mon' in vals.keys():
-            self.monster = Monster(vals['mon'])
+        if 'mon' in vals.keys() and vals['mon']:
+            self.monster = Monster(vals['mon'], ascii_sym=self.g)
+            print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x,self.y))))
+
         if 'g' in vals.keys():
             self.g = vals['g']
 
@@ -211,10 +229,9 @@ class Cell:
             if self.g == 'P':
                 self.has_plant = True
 
-            elif self.g in string.ascii_lowercase+string.ascii_uppercase:
-                print("We may have a monster represented by g={}, vals are {}".format(self.g, vals))
-                time.sleep(10)
-
+            #elif self.g in string.ascii_lowercase+string.ascii_uppercase:
+            #    print("We may have a monster represented by g={}, vals are {}".format(self.g, vals))
+            #    print("Current monster is ")
 
         if 't' in vals.keys():
             self.t = vals['t']
@@ -258,6 +275,8 @@ class Cell:
             pddl_facts.append('(plant {})'.format(self.get_pddl_name()))
         if self.has_tree:
             pddl_facts.append('(tree {})'.format(self.get_pddl_name()))
+        if self.monster:
+            pddl_facts.append(self.monster.get_pddl_str(self.get_pddl_name()))
         return pddl_facts
 
     def __str__(self):
@@ -640,7 +659,7 @@ class GameState:
             # print(self.training_asp_str)
             # print(self.background_asp_str)
         except Exception as e:
-            raise Exception("Something went wrong" + e)
+            raise Exception("Something went wrong: " + str(e))
 
     def record_movement(self, dir):
         self.last_recorded_movement = dir
@@ -874,6 +893,10 @@ class GameState:
                     vals['x'] = curr_x
                 if 'y' not in vals.keys():
                     vals['y'] = curr_y
+
+                if 'mon' in cell_dict.keys():
+                    print("Found a monster cell with cell_dict vals {}".format(cell_dict))
+                    #vals['mon'] = cell_dict['mon']
 
                 self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
 
