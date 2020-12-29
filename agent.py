@@ -162,15 +162,19 @@ class FastDownwardPlanningAgent(Agent):
         into the monsters cell, the agent should end up attacking the monster, because movement and attacking are the
         same thing (for melee).
         """
-
+        cells_with_monsters = []
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.monster:
-                monster_goal_str = "(playerat {})".format(cell.get_pddl_name())
-                print("about to return monster goal: {}".format(monster_goal_str))
-                time.sleep(1)
-                return monster_goal_str
+                cells_with_monsters.append(cell)
 
-        return None
+        if len(cells_with_monsters) == 0:
+            return None
+
+        monster_cell_goal = random.choice(cells_with_monsters)
+        monster_goal_str = "(playerat {})".format(monster_cell_goal.get_pddl_name())
+        print("about to return monster goal: {}".format(monster_goal_str))
+        #time.sleep(1)
+        return monster_goal_str
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
@@ -209,17 +213,22 @@ class FastDownwardPlanningAgent(Agent):
 
         # step 3: read in the resulting plan
         plan = []
-        with open(self.plan_result_filename, 'r') as f:
-            for line in f.readlines():
-                line = line.strip()
-                if ';' not in line:
-                    if line[0] == '(':
-                        pddl_action_name = line.split()[0][1:]
-                        command_name = pddl_action_name.upper()
-                        plan.append(Command[command_name])
-                else:
-                    # we have a comment, ignore
-                    pass
+        try:
+            with open(self.plan_result_filename, 'r') as f:
+                for line in f.readlines():
+                    line = line.strip()
+                    if ';' not in line:
+                        if line[0] == '(':
+                            pddl_action_name = line.split()[0][1:]
+                            command_name = pddl_action_name.upper()
+                            plan.append(Command[command_name])
+                    else:
+                        # we have a comment, ignore
+                        pass
+        except FileNotFoundError:
+            print("Plan could not be generated...")
+            # Todo - change the goal here
+            return
 
         # for ps in plan:
         #    print("Plan step: {}".format(ps))
@@ -229,14 +238,25 @@ class FastDownwardPlanningAgent(Agent):
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
 
-        if len(self.plan) == 0:
+        while_loop_iterations = 0
+        while len(self.plan) == 0:
+            # select a new goal and plan until we find a plan that's non empty
+
+            selected_goal = None
+
             # attack monsters first
             monster_goal = self.get_first_monster_goal()
             if monster_goal:
                 self.get_plan_from_fast_downward(goals=[monster_goal])
+                selected_goal = monster_goal
             else:
-                goals = [self.get_random_nonvisited_nonwall_playerat_goal()]
-                self.get_plan_from_fast_downward(goals=goals)
+                goal = self.get_random_nonvisited_nonwall_playerat_goal()
+                self.get_plan_from_fast_downward(goals=[goal])
+                selected_goal = goal
+
+            while_loop_iterations += 1
+            if while_loop_iterations > 1:
+                print("  in while loop, goal is {}, iterations is {}".format(selected_goal, while_loop_iterations))
 
         next_action = None
         if len(self.plan) > 0:

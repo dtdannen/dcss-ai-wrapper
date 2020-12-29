@@ -985,19 +985,20 @@ class GameState:
                 self.map_obj[map_obj_y][map_obj_x] = g
 
     def print_map_obj(self):
-        while self.lock:
-            # wait
-            time.sleep(0.001)
-
-        self.lock = True
-        try:
-            for r in self.map_obj:
-                print(str(r))
-            self.lock = False
-        except:
-            raise Exception("Oh man something happened")
-        finally:
-            self.lock = False
+        raise Exception("We're in an olddddd function")
+        # while self.lock:
+        #     # wait
+        #     time.sleep(0.001)
+        #
+        # self.lock = True
+        # try:
+        #     for r in self.map_obj:
+        #         print(str(r))
+        #     self.lock = False
+        # except:
+        #     raise Exception("Oh man something happened")
+        # finally:
+        #     self.lock = False
 
     def get_player_xy(self):
         return (self.map_obj_player_x, self.map_obj_player_y)
