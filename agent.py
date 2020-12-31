@@ -105,7 +105,7 @@ class TestAllCommandsAgent(Agent):
 
 class FastDownwardPlanningAgent(Agent):
     """
-    Agent that uses fast downward to solve planning problems to explore a floor. Ignores monsters.
+    Agent that uses fast downward to solve planning problems to explore a floor.
     """
 
     pddl_domain_file = ""
@@ -118,6 +118,7 @@ class FastDownwardPlanningAgent(Agent):
         self.plan_current_pddl_state_filename = "models/fdtempfiles/gamestate.pddl"
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
+        self.actions_taken_so_far = 0
 
     def do_dungeon(self):
         # select dungeon and character build
@@ -205,7 +206,7 @@ class FastDownwardPlanningAgent(Agent):
 
         # print("About to call fastdownward like:")
         # print(str(fast_downward_process_call))
-        print("platform is {}".format(platform))
+        print("platform is {}".format(platform.system()))
         if platform.system() == 'Windows':
             os.system(fast_downward_system_call)
         elif platform.system() == 'Linux':
@@ -233,10 +234,57 @@ class FastDownwardPlanningAgent(Agent):
         # for ps in plan:
         #    print("Plan step: {}".format(ps))
 
-        self.plan = plan
+        return plan
+
+    def equip_best_items(self):
+        """
+        Calling this will have the agent evaluate the best items
+        """
+
+
+    def read_scrolls(self):
+        """
+        The agent will read all scrolls in its inventory
+        """
+
+
+    def can_create_plan_to_reach_next_floor(self):
+        """
+        Returns a plan to go to the next floor
+        """
+
+        player_goal_str = None
+
+        # first find a stair down
+        cells_with_stairs_down = []
+        for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
+            if cell.has_stairs_down:
+                cells_with_stairs_down.append(cell)
+
+        # set the goal to be player at cell with stairs down
+        if len(cells_with_stairs_down) > 0:
+            player_goal_str = "(playerat {})".format(random.choice(cells_with_stairs_down).get_pddl_name())
+        else:
+            return False
+
+        # create a plan to reach the stairs
+        plan = self.get_plan_from_fast_downward(goals=[player_goal_str])
+
+        # add an action to take the stairs down
+        if plan and len(plan) > 0:
+            plan.append(Command.TRAVEL_STAIRCASE_DOWN)
+
+        return plan
 
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
+
+        if self.actions_taken_so_far > 100:
+            if random.random() < 0.25:
+                stair_plan = self.can_create_plan_to_reach_next_floor()
+                if stair_plan:
+                    self.plan = stair_plan
+                    print("PLAN: Going to next level via stairs down")
 
         while_loop_iterations = 0
         while len(self.plan) == 0:
@@ -247,11 +295,11 @@ class FastDownwardPlanningAgent(Agent):
             # attack monsters first
             monster_goal = self.get_first_monster_goal()
             if monster_goal:
-                self.get_plan_from_fast_downward(goals=[monster_goal])
+                self.plan = self.get_plan_from_fast_downward(goals=[monster_goal])
                 selected_goal = monster_goal
             else:
                 goal = self.get_random_nonvisited_nonwall_playerat_goal()
-                self.get_plan_from_fast_downward(goals=[goal])
+                self.plan = self.get_plan_from_fast_downward(goals=[goal])
                 selected_goal = goal
 
             while_loop_iterations += 1
@@ -261,6 +309,7 @@ class FastDownwardPlanningAgent(Agent):
         next_action = None
         if len(self.plan) > 0:
             next_action = self.plan.pop(0)
+            self.actions_taken_so_far += 1
         else:
             print("warning - no plan!")
 
