@@ -43,7 +43,7 @@ def main():
         print(game_state.draw_cell_map())
         print("Visible Monsters are:")
         for m_id, mon in Monster.ids_to_monsters.items():
-            if mon.cell:
+            if mon.cell and mon.ascii_sym:
                 print("  {} with id {} and symbol {} on cell {}".format(mon.name, m_id, mon.ascii_sym, "{},{}".format(mon.cell.x, mon.cell.y)))
         print("Monsters away from us (or dead) are:")
         for m_id, mon in Monster.ids_to_monsters.items():

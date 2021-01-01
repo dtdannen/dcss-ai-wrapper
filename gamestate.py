@@ -194,7 +194,7 @@ class Cell:
         self.has_lava = False
         self.has_plant = False
         self.has_tree = False
-        self.monster = None # there can only be up to 1 monster in a cell
+        self.monster = None  # there can only be up to 1 monster in a cell
         self.set_vals(vals)
 
     def set_vals(self, vals):
@@ -209,7 +209,7 @@ class Cell:
                 # we have a live monster in this cell
                 self.monster = Monster.create_or_update_monster(vals['mon'], ascii_sym=self.g)
                 self.monster.set_cell(self)
-                print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x,self.y))))
+                print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x, self.y))))
             else:
                 # a monster either died here or moved to a different cell, either way it's not in this cell
                 # so we need to update the monster to tell it it's no longer in this cell
@@ -255,7 +255,7 @@ class Cell:
             if self.g == 'P':
                 self.has_plant = True
 
-            #elif self.g in string.ascii_lowercase+string.ascii_uppercase:
+            # elif self.g in string.ascii_lowercase+string.ascii_uppercase:
             #    print("We may have a monster represented by g={}, vals are {}".format(self.g, vals))
             #    print("Current monster is ")
 
@@ -277,11 +277,11 @@ class Cell:
         # cell vector should contain:
         # corpse? 0 or 1
         # monster? (can only be one monster on a tile) - monster vector with
-            # monster vector
-            # current health? (may be in the form of weak, almost dead, bloodied, etc)
-            # maximum health?
-            # monster name
-            # is unique?
+        # monster vector
+        # current health? (may be in the form of weak, almost dead, bloodied, etc)
+        # maximum health?
+        # monster name
+        # is unique?
         # items?
         # special tile features (like water, lava, wall, door, etc)
 
@@ -304,6 +304,10 @@ class Cell:
         if self.monster:
             pddl_facts.append(self.monster.get_pddl_str(self.get_pddl_name()))
         return pddl_facts
+
+    def straight_line_distance(self, cell):
+        # this considers diagonal movements
+        return max(abs(self.x - cell.x), abs(self.y - cell.y))
 
     def __str__(self):
         if self.g and len(self.g) >= 1:
@@ -330,7 +334,7 @@ class CellMap:
         # self.unknown_cell = Cell(
 
     def add_or_update_cell(self, x, y, vals):
-        #print("vals={}".format(str(vals)))
+        # print("vals={}".format(str(vals)))
 
         if 'x' not in vals.keys():
             vals['x'] = x
@@ -342,11 +346,11 @@ class CellMap:
             print("WARNING potential with coordinates, y={} and vals[y]={}".format(y, vals['y']))
 
         if (x, y) in self.x_y_to_cells.keys():
-            #print("updating existing cell x={},y={}".format(x,y))
-            #print("previous vals={}, new vals={}".format(self.x_y_to_cells[(x, y)].raw, vals))
+            # print("updating existing cell x={},y={}".format(x,y))
+            # print("previous vals={}, new vals={}".format(self.x_y_to_cells[(x, y)].raw, vals))
             self.x_y_to_cells[(x, y)].set_vals(vals=vals)
         else:
-            #print("adding new cell x={},y={} with vals={}".format(x, y, vals))
+            # print("adding new cell x={},y={} with vals={}".format(x, y, vals))
             self.x_y_to_cells[(x, y)] = Cell(vals=vals)
             if self.min_x is None or x < self.min_x:
                 self.min_x = x
@@ -364,7 +368,7 @@ class CellMap:
     def draw_cell_map(self):
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
-                                                              self.min_x, self.max_x, self.min_y, self.max_y)
+                                                                      self.min_x, self.max_x, self.min_y, self.max_y)
         non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
             for curr_x in range(self.min_x, self.max_x + 1):
@@ -377,8 +381,8 @@ class CellMap:
                     s += " "
             s += '\n'
 
-        #print("non-empty cells are:")
-        #for c in non_empty_cells:
+        # print("non-empty cells are:")
+        # for c in non_empty_cells:
         #    print("X={},Y={}, Cell is: {}".format(c.x, c.y, c.g))
 
         return s
@@ -411,12 +415,12 @@ class CellMap:
                     for f in cell.get_pddl_facts():
                         fact_strs.append(f)
 
-                    #print('cellxy = {}, cellname is {}'.format(str((curr_x, curr_y)), cell.get_pddl_name()))
+                    # print('cellxy = {}, cellname is {}'.format(str((curr_x, curr_y)), cell.get_pddl_name()))
                     northcellxy = (cell.x, cell.y - 1)
-                    #print("northcellxy = {}".format(northcellxy))
+                    # print("northcellxy = {}".format(northcellxy))
                     if northcellxy in self.x_y_to_cells.keys():
                         northcell = self.x_y_to_cells[northcellxy]
-                        #print("northcell = {}".format(northcell.get_pddl_name()))
+                        # print("northcell = {}".format(northcell.get_pddl_name()))
                         fact_strs.append("(northof {} {})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
 
                     southcellxy = (cell.x, cell.y + 1)
@@ -424,7 +428,7 @@ class CellMap:
                         southcell = self.x_y_to_cells[southcellxy]
                         fact_strs.append("(southof {} {})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
 
-                    westcellxy = (cell.x-1, cell.y)
+                    westcellxy = (cell.x - 1, cell.y)
                     if westcellxy in self.x_y_to_cells.keys():
                         westcell = self.x_y_to_cells[westcellxy]
                         fact_strs.append("(westof {} {})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
@@ -437,7 +441,8 @@ class CellMap:
                     northeastcellxy = (cell.x + 1, cell.y - 1)
                     if northeastcellxy in self.x_y_to_cells.keys():
                         northeastcell = self.x_y_to_cells[northeastcellxy]
-                        fact_strs.append("(northeastof {} {})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
+                        fact_strs.append(
+                            "(northeastof {} {})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
 
                     northwestcellxy = (cell.x - 1, cell.y - 1)
                     if northwestcellxy in self.x_y_to_cells.keys():
@@ -463,12 +468,12 @@ class CellMap:
         pddl_str = "(define (problem dcss-test-prob)\n(:domain dcss)\n(:objects \n"
 
         for obj in object_strs:
-            pddl_str+= "  {}\n".format(obj)
+            pddl_str += "  {}\n".format(obj)
         pddl_str += ")\n"
 
         pddl_str += "(:init \n"
         for fact in fact_strs:
-            pddl_str+= "  {}\n".format(fact)
+            pddl_str += "  {}\n".format(fact)
         pddl_str += ")\n"
 
         pddl_str += "(:goal \n  (and \n"
@@ -481,6 +486,9 @@ class CellMap:
 
     def get_xy_to_cells_dict(self):
         return self.x_y_to_cells
+
+    def get_player_cell(self):
+        return self.x_y_to_cells[(self.agent_x, self.agent_y)]
 
 
 class InventoryItem:
@@ -594,7 +602,8 @@ class InventoryItem:
 
     def __str__(self):
         return "{}({}) - {} (#={}, base_type={})".format(self.get_letter(), self.id_num, self.get_name(),
-                                                             self.get_quantity(), self.get_base_type())
+                                                         self.get_quantity(), self.get_base_type())
+
 
 class TileFeatures:
     '''
@@ -719,7 +728,7 @@ class GameState:
         return self.cellmap
 
     def _process_raw_state(self, s, last_key=''):
-        print("processing {}\n".format(s))
+        # print("processing {}\n".format(s))
         if isinstance(s, list):
             for i in s:
                 self._process_raw_state(i)
@@ -791,7 +800,8 @@ class GameState:
             if 'You die...' in message_only:
                 self.died = True
 
-            if len(self.messages[turn]) >= 8:
+            # Todo there should be a better way to do this
+            if len(self.messages[turn]) >= 5:
                 self.more_prompt = True
 
             if 'too terrified to move' in message_only:
@@ -855,7 +865,7 @@ class GameState:
         return more_prompt
 
     def process_inv(self, data):
-        #print("Data is {}".format(data))
+        # print("Data is {}".format(data))
         for inv_id in data.keys():
             name = None
             quantity = None
@@ -884,7 +894,8 @@ class GameState:
                         print("  **** Deleting item {} because quantity = 0".format(inv_item))
                         del self.inventory_by_id[inv_id]
                     else:
-                        print("  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
+                        print(
+                            "  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
                         self.inventory_by_id[inv_id].set_quantity(quantity)
 
     def get_cell_objs_from_raw_data(self, cells):
@@ -903,14 +914,14 @@ class GameState:
                 else:  # ... just increment x, keeping y the same
                     curr_x += 1
 
-                #print("x={},y={}".format(curr_x, curr_y))
+                # print("x={},y={}".format(curr_x, curr_y))
 
                 vals = {}
 
                 # store any other datums we have access to
                 for datum_key in CellRawStrDatum:
                     if datum_key.name in cell_dict.keys():
-                        #input("datum_key {} is in cell_dict {} with value {}".format(datum_key.name, cell_dict, cell_dict[datum_key.name]))
+                        # input("datum_key {} is in cell_dict {} with value {}".format(datum_key.name, cell_dict, cell_dict[datum_key.name]))
                         vals[datum_key.name] = cell_dict[datum_key.name]
                     else:
                         pass
@@ -922,7 +933,7 @@ class GameState:
 
                 if 'mon' in cell_dict.keys():
                     print("Found a monster cell with cell_dict vals {}".format(cell_dict))
-                    #vals['mon'] = cell_dict['mon']
+                    # vals['mon'] = cell_dict['mon']
 
                 self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
 

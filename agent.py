@@ -141,20 +141,51 @@ class FastDownwardPlanningAgent(Agent):
         return self.do_dungeon_webserver()
 
     def get_random_nonvisited_nonwall_playerat_goal(self):
-        available_cells = []
-        cells_visited = 0
+        cells_not_visited = []
+        cells_visited = []
+        closed_door_cells = []
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.has_player_visited:
-                cells_visited += 1
+                cells_visited.append(cell)
             elif not cell.has_wall and not cell.has_player and not cell.has_statue and not cell.has_lava and not cell.has_plant and not cell.has_tree and cell.g:
                 # print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
-                available_cells.append(cell)
+                cells_not_visited.append(cell)
             else:
                 pass
 
-        goal_cell = random.choice(available_cells)
+            if cell.has_closed_door:
+                closed_door_cells.append(cell)
 
-        print("Visited {} cells - Goal is now {}".format(cells_visited, goal_cell.get_pddl_name()))
+        print("Found {} not visited cells".format(len(cells_not_visited)))
+        i = 1
+        farthest_away_cells = []
+        target_cells = cells_not_visited
+        while len(target_cells) > 1:
+            farthest_away_cells = target_cells
+            # remove all cells that are i distance away from other visited cells
+            new_target_cells = []
+            for potential_cell in target_cells:
+                found_close_visited_cell = False
+                for visited_cell in cells_visited:
+                    if visited_cell.straight_line_distance(potential_cell) <= i:
+                        found_close_visited_cell = True
+
+                if not found_close_visited_cell:
+                    new_target_cells.append(potential_cell)
+
+            print("  i={} with {} target cells".format(i, len(new_target_cells)))
+            target_cells = new_target_cells
+            i+=1
+
+        print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i-1))
+
+        if i < 4 and len(closed_door_cells) > 1:
+            print("Attempting to choose a closed door as a goal if possible")
+            goal_cell = random.choice(closed_door_cells)
+        else:
+            goal_cell = random.choice(farthest_away_cells)
+            print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
+
         return "(playerat {})".format(goal_cell.get_pddl_name())
 
     def get_first_monster_goal(self):
@@ -184,7 +215,7 @@ class FastDownwardPlanningAgent(Agent):
                                                                      goals=goals)
         else:
             print("WARNING current game state is null when trying to call fast downward planner")
-            return
+            return []
 
         # step 2: run fastdownward
         # fast_downward_process_call = ["./FastDownward/fast-downward.py",
@@ -199,10 +230,11 @@ class FastDownwardPlanningAgent(Agent):
                 self.plan_domain_filename,
                 self.plan_current_pddl_state_filename), ]
         # This is used for windows
-        fast_downward_system_call = "python FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
+        fast_downward_system_call = "python FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\" {}".format(
             self.plan_result_filename,
             self.plan_domain_filename,
-            self.plan_current_pddl_state_filename)
+            self.plan_current_pddl_state_filename,
+            "> NUL") # this last line is to remove output from showing up in the terminal, feel free to remove this if debugging
 
         # print("About to call fastdownward like:")
         # print(str(fast_downward_process_call))

@@ -234,7 +234,7 @@ class Action:
         Command.OPEN_DOOR: {'text': 'O', 'msg': 'input'},
         Command.CLOSE_DOOR: {'text': 'C', 'msg': 'input'},
         Command.TRAVEL_STAIRCASE_UP: {'text': '<', 'msg': 'input'},
-        Command.TRAVEL_STAIRCASE_DOWN: {'text': '<', 'msg': 'input'},
+        Command.TRAVEL_STAIRCASE_DOWN: {'text': '>', 'msg': 'input'},
         Command.EXAMINE_CURRENT_TILE_PICKUP_PART_OF_SINGLE_STACK: {'text': ';', 'msg': 'input'},
         Command.EXAMINE_SURROUNDINGS_AND_TARGETS: {'text': 'x', 'msg': 'input'},
         Command.EXAMINE_LEVEL_MAP: {'text': 'X', 'msg': 'input'},
