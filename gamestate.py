@@ -327,7 +327,9 @@ class CellMap:
         self.max_x = None
         self.max_y = None
         self.num_cells = 0
-        self.x_y_to_cells = {}  # key is an (x,y) tuple, val is the cell at that spot
+        self.place_depth_to_x_y_to_cells = {}  # key is depth, then key is an (x,y) tuple, val is the cell at that spot
+        self.current_depth = 1
+        self.current_place = "Dungeon"
         self.agent_x = None
         self.agent_y = None
         # unknown_vals = {k:None for k in CellRawStrDatum} # test this
@@ -345,13 +347,13 @@ class CellMap:
         elif y != vals['y']:
             print("WARNING potential with coordinates, y={} and vals[y]={}".format(y, vals['y']))
 
-        if (x, y) in self.x_y_to_cells.keys():
+        if (x, y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
             # print("updating existing cell x={},y={}".format(x,y))
             # print("previous vals={}, new vals={}".format(self.x_y_to_cells[(x, y)].raw, vals))
-            self.x_y_to_cells[(x, y)].set_vals(vals=vals)
+            self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(x, y)].set_vals(vals=vals)
         else:
             # print("adding new cell x={},y={} with vals={}".format(x, y, vals))
-            self.x_y_to_cells[(x, y)] = Cell(vals=vals)
+            self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(x, y)] = Cell(vals=vals)
             if self.min_x is None or x < self.min_x:
                 self.min_x = x
             if self.max_x is None or x > self.max_x:
@@ -372,8 +374,8 @@ class CellMap:
         non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
             for curr_x in range(self.min_x, self.max_x + 1):
-                if (curr_x, curr_y) in self.x_y_to_cells.keys():
-                    cell = self.x_y_to_cells[(curr_x, curr_y)]
+                if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                    cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)]
                     s += str(cell)
                     if cell.g != "." and cell.g != "#" and cell.g is not None:
                         non_empty_cells.append(cell)
@@ -387,6 +389,12 @@ class CellMap:
 
         return s
 
+    def set_current_depth(self, depth: int):
+        self.current_depth = depth
+
+    def set_current_place(self, place: str):
+        self.current_place = place
+
     def print_radius_around_agent(self, r=8):
         x_min = self.agent_x - r
         x_max = self.agent_x + r
@@ -395,8 +403,8 @@ class CellMap:
         s = ""
         for curr_y in range(y_min, y_max + 1):
             for curr_x in range(x_min, x_max + 1):
-                if (curr_x, curr_y) in self.x_y_to_cells.keys():
-                    s += str(self.x_y_to_cells[(curr_x, curr_y)])
+                if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                    s += str(self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)])
                 else:
                     s += " "
             s += '\n'
@@ -408,8 +416,8 @@ class CellMap:
         fact_strs = []
         for curr_y in range(self.min_y, self.max_y + 1):
             for curr_x in range(self.min_x, self.max_x + 1):
-                if (curr_x, curr_y) in self.x_y_to_cells.keys():
-                    cell = self.x_y_to_cells[(curr_x, curr_y)]
+                if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                    cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)]
                     object_strs.append(cell.get_pddl_name())
 
                     for f in cell.get_pddl_facts():
@@ -418,47 +426,57 @@ class CellMap:
                     # print('cellxy = {}, cellname is {}'.format(str((curr_x, curr_y)), cell.get_pddl_name()))
                     northcellxy = (cell.x, cell.y - 1)
                     # print("northcellxy = {}".format(northcellxy))
-                    if northcellxy in self.x_y_to_cells.keys():
-                        northcell = self.x_y_to_cells[northcellxy]
+                    if northcellxy in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                        northcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][
+                            northcellxy]
                         # print("northcell = {}".format(northcell.get_pddl_name()))
                         fact_strs.append("(northof {} {})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
 
                     southcellxy = (cell.x, cell.y + 1)
-                    if southcellxy in self.x_y_to_cells.keys():
-                        southcell = self.x_y_to_cells[southcellxy]
+                    if southcellxy in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                        southcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][
+                            southcellxy]
                         fact_strs.append("(southof {} {})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
 
                     westcellxy = (cell.x - 1, cell.y)
-                    if westcellxy in self.x_y_to_cells.keys():
-                        westcell = self.x_y_to_cells[westcellxy]
+                    if westcellxy in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                        westcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][westcellxy]
                         fact_strs.append("(westof {} {})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
 
                     eastcellxy = (cell.x + 1, cell.y)
-                    if eastcellxy in self.x_y_to_cells.keys():
-                        eastcell = self.x_y_to_cells[eastcellxy]
+                    if eastcellxy in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                        eastcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][eastcellxy]
                         fact_strs.append("(eastof {} {})".format(cell.get_pddl_name(), eastcell.get_pddl_name()))
 
                     northeastcellxy = (cell.x + 1, cell.y - 1)
-                    if northeastcellxy in self.x_y_to_cells.keys():
-                        northeastcell = self.x_y_to_cells[northeastcellxy]
+                    if northeastcellxy in self.place_depth_to_x_y_to_cells[self.current_place][
+                        self.current_depth].keys():
+                        northeastcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][
+                            northeastcellxy]
                         fact_strs.append(
                             "(northeastof {} {})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
 
                     northwestcellxy = (cell.x - 1, cell.y - 1)
-                    if northwestcellxy in self.x_y_to_cells.keys():
-                        northwestcell = self.x_y_to_cells[northwestcellxy]
+                    if northwestcellxy in self.place_depth_to_x_y_to_cells[self.current_place][
+                        self.current_depth].keys():
+                        northwestcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][
+                            northwestcellxy]
                         fact_strs.append(
                             "(northwestof {} {})".format(cell.get_pddl_name(), northwestcell.get_pddl_name()))
 
                     southeastcellxy = (cell.x + 1, cell.y + 1)
-                    if southeastcellxy in self.x_y_to_cells.keys():
-                        southeastcell = self.x_y_to_cells[southeastcellxy]
+                    if southeastcellxy in self.place_depth_to_x_y_to_cells[self.current_place][
+                        self.current_depth].keys():
+                        southeastcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][
+                            southeastcellxy]
                         fact_strs.append(
                             "(southeastof {} {})".format(cell.get_pddl_name(), southeastcell.get_pddl_name()))
 
                     southwestcellxy = (cell.x - 1, cell.y + 1)
-                    if southwestcellxy in self.x_y_to_cells.keys():
-                        southwestcell = self.x_y_to_cells[southwestcellxy]
+                    if southwestcellxy in self.place_depth_to_x_y_to_cells[self.current_place][
+                        self.current_depth].keys():
+                        southwestcell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][
+                            southwestcellxy]
                         fact_strs.append(
                             "(southwestof {} {})".format(cell.get_pddl_name(), southwestcell.get_pddl_name()))
 
@@ -485,10 +503,10 @@ class CellMap:
         return pddl_str
 
     def get_xy_to_cells_dict(self):
-        return self.x_y_to_cells
+        return self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth]
 
     def get_player_cell(self):
-        return self.x_y_to_cells[(self.agent_x, self.agent_y)]
+        return self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(self.agent_x, self.agent_y)]
 
 
 class InventoryItem:
@@ -681,6 +699,52 @@ class GameState:
 
         self.just_gained_level = False
 
+        self.wizard_mode_on = False
+
+        self.game_time = None
+        self.game_turn = None
+
+        self.player_name = ""
+        self.player_title = ""
+        self.player_species = ""
+
+        self.player_form = None
+        self.player_unarmed_attack = None
+
+        self.player_place = ""
+        self.player_depth = 1
+
+        self.player_ac = None
+        self.player_ev = None
+        self.player_sh = None
+
+        self.player_god = None
+        self.player_piety_rank = None
+        self.player_penance = None
+
+        self.player_current_hp = None
+        self.player_hp_max = None
+        self.player_current_mp = None
+        self.player_mp_max = None
+        self.player_dd_real_mp_max = None
+
+        self.player_strength = None
+        self.player_strength_max = None
+        self.player_dex = None
+        self.player_dex_max = None
+        self.player_int = None
+        self.player_int_max = None
+
+        self.player_status = []
+        self.player_poison_survival = None
+        self.player_level = 1
+
+        self.player_progress = None
+        self.player_gold = 0
+
+        self.noise_level = None
+        self.adjusted_noise_level = None
+
         self.id = GameState.ID
         GameState.ID += 1
 
@@ -743,8 +807,15 @@ class GameState:
 
                 if k == 'messages':
                     self.process_messages(s[k])
+
                 if k == 'inv':
                     self.process_inv(s[k])
+
+                if k == 'equip':
+                    self.process_equip(s[k])
+
+                if k == 'msg' and s[k] == 'player':
+                    self.process_player(s)
 
                 if k in self.state_keys:
                     self.state[k] = s[k]
@@ -826,6 +897,135 @@ class GameState:
 
             print("Just added message for turn {}: {}".format(turn, message_only))
 
+    def process_player(self, data):
+        input("In process player with data:\n{}".format(data))
+        for k in data.keys():
+            if k == 'name':
+                self.player_name = data[k]
+
+            elif k == 'title':
+                self.player_title = data[k]
+
+            elif k == 'wizard':
+                if data[k] == 0:
+                    self.wizard_mode_on = False
+                else:
+                    self.wizard_mode_on = True
+
+            elif k == 'place':
+                self.player_place = data[k]
+                self.get_cell_map().set_current_place(self.player_place)
+
+            elif k == 'depth':
+                self.player_depth = data[k]
+                self.get_cell_map().set_current_depth(self.player_depth)
+
+            elif k == 'time':
+                self.game_time = data[k]
+
+            elif k == 'turn':
+                self.game_turn = data[k]
+
+            elif k == 'species':
+                self.player_species = data[k]
+
+            elif k == 'god':
+                self.player_god = data[k]
+
+            elif k == 'penance':
+                self.player_penance = data[k]
+
+            elif k == 'piety_rank':
+                self.player_piety_rank = data[k]
+
+            # Todo - I don't know what the possible for forms refer to
+            # Todo - my best guess is it relates to transmutations, like blade hands and dragon form
+            elif k == 'form':
+                self.player_form = data[k]
+
+            elif k == 'hp':
+                self.player_current_hp = data[k]
+
+            elif k == 'hp_max':
+                self.player_hp_max = data[k]
+
+            elif k == 'mp':
+                self.player_current_mp = data[k]
+
+            elif k == 'mp_max':
+                self.player_mp_max = data[k]
+
+            # Todo - I don't know what this represents
+            elif k == 'dd_real_mp_max':
+                self.player_dd_real_mp_max = data[k]
+
+            # Todo - I don't know what values mean what
+            # Todo - my best guess is 0 means player will die from poison and 1 means player will live
+            elif k == 'poison_survival':
+                self.player_poison_survival = data[k]
+
+            elif k == 'ac':
+                self.player_ac = data[k]
+
+            elif k == 'ev':
+                self.player_ev = data[k]
+
+            elif k == 'sh':
+                self.player_sh = data[k]
+
+            elif k == 'str':
+                self.player_strength = data[k]
+
+            elif k == 'str_max':
+                self.player_strength_max = data[k]
+
+            elif k == 'int':
+                self.player_int = data[k]
+
+            elif k == 'int_max':
+                self.player_int_max = data[k]
+
+            elif k == 'dex':
+                self.player_dex = data[k]
+
+            elif k == 'dex_max':
+                self.player_dex_max = data[k]
+
+            elif k == 'xl':
+                self.player_level = data[k]
+
+            # Todo - I don't know what progress means
+            elif k == 'progress':
+                self.player_progress = data[k]
+
+            elif k == 'gold':
+                self.player_gold = data[k]
+
+            elif k == 'noise':
+                self.noise_level = data[k]
+
+            # Todo - I don't know the difference between adjusted noise and noise
+            elif k == 'adjusted_noise':
+                self.adjusted_noise_level = data[k]
+
+            # Todo - Status is a list, I'm not sure what possible values could be
+            # I'm guessing probably strings of some form
+            elif k == 'status':
+                if len(data[k]) > 1:
+                    print("Status is {}".format(data[k]))
+                    time.sleep(5)
+                self.player_status = data[k]
+
+            elif k == 'unarmed_attack':
+                self.player_unarmed_attack = data[k]
+
+            elif k in ['inv', 'quiver_item', 'quiver_available']:
+                # these are processed elsewhere
+                pass
+
+            else:
+                print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
+
     def get_pddl_current_state(self, goals):
         return self.cellmap.get_cell_map_pddl(goals)
 
@@ -897,6 +1097,25 @@ class GameState:
                         print(
                             "  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
                         self.inventory_by_id[inv_id].set_quantity(quantity)
+
+    def process_equip(self, data):
+        """
+        This function should probably always come after process_inv.
+        """
+
+        for equip_slot, equip_item in data.items():
+            print("equip slot {} has value {}".format(equip_slot, equip_item))
+
+        # Todo - if an item is equipped, find the item in the inventory, and update the is_equipped flag
+
+    def process_quiver_item(self, data):
+        # Todo - update the inventory quiver item to be this item
+        pass
+
+    def process_quiver_available(self, data):
+        # Todo - add this into the inventory, I'm not sure what it means though
+        # Todo - best guess is that its the number of items that can be put in the quiver?
+        pass
 
     def get_cell_objs_from_raw_data(self, cells):
         only_xyg_cell_data = []

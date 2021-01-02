@@ -87,7 +87,7 @@ class GameConnection:
 
                 data_recv += bytes([0, 0, 255, 255])
                 json_message = self.decomp.decompress(data_recv)
-                #print("Just received json_message:\n{}".format(json_message))
+                print("Just received json_message:\n{}".format(json_message))
                 json_message = json_message.decode("utf-8")
 
                 msg_from_server = json.loads(json_message)
