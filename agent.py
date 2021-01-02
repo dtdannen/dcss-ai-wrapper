@@ -196,7 +196,7 @@ class FastDownwardPlanningAgent(Agent):
         """
         cells_with_monsters = []
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
-            if cell.monster:
+            if cell.monster and cell.monster.threat != 0:
                 cells_with_monsters.append(cell)
 
         if len(cells_with_monsters) == 0:
@@ -311,15 +311,20 @@ class FastDownwardPlanningAgent(Agent):
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
 
-        if self.actions_taken_so_far > 100:
-            if random.random() < 0.25:
-                stair_plan = self.can_create_plan_to_reach_next_floor()
-                if stair_plan:
-                    self.plan = stair_plan
-                    print("PLAN: Going to next level via stairs down")
+        if self.current_game_state.more_prompt:
+            print("More prompt is true, making a plan of 1 action to send Enter Key")
+            self.plan = [Command.ENTER_KEY]
+
+        if self.plan is None or len(self.plan) == 0:
+            if self.actions_taken_so_far % 10 == 0:
+                if random.random() < 0.15:
+                    stair_plan = self.can_create_plan_to_reach_next_floor()
+                    if stair_plan:
+                        self.plan = stair_plan
+                        print("PLAN: Going to next level via stairs down")
 
         while_loop_iterations = 0
-        while len(self.plan) == 0:
+        while self.plan is None or len(self.plan) == 0:
             # select a new goal and plan until we find a plan that's non empty
 
             selected_goal = None

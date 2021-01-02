@@ -109,6 +109,7 @@ class Monster:
         self.ascii_sym = None
         self.id = None
         self.cell = None  # if the monster is on a cell, update it here (note that this could become outdated and we wouldn't know about it)
+        self.threat = 0
 
     @staticmethod
     def create_or_update_monster(vals, ascii_sym):
@@ -140,6 +141,9 @@ class Monster:
 
         if 'type' in vals.keys():
             self.type = vals['type']
+
+        if 'threat' in vals.keys():
+            self.threat = vals['threat']
 
     def set_cell(self, cell):
         self.cell = cell
@@ -337,6 +341,12 @@ class CellMap:
 
     def add_or_update_cell(self, x, y, vals):
         # print("vals={}".format(str(vals)))
+
+        if self.current_place not in self.place_depth_to_x_y_to_cells.keys():
+            self.place_depth_to_x_y_to_cells[self.current_place] = {}
+
+        if self.current_depth not in self.place_depth_to_x_y_to_cells[self.current_place].keys():
+            self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth] = {}
 
         if 'x' not in vals.keys():
             vals['x'] = x
@@ -724,6 +734,7 @@ class GameState:
 
         self.player_current_hp = None
         self.player_hp_max = None
+        self.player_real_hp_max = None
         self.player_current_mp = None
         self.player_mp_max = None
         self.player_dd_real_mp_max = None
@@ -735,6 +746,7 @@ class GameState:
         self.player_int = None
         self.player_int_max = None
 
+        self.player_position = None
         self.player_status = []
         self.player_poison_survival = None
         self.player_level = 1
@@ -805,6 +817,14 @@ class GameState:
                     # self.update_map_obj()
                 last_key = k
 
+                if k == 'more':
+                    print("More prompt, with s['more']= {}".format(s[k]))
+                    time.sleep(5)
+                    if s[k]:
+                        print("s[k] being true worked, marking self.more_prompt = True")
+                        self.more_prompt = True
+                        time.sleep(10)
+
                 if k == 'messages':
                     self.process_messages(s[k])
 
@@ -871,10 +891,6 @@ class GameState:
             if 'You die...' in message_only:
                 self.died = True
 
-            # Todo there should be a better way to do this
-            if len(self.messages[turn]) >= 5:
-                self.more_prompt = True
-
             if 'too terrified to move' in message_only:
                 self.too_terrified_to_move = True
 
@@ -898,7 +914,7 @@ class GameState:
             print("Just added message for turn {}: {}".format(turn, message_only))
 
     def process_player(self, data):
-        input("In process player with data:\n{}".format(data))
+        print("In process_player() with data:\n{}".format(data))
         for k in data.keys():
             if k == 'name':
                 self.player_name = data[k]
@@ -948,6 +964,9 @@ class GameState:
 
             elif k == 'hp_max':
                 self.player_hp_max = data[k]
+
+            elif k == 'real_hp_max':
+                self.player_real_hp_max = data[k]
 
             elif k == 'mp':
                 self.player_current_mp = data[k]
@@ -1004,6 +1023,9 @@ class GameState:
             elif k == 'noise':
                 self.noise_level = data[k]
 
+            elif k == 'pos':
+                self.player_position = data[k]
+
             # Todo - I don't know the difference between adjusted noise and noise
             elif k == 'adjusted_noise':
                 self.adjusted_noise_level = data[k]
@@ -1019,12 +1041,13 @@ class GameState:
             elif k == 'unarmed_attack':
                 self.player_unarmed_attack = data[k]
 
-            elif k in ['inv', 'quiver_item', 'quiver_available']:
-                # these are processed elsewhere
+            elif k in ['msg', 'inv', 'quiver_item', 'quiver_available', 'equip', 'unarmed_attack_colour']:
+                # these are processed elsewhere or are irrelevant
                 pass
 
             else:
                 print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
+                time.sleep(10)
 
     def get_pddl_current_state(self, goals):
         return self.cellmap.get_cell_map_pddl(goals)
@@ -1057,12 +1080,6 @@ class GameState:
         if reset:
             self.just_gained_level = False
         return leveled_up
-
-    def game_has_more_messages(self, reset=False):
-        more_prompt = self.more_prompt
-        if reset:
-            self.more_prompt = False
-        return more_prompt
 
     def process_inv(self, data):
         # print("Data is {}".format(data))
