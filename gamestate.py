@@ -421,7 +421,7 @@ class CellMap:
             s += '\n'
         return s
 
-    def get_cell_map_pddl(self, goals):
+    def get_cell_map_pddl(self):
 
         object_strs = []
         fact_strs = []
@@ -494,24 +494,7 @@ class CellMap:
         object_strs = list(set(object_strs))
         fact_strs = list(set(fact_strs))
 
-        pddl_str = "(define (problem dcss-test-prob)\n(:domain dcss)\n(:objects \n"
-
-        for obj in object_strs:
-            pddl_str += "  {}\n".format(obj)
-        pddl_str += ")\n"
-
-        pddl_str += "(:init \n"
-        for fact in fact_strs:
-            pddl_str += "  {}\n".format(fact)
-        pddl_str += ")\n"
-
-        pddl_str += "(:goal \n  (and \n"
-        for goal in goals:
-            pddl_str += "    {}\n".format(goal)
-        pddl_str += ")\n"
-        pddl_str += ")\n\n)"
-
-        return pddl_str
+        return object_strs, fact_strs
 
     def get_xy_to_cells_dict(self):
         return self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth]
@@ -1049,14 +1032,43 @@ class GameState:
                 print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
                 time.sleep(10)
 
-    def get_pddl_current_state(self, goals):
-        return self.cellmap.get_cell_map_pddl(goals)
+    def get_pddl_current_state_player(self):
+        player_object_strs = []
+        player_fact_strs = []
+
+        return player_object_strs, player_fact_strs
+
+    def get_pddl_current_state_cellmap(self):
+        object_strs, fact_strs = self.cellmap.get_cell_map_pddl()
+        return object_strs, fact_strs
 
     def write_pddl_current_state_to_file(self, filename, goals):
         """Filename is assumed to be a relevant filename from the folder that the main script is running"""
 
+        pddl_str = "(define (problem dcss-test-prob)\n(:domain dcss)\n(:objects \n"
+
+        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap()
+
+        object_strs = [cell_map_object_strs]
+        fact_strs = [cell_map_fact_strs]
+
+        for obj in object_strs:
+            pddl_str += "  {}\n".format(obj)
+        pddl_str += ")\n"
+
+        pddl_str += "(:init \n"
+        for fact in fact_strs:
+            pddl_str += "  {}\n".format(fact)
+        pddl_str += ")\n"
+
+        pddl_str += "(:goal \n  (and \n"
+        for goal in goals:
+            pddl_str += "    {}\n".format(goal)
+        pddl_str += ")\n"
+        pddl_str += ")\n\n)"
+
         with open(filename.format(), 'w') as f:
-            f.write(self.get_pddl_current_state(goals))
+            f.write(self.get_pddl_current_state_cellmap(goals))
 
         return True
 
