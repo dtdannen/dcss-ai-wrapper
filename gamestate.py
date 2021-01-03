@@ -381,6 +381,7 @@ class CellMap:
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
                                                                       self.min_x, self.max_x, self.min_y, self.max_y)
+        print(s)
         non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
             for curr_x in range(self.min_x, self.max_x + 1):
@@ -818,12 +819,10 @@ class GameState:
                 last_key = k
 
                 if k == 'more':
-                    print("More prompt, with s['more']= {}".format(s[k]))
-                    time.sleep(5)
                     if s[k]:
-                        print("s[k] being true worked, marking self.more_prompt = True")
                         self.more_prompt = True
-                        time.sleep(10)
+                    else:
+                        self.more_prompt = False
 
                 if k == 'messages':
                     self.process_messages(s[k])
@@ -908,8 +907,7 @@ class GameState:
                 last_message_is_items_here = True
 
             if 'Unknown command.' in message_only:
-                print("Error with last command - game did not recognize it... sleeping for 30 seconds")
-                time.sleep(30)
+                print("Error with last command - game did not recognize it... ")
 
             print("Just added message for turn {}: {}".format(turn, message_only))
 
@@ -1025,6 +1023,8 @@ class GameState:
 
             elif k == 'pos':
                 self.player_position = data[k]
+                self.agent_x = self.player_position['x']
+                self.agent_y = self.player_position['y']
 
             # Todo - I don't know the difference between adjusted noise and noise
             elif k == 'adjusted_noise':
