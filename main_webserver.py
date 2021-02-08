@@ -23,18 +23,18 @@ def main():
     game = GameConnection(config=config.WebserverConfig())
     asyncio.get_event_loop().run_until_complete(game.connect_webserver())
     print("Connected!")
-    #agent = SimpleRandomAgent()
-    agent = FastDownwardPlanningAgent()
+    agent = SimpleRandomAgent()
+    #agent = FastDownwardPlanningAgent()
 
     print("Waiting 3 seconds....")
-    time.sleep(1)
+    time.sleep(3)
 
     setup_actions = agent.get_game_mode_setup_actions_webserver()
     for action in setup_actions:
         print("Sending setup action {}".format(action))
         asyncio.get_event_loop().run_until_complete(game.send_and_receive_dict_ws(action))
         print("Waiting 3 seconds....")
-        time.sleep(1)
+        time.sleep(3)
 
     print("About to start playing the game")
     game_state = game.get_gamestate()

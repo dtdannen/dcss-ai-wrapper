@@ -1036,6 +1036,8 @@ class GameState:
         player_object_strs = []
         player_fact_strs = []
 
+        # TODO - put all player fact information here
+
         return player_object_strs, player_fact_strs
 
     def get_pddl_current_state_cellmap(self):
