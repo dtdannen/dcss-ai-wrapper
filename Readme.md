@@ -100,7 +100,43 @@ project's folder.
 
 3. Run main.py and it should work. There's a chance that the fastdownward planner will fail to find a plan because of a missing feature of our api. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess.
 
-## Web browser setup (see ISSUE #8)
+## Web browser via Docker Image
+
+The docker image is the quickest way to get a server up and running so that you can watch the agent play by spectating the game in the browser.
+
+After installing docker, do the following:
+
+    docker pull dtdannen34/dcss-ai-wrapper
+    
+Then run the docker in interactive mode:
+
+    docker run -it -p 8080:8080 b3d5cdf181b8
+    
+Now you should be in the command line of the docker container, and you need to run the webserver.
+
+First activate python:
+
+    cd /dcss/crawl/crawl-ref/source/webserver
+    source venv/bin/activate
+
+Then run the webserver:
+
+    cd ..
+    python webserver/server.py
+
+And now you should be able to open up a browser (I recommend chrome because firefox sometimes as issues with hotkeys that prevent you from shutting down the game)
+
+    http://localhost:8080/
+    
+Then you need to register two accounts, one for the agent to connect to and another one for you to use for spectating. This is done via the web interface, click the register button and enter a username and password. It's recommend to use *midca* for the username and password for one of the accounts - these are the current default values used in the script that connects the AI to the webserver. You can choose any other username and password you want for the other user. You don't need to fill in the email field. Note that every time you start up the webserver you'll have to re-do this registration step because it's not saved between docker runs.
+
+The next step is to run the `main_webserver.py` script. After a second, you should see the name *midca* pop up in the browser. If you click on it you should be able to watch the agent play. It's best to watch the agent from the browser that is signed into with the non-midca account (the one for spectating). 
+
+
+### Older Instructions for manually setting up webserver
+
+There is no gaurauntee that these instructions are still valid - proceed at your own risk :)
+
 The following instructions need to be updated - see issue 8.
 
 The following steps enable the API to connect to DCSS running on a webserver on the local host, which means you can watch

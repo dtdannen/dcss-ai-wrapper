@@ -198,6 +198,7 @@ class Cell:
         self.has_lava = False
         self.has_plant = False
         self.has_tree = False
+        self.has_smoke = False
         self.monster = None  # there can only be up to 1 monster in a cell
         self.set_vals(vals)
 
@@ -255,6 +256,8 @@ class Cell:
             if self.g == '☘':
                 self.has_tree = True
 
+            # TODO - add detection of smoke
+
             # now check for monsters
             if self.g == 'P':
                 self.has_plant = True
@@ -262,6 +265,8 @@ class Cell:
             # elif self.g in string.ascii_lowercase+string.ascii_uppercase:
             #    print("We may have a monster represented by g={}, vals are {}".format(self.g, vals))
             #    print("Current monster is ")
+
+
 
         if 't' in vals.keys():
             self.t = vals['t']
