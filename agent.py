@@ -6,6 +6,7 @@ import platform
 import os
 import time
 
+
 class Agent:
     def __init__(self):
         pass
@@ -140,6 +141,9 @@ class FastDownwardPlanningAgent(Agent):
     def get_game_mode_setup_actions_webserver(self):
         return self.do_dungeon_webserver()
 
+    def get_full_health_goal(self):
+        return "(playerfullhealth)"
+
     def get_random_nonvisited_nonwall_playerat_goal(self):
         cells_not_visited = []
         cells_visited = []
@@ -156,7 +160,7 @@ class FastDownwardPlanningAgent(Agent):
             if cell.has_closed_door:
                 closed_door_cells.append(cell)
 
-        print("Found {} not visited cells".format(len(cells_not_visited)))
+        # print("Found {} not visited cells".format(len(cells_not_visited)))
         i = 1
         farthest_away_cells = []
         target_cells = cells_not_visited
@@ -173,11 +177,11 @@ class FastDownwardPlanningAgent(Agent):
                 if not found_close_visited_cell:
                     new_target_cells.append(potential_cell)
 
-            print("  i={} with {} target cells".format(i, len(new_target_cells)))
+            # print("  i={} with {} target cells".format(i, len(new_target_cells)))
             target_cells = new_target_cells
-            i+=1
+            i += 1
 
-        print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i-1))
+        print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if i < 4 and len(closed_door_cells) > 1:
             print("Attempting to choose a closed door as a goal if possible")
@@ -205,7 +209,7 @@ class FastDownwardPlanningAgent(Agent):
         monster_cell_goal = random.choice(cells_with_monsters)
         monster_goal_str = "(playerat {})".format(monster_cell_goal.get_pddl_name())
         print("about to return monster goal: {}".format(monster_goal_str))
-        #time.sleep(1)
+        # time.sleep(1)
         return monster_goal_str
 
     def get_plan_from_fast_downward(self, goals):
@@ -234,11 +238,11 @@ class FastDownwardPlanningAgent(Agent):
             self.plan_result_filename,
             self.plan_domain_filename,
             self.plan_current_pddl_state_filename,
-            "> NUL") # this last line is to remove output from showing up in the terminal, feel free to remove this if debugging
+            "> NUL")  # this last line is to remove output from showing up in the terminal, feel free to remove this if debugging
 
         # print("About to call fastdownward like:")
         # print(str(fast_downward_process_call))
-        print("platform is {}".format(platform.system()))
+        # print("platform is {}".format(platform.system()))
         if platform.system() == 'Windows':
             os.system(fast_downward_system_call)
         elif platform.system() == 'Linux':
@@ -272,13 +276,13 @@ class FastDownwardPlanningAgent(Agent):
         """
         Calling this will have the agent evaluate the best items
         """
-
+        pass
 
     def read_scrolls(self):
         """
         The agent will read all scrolls in its inventory
         """
-
+        pass
 
     def can_create_plan_to_reach_next_floor(self):
         """
@@ -317,7 +321,7 @@ class FastDownwardPlanningAgent(Agent):
 
         if self.plan is None or len(self.plan) == 0:
             if self.actions_taken_so_far % 10 == 0:
-                if random.random() < 0.15:
+                if random.random() < 0.50:
                     stair_plan = self.can_create_plan_to_reach_next_floor()
                     if stair_plan:
                         self.plan = stair_plan
@@ -334,6 +338,9 @@ class FastDownwardPlanningAgent(Agent):
             if monster_goal:
                 self.plan = self.get_plan_from_fast_downward(goals=[monster_goal])
                 selected_goal = monster_goal
+            elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
+                selected_goal = self.get_full_health_goal()
+                self.plan = self.get_plan_from_fast_downward(goals=[selected_goal])
             else:
                 goal = self.get_random_nonvisited_nonwall_playerat_goal()
                 self.plan = self.get_plan_from_fast_downward(goals=[goal])
@@ -342,6 +349,11 @@ class FastDownwardPlanningAgent(Agent):
             while_loop_iterations += 1
             if while_loop_iterations > 1:
                 print("  in while loop, goal is {}, iterations is {}".format(selected_goal, while_loop_iterations))
+
+            # if self.plan and len(self.plan) > 0:
+            #    print("New plan is:")
+            #    for action_i in self.plan:
+            #        print("   {}".format(action_i))
 
         next_action = None
         if len(self.plan) > 0:

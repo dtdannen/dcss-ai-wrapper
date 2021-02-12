@@ -87,7 +87,7 @@ class GameConnection:
 
                 data_recv += bytes([0, 0, 255, 255])
                 json_message = self.decomp.decompress(data_recv)
-                print("Just received json_message:\n{}".format(json_message))
+                #print("Just received json_message:\n{}".format(json_message))
                 json_message = json_message.decode("utf-8")
 
                 msg_from_server = json.loads(json_message)
@@ -143,7 +143,7 @@ class GameConnection:
 
     async def send_and_receive_ws(self, message):
         # send data to server
-        print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
+        #print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
         await self.websocket.send(GameConnection.json_encode(message))
         # print("POST-AWAITING ON WEBSOCKET_1 SEND")
         # wait for server to get back
@@ -152,7 +152,7 @@ class GameConnection:
 
     async def send_and_receive_command_ws(self, command):
         # send data to server
-        print("AWAITING ON WEBSOCKET_1 SEND - sending command: "+str(command))
+        #print("AWAITING ON WEBSOCKET_1 SEND - sending command: "+str(command))
         await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
         # print("POST-AWAITING ON WEBSOCKET_1 SEND")
         # wait for server to get back

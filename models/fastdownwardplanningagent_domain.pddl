@@ -25,8 +25,13 @@
     (tree ?cell)
     ; player loc
     (playerat ?cell)
+    ; player health
+    (playerlessthanfullhealth)
+    (playerfullhealth)
     ; simple monster information
     (monsterat ?monstername ?monsterid ?cell)
+
+
 )
 
 (:action move_or_attack_n
@@ -341,7 +346,13 @@
     )
 )
 
+(:action rest_and_long_wait
+    :parameters ()
+    :precondition
+    (and (playerlessthanfullhealth))
+    :effect
+    (and (playerfullhealth))
 )
-
+)
 
 

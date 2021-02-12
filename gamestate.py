@@ -213,7 +213,7 @@ class Cell:
                 # we have a live monster in this cell
                 self.monster = Monster.create_or_update_monster(vals['mon'], ascii_sym=self.g)
                 self.monster.set_cell(self)
-                print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x, self.y))))
+                #print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x, self.y))))
             else:
                 # a monster either died here or moved to a different cell, either way it's not in this cell
                 # so we need to update the monster to tell it it's no longer in this cell
@@ -604,6 +604,8 @@ class InventoryItem:
 
         return item_vector
 
+
+
     @staticmethod
     def get_empty_item_vector():
         item_vector = [0 for i in range(InventoryItem.ITEM_VECTOR_LENGTH)]
@@ -892,10 +894,10 @@ class GameState:
             if 'Unknown command.' in message_only:
                 print("Error with last command - game did not recognize it... ")
 
-            print("Just added message for turn {}: {}".format(turn, message_only))
+            #print("Just added message for turn {}: {}".format(turn, message_only))
 
     def process_player(self, data):
-        print("In process_player() with data:\n{}".format(data))
+        #print("In process_player() with data:\n{}".format(data))
         for k in data.keys():
             if k == 'name':
                 self.player_name = data[k]
@@ -1040,6 +1042,18 @@ class GameState:
 
         return player_object_strs, player_fact_strs
 
+    def get_pddl_player_info(self):
+        """
+        Return player health information and other stats
+        """
+        player_pddl_strs = []
+        if self.player_current_hp < self.player_hp_max:
+            player_pddl_strs.append("(playerlessthanfullhealth)")
+        else:
+            player_pddl_strs.append("(playerfullhealth)")
+
+        return player_pddl_strs
+
     def get_pddl_current_state_cellmap(self):
         object_strs, fact_strs = self.cellmap.get_cell_map_pddl()
         return object_strs, fact_strs
@@ -1051,8 +1065,8 @@ class GameState:
 
         cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap()
 
-        object_strs = [cell_map_object_strs]
-        fact_strs = [cell_map_fact_strs]
+        object_strs = cell_map_object_strs
+        fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
 
         for obj in object_strs:
             pddl_str += "  {}\n".format(obj)
@@ -1070,7 +1084,7 @@ class GameState:
         pddl_str += ")\n\n)"
 
         with open(filename.format(), 'w') as f:
-            f.write(self.get_pddl_current_state_cellmap(goals))
+            f.write(pddl_str)
 
         return True
 
@@ -1182,68 +1196,11 @@ class GameState:
                     vals['y'] = curr_y
 
                 if 'mon' in cell_dict.keys():
-                    print("Found a monster cell with cell_dict vals {}".format(cell_dict))
+                    #print("Found a monster cell with cell_dict vals {}".format(cell_dict))
                     # vals['mon'] = cell_dict['mon']
+                    pass
 
                 self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
-
-    def update_map_obj(self):
-        '''
-        If we already have a map data, and we have new map data from the player moving,
-        shift the map and update the cells
-
-        :param cell_data_raw:
-        :param player_move_dir:
-        '''
-
-        # print("cells data is {}".format(cell_data_raw))
-        # todo - left off here, figure out how to update the global cells as the player moves
-        # todo - do we need to shift cells? or only change the player's current x and y? The latter
-        # todo - would be ideal.
-        at_sign_count = 0  # we should only see the @ in one location
-
-        # If map object isn't created yet, then initialize
-        if len(self.map_obj) == 0:
-            for i in range(self.map_dim):
-                row = [' '] * self.map_dim
-                self.map_obj.append(row)
-
-        if not cell_data_raw:
-            # We don't always get cell data, if so, return
-            return
-
-        if cell_data_raw:
-            print("Raw cells data:")
-            prev_x = None
-            prev_y = None
-            for cell_raw_str in cell_data_raw:
-                # x, y, g = cell_raw_str['x']
-                print("  {}".format(cell_raw_str))
-
-        for xyg_cell in cell_data_raw:
-            x = int(xyg_cell[0])
-            y = int(xyg_cell[1])
-            g = xyg_cell[2]
-
-            map_obj_x = self.map_middle + x
-            map_obj_y = self.map_middle + y
-
-            if '@' == g:
-                # print("player x,y is " + str(x) + ',' + str(y) + " from cell data")
-                # print("player x,y in gamestate is " + str(map_obj_x) + ',' + str(map_obj_y) + " from cell data")
-                self.map_obj_player_x = map_obj_x
-                self.map_obj_player_y = map_obj_y
-                at_sign_count += 1
-                if at_sign_count > 1:
-                    print("Error, multiple @ signs - let's debug!")
-                    time.sleep(1000)
-
-            # boundary conditions
-            if map_obj_y < len(self.map_obj) and \
-                    map_obj_x < len(self.map_obj[map_obj_y]) and \
-                    map_obj_x > 0 and \
-                    map_obj_y > 0:
-                self.map_obj[map_obj_y][map_obj_x] = g
 
     def print_map_obj(self):
         raise Exception("We're in an olddddd function")
