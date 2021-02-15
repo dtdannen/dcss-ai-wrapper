@@ -218,8 +218,9 @@ class Cell:
             else:
                 # a monster either died here or moved to a different cell, either way it's not in this cell
                 # so we need to update the monster to tell it it's no longer in this cell
-                self.monster.remove_cell()
-                self.monster = None
+                if self.monster:
+                    self.monster.remove_cell()
+                    self.monster = None
 
         if 'g' in vals.keys():
             self.g = vals['g']
@@ -1037,7 +1038,7 @@ class GameState:
 
             else:
                 print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
-                time.sleep(10)
+                #time.sleep(10)
 
     def get_pddl_current_state_player(self):
         player_object_strs = []
