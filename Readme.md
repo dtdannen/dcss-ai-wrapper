@@ -2,6 +2,8 @@
 
 ![](contribute/docker_web_browser_demo.gif)
 
+(Demo of an agent taking random actions to play DCSS in the browser using the docker container running a DCSS webserver instance)
+
 ![](contribute/terminal_demo.gif)
 
 (Demo of an agent taking random actions to play DCSS in the terminal)
