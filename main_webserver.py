@@ -23,8 +23,8 @@ def main():
     game = GameConnection(config=config.WebserverConfig())
     asyncio.get_event_loop().run_until_complete(game.connect_webserver())
     print("Connected!")
-    #agent = SimpleRandomAgent()
-    agent = FastDownwardPlanningAgent()
+    agent = SimpleRandomAgent()
+    #agent = FastDownwardPlanningAgent()
 
     print("Waiting 3 seconds....")
     time.sleep(3)

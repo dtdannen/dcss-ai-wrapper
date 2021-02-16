@@ -1,10 +1,6 @@
 """
-
-Demo of an RL agent on the sonja sprint in crawl 23.1
-
 Make sure to run crawl before running this demo, see:
     start_crawl_terminal_sprint.sh
-
 """
 
 from game_connection import GameConnection
@@ -26,14 +22,11 @@ def main():
 
     # turn
 
-
-
     print("\n\nAbout to start playing the game \n\n")
     game_state = game.get_gamestate()
     i = 0
     while not game_state.has_agent_died():
-        #print(game_state.draw_cell_map())
-
+        # print(game_state.draw_cell_map())
 
         next_action = agent.get_action(game_state)
         if next_action not in Action.command_to_msg.keys():
@@ -42,7 +35,7 @@ def main():
 
         game.send_and_receive_command(next_action)
         game_state = game.get_gamestate()
-        i+=1
+        i += 1
 
     if game_state.has_agent_died():
         # Quit and delete the game
@@ -54,9 +47,9 @@ def main():
 
     game.close()
 
+
 if __name__ == "__main__":
     main()
-
 
 #
 # HUMAN_INPUT = False

@@ -1,6 +1,8 @@
 # AI Wrapper for Dungeon Crawl Stone Soup
 
-![](contribute/dcss-ai-wrapper-terminal-demo.gif)
+![](contribute/docker_web_browser_demo.gif)
+
+![](contribute/terminal_demo.gif)
 
 (Demo of an agent taking random actions to play DCSS in the terminal)
 
@@ -63,9 +65,11 @@ project's folder.
     
     If you get an error saying "/usr/bin/env cannot find python", then one possible fix is to the do the following (but beware this may change the default python on your system)
 
-    `sudo ln --symbolic \usr\bin\python2.7 \usr\bin\python`    
+    `sudo ln --symbolic /usr/bin/python2.7 /usr/bin/python`
+
+    Note that Python2.7 is needed to compile crawl.
     
-4. Check that the `crawl/crawl-ref/source/.rcs' folder exists, if not create it:
+4. Check that the `crawl/crawl-ref/source/rcs' folder exists, if not create it:
 
     `mkdir crawl/crawl-ref/source/rcs`
 
@@ -79,7 +83,7 @@ project's folder.
 
    Note that nothing will happen until an agent connects.
    
-   The terminal that runs this command must be a minimum width, so try enlarging the terminal if it doesn't work and you are using a small monitor/screen. (Only try changing the width if the next step fails).
+   The terminal that runs this command must be a minimum width and height, so try enlarging the terminal if it doesn't work and you are using a small monitor/screen. (Only try changing the width if the next step fails).
 
 2. Open a new terminal, cd into dcss-ai-wrapper/ and run:
 

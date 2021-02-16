@@ -1032,13 +1032,13 @@ class GameState:
             elif k == 'unarmed_attack':
                 self.player_unarmed_attack = data[k]
 
-            elif k in ['msg', 'inv', 'quiver_item', 'quiver_available', 'equip', 'unarmed_attack_colour']:
+            elif k in ['msg', 'inv', 'quiver_item', 'quiver_available', 'quiver_desc', 'launcher_item', 'equip', 'unarmed_attack_colour']:
                 # these are processed elsewhere or are irrelevant
                 pass
 
             else:
                 print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
-                #time.sleep(10)
+                time.sleep(10)
 
     def get_pddl_current_state_player(self):
         player_object_strs = []
