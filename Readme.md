@@ -130,7 +130,7 @@ Then run the webserver:
     cd ..
     python webserver/server.py
 
-And now you should be able to open up a browser (I recommend chrome because firefox sometimes as issues with hotkeys that prevent you from shutting down the game)
+And now you should be able to open up a browser (I recommend chrome because firefox sometimes as issues with hotkeys that prevent you from interacting with crawl)
 
     http://localhost:8080/
     
