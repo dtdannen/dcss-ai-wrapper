@@ -1,0 +1,20 @@
+RECAP FROM LAST TIME (Feb 11, 2021):
+1. (DONE!) write player current health and maximum health to the gamestate.pddl file
+2. (DONE!)add heal action to the pddl domain file
+2.5. (DONE!) connect pddl action to the webserver action
+3. (DONE) add new goal capability to select the goal of current health == maximum health
+   whenever current health is < 50% of maximum
+
+
+TONIGHT (Feb 18, 2021):
+1. Discussion: Why I'm doing this
+2. Add code to catch new g values (solves the smoke problem from last time)
+3. Better monster goal; separate out attack from movement actions
+4. Decouple goal selection from planning; if goal changes, re-plan
+5. (Bonus) Figure out how to reconnect to an existing game (Quality of Life Improvement)
+
+
+Future issues to solve:
+* check if time (from the game) has changed - if not we have a problem
+* investigate situation where monsters are not being seen
+* add smoke to the objects that can be detected in cells
