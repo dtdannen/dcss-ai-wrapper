@@ -7,9 +7,12 @@ RECAP FROM LAST TIME (Feb 11, 2021):
 
 
 TONIGHT (Feb 18, 2021):
-1. Discussion: Why I'm doing this
-2. Add code to catch new g values (solves the smoke problem from last time)
+1. (DONE) Discussion: Why I'm doing this
+2. (DONE) Add code to catch new g values (solves the smoke problem from last time)
 3. Better monster goal; separate out attack from movement actions
+    a. Separate move_and_attack actions in move and attack
+    b. Make the attack action have an effect where the monster is no longer at that tile
+    c. Add attack monster goals into the goal selection part of the planning agent
 4. Decouple goal selection from planning; if goal changes, re-plan
 5. (Bonus) Figure out how to reconnect to an existing game (Quality of Life Improvement)
 

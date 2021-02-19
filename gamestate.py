@@ -100,6 +100,15 @@ class Monster:
 
     """
 
+    all_possible_g_values = ['g',  # goblin
+                             'b',  # bat
+                             'r',  # rat
+                             'K',  # Kobold
+                             'h',  # quokka
+                             'l',  # frilled lizard
+                             'w',  # worm
+                             ]
+
     # current theory: each monster has a unique id, so use this class variable to track them
     ids_to_monsters = {}
 
@@ -199,6 +208,18 @@ class Cell:
         self.has_plant = False
         self.has_tree = False
         self.has_smoke = False
+        self.has_potion = False
+        self.has_scroll = False
+        self.teleport_trap = False  # TODO not handled anywhere
+        self.has_multiple_items = False  # TODO not handled anywhere
+        self.has_throwing_item = False
+        self.has_gold = False
+        self.has_monster = False
+        self.has_shaft = False
+        self.has_weapon_item = False
+        self.has_corpse = False
+
+        # TODO add condition for †
         self.monster = None  # there can only be up to 1 monster in a cell
         self.set_vals(vals)
 
@@ -214,7 +235,7 @@ class Cell:
                 # we have a live monster in this cell
                 self.monster = Monster.create_or_update_monster(vals['mon'], ascii_sym=self.g)
                 self.monster.set_cell(self)
-                #print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x, self.y))))
+                # print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x, self.y))))
             else:
                 # a monster either died here or moved to a different cell, either way it's not in this cell
                 # so we need to update the monster to tell it it's no longer in this cell
@@ -225,49 +246,84 @@ class Cell:
         if 'g' in vals.keys():
             self.g = vals['g']
 
-            if self.g == '#':
+            if self.g in Monster.all_possible_g_values:
+                self.has_monster = True
+
+            elif self.g == '#':
                 self.has_wall = True
 
-            if self.g == '>':
+            elif self.g == '>':
                 self.has_stairs_down = True
 
-            if self.g == '<':
+            elif self.g == '<':
                 self.has_stairs_up = True
 
-            if self.g == '@':
+            elif self.g == '@':
                 self.has_player = True
                 self.has_player_visited = True
-            else:
-                self.has_player = False
 
-            if self.g == '+':
+            elif self.g == '+':
                 self.has_closed_door = True
                 self.has_closed_door = False
 
-            if self.g == '\'':
+            elif self.g == '\'':
                 self.has_closed_door = False
                 self.has_open_door = True
 
-            if self.g == '8':
+            elif self.g == '8':
                 self.has_statue = True
 
-            if self.g == '≈' or self.g == '§':
+            elif self.g == '≈' or self.g == '§':
                 self.has_lava = True
 
-            if self.g == '☘':
+            elif self.g == '☘':
                 self.has_tree = True
+
+            elif self.g == '†':
+                self.has_corpse = True
 
             # TODO - add detection of smoke
 
             # now check for monsters
-            if self.g == 'P':
+            elif self.g == 'P':
                 self.has_plant = True
+
+            elif self.g == '^':
+                self.has_shaft = True
+
+            # A '.' means that its an empty tile
+            elif self.g == '.':
+                pass
+                #print("Found a g value of \'.\' at x={},y={}".format(self.x, self.y))
+
+            elif self.g == '!':
+                self.has_potion = True
+
+            elif self.g == '?':
+                self.has_scroll = True
+
+            elif self.g == '(':
+                self.has_throwing_item = True
+
+            elif self.g == ')':
+                self.has_weapon_item = True
+                print("Found weapon(g=\')\') on tile x={},y={}".format(self.x, self.y))
+
+            # TODO Figure out how much gold (information is at least in messages)
+            elif self.g == '$':
+                self.has_gold = True
+
+            else:
+                print("Found an unknown g value: {}".format(self.g))
+                time.sleep(20)
 
             # elif self.g in string.ascii_lowercase+string.ascii_uppercase:
             #    print("We may have a monster represented by g={}, vals are {}".format(self.g, vals))
             #    print("Current monster is ")
 
-
+            # Player location is updated in multiple places, remove old player location just in case
+            if not self.g == '@':
+                self.has_player = False
 
         if 't' in vals.keys():
             self.t = vals['t']
@@ -610,8 +666,6 @@ class InventoryItem:
 
         return item_vector
 
-
-
     @staticmethod
     def get_empty_item_vector():
         item_vector = [0 for i in range(InventoryItem.ITEM_VECTOR_LENGTH)]
@@ -900,10 +954,10 @@ class GameState:
             if 'Unknown command.' in message_only:
                 print("Error with last command - game did not recognize it... ")
 
-            #print("Just added message for turn {}: {}".format(turn, message_only))
+            # print("Just added message for turn {}: {}".format(turn, message_only))
 
     def process_player(self, data):
-        #print("In process_player() with data:\n{}".format(data))
+        # print("In process_player() with data:\n{}".format(data))
         for k in data.keys():
             if k == 'name':
                 self.player_name = data[k]
@@ -1032,7 +1086,8 @@ class GameState:
             elif k == 'unarmed_attack':
                 self.player_unarmed_attack = data[k]
 
-            elif k in ['msg', 'inv', 'quiver_item', 'quiver_available', 'quiver_desc', 'launcher_item', 'equip', 'unarmed_attack_colour']:
+            elif k in ['msg', 'inv', 'quiver_item', 'quiver_available', 'quiver_desc', 'launcher_item', 'equip',
+                       'unarmed_attack_colour']:
                 # these are processed elsewhere or are irrelevant
                 pass
 
@@ -1202,7 +1257,7 @@ class GameState:
                     vals['y'] = curr_y
 
                 if 'mon' in cell_dict.keys():
-                    #print("Found a monster cell with cell_dict vals {}".format(cell_dict))
+                    # print("Found a monster cell with cell_dict vals {}".format(cell_dict))
                     # vals['mon'] = cell_dict['mon']
                     pass
 
