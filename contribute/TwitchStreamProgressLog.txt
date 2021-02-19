@@ -9,11 +9,21 @@ RECAP FROM LAST TIME (Feb 11, 2021):
 TONIGHT (Feb 18, 2021):
 1. (DONE) Discussion: Why I'm doing this
 2. (DONE) Add code to catch new g values (solves the smoke problem from last time)
-3. Better monster goal; separate out attack from movement actions
-    a. Separate move_and_attack actions in move and attack
-    b. Make the attack action have an effect where the monster is no longer at that tile
-    c. Add attack monster goals into the goal selection part of the planning agent
+3. (DONE) Better monster goal; separate out attack from movement actions
+    a. (DONE) Separate move_and_attack actions in move and attack
+    b. (DONE) Write out pddl for the has_monster predicate
+    c. (DONE) Make the attack action have an effect where the monster is no longer at that tile
+    d. (DONE) Add attack monster goals into the goal selection part of the planning agent
 4. Decouple goal selection from planning; if goal changes, re-plan
+    a. Make everything goal oriented with a goal selection function
+        i. make traveling down via stairs goal oriented
+            *. (DONE)write an action model for traveling stairs down
+            *. (DONE)add new predicates to the pddl from gamestate
+            *. (DONE) add new common knowledge to the pddl
+    b. (LEFT OFF HERE) Test goal selection with every action
+        i. *** Issue was that the agent seems to be replanning for the same goal, which shouldn't be happening
+        ii. ALSO LEFT OFF ADDING INDIVIUAL PLACES in the general knowledge file
+            NEXT TIME - need to make player place unique, can't use place predicate
 5. (Bonus) Figure out how to reconnect to an existing game (Quality of Life Improvement)
 
 
@@ -21,3 +31,5 @@ Future issues to solve:
 * check if time (from the game) has changed - if not we have a problem
 * investigate situation where monsters are not being seen
 * add smoke to the objects that can be detected in cells
+* gracefully handle agent death
+* shallow and deep water can have the same symbol

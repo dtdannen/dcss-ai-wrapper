@@ -1,5 +1,5 @@
 (define (domain dcss)
-(:requirements :strips :negative-preconditions)
+(:requirements :strips :negative-preconditions :existential-preconditions)
 (:types goblin kobold rat slug - monster)
 (:predicates
     ; N,S,E,W,NE,NW,SE,SW of a cell
@@ -30,8 +30,13 @@
     (playerfullhealth)
     ; simple monster information
     (monsterat ?monstername ?monsterid ?cell)
-
-
+    ; has monster if there is a monster at that cell
+    (hasmonster ?cell)
+    ; levels
+    (place ?dungeon_level)
+    (deeper ?place_above ?place_below)
+    (connected ?currentplace ?nextlowestplace)
+    (hasstairsdown ?cell)
 )
 
 (:action move_or_attack_n
@@ -353,6 +358,148 @@
     :effect
     (and (playerfullhealth))
 )
+
+(:action attack_without_move_n
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (northof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_s
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (southof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_s
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (southof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_e
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (eastof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_w
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (westof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_ne
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (northeastof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_nw
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (northwestof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_se
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (southeastof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action attack_without_move_sw
+    :parameters (?currcell ?destcell)
+    :precondition
+    (and
+        (southwestof ?currcell ?destcell)
+        (hasmonster ?destcell)
+        (playerat ?currcell)
+    )
+    :effect
+    (and
+        (not (hasmonster ?destcell))
+    )
+)
+
+(:action travel_staircase_down
+    :parameters (?currentplace ?currcell ?nextlowestplace)
+    :precondition
+    (and
+        (playerat ?currcell)
+        (hasstairsdown ?currcell)
+        (place ?currentplace)
+        (connected ?currentplace ?nextlowestplace)
+    )
+    :effect
+    (and
+        (place ?nextlowestplace)
+    )
+)
+
 )
 
 

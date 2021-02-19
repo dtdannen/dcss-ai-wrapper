@@ -120,6 +120,12 @@ class FastDownwardPlanningAgent(Agent):
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
         self.actions_taken_so_far = 0
+        self.current_goal = None
+        self.previous_goal = None
+        self.previous_goal_type = None
+        self.new_goal = None
+        self.new_goal_type = None
+        self.current_goal_type = None
 
     def do_dungeon(self):
         # select dungeon and character build
@@ -184,13 +190,14 @@ class FastDownwardPlanningAgent(Agent):
         print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if i < 4 and len(closed_door_cells) > 1:
-            print("Attempting to choose a closed door as a goal if possible")
+            # print("Attempting to choose a closed door as a goal if possible")
             goal_cell = random.choice(closed_door_cells)
         else:
             goal_cell = random.choice(farthest_away_cells)
-            print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
-
-        return "(playerat {})".format(goal_cell.get_pddl_name())
+            # print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
+        goal_str = "(playerat {})".format(goal_cell.get_pddl_name())
+        print("Returning goal str of {}".format(goal_str))
+        return goal_str
 
     def get_first_monster_goal(self):
         """
@@ -207,7 +214,7 @@ class FastDownwardPlanningAgent(Agent):
             return None
 
         monster_cell_goal = random.choice(cells_with_monsters)
-        monster_goal_str = "(playerat {})".format(monster_cell_goal.get_pddl_name())
+        monster_goal_str = "(not (hasmonster {}))".format(monster_cell_goal.get_pddl_name())
         print("about to return monster goal: {}".format(monster_goal_str))
         # time.sleep(1)
         return monster_goal_str
@@ -312,6 +319,43 @@ class FastDownwardPlanningAgent(Agent):
 
         return plan
 
+    def goal_selection(self):
+        """
+        Returns the goal the agent should pursue right now
+
+        In some cases, deciding to reach a goal may depend
+        on whether that goal is even reachable via planning.
+        Since we would have generated the plan anyway, let's
+        return it and save some work
+        """
+
+        # attack monsters first
+        monster_goal = self.get_first_monster_goal()
+        if monster_goal:
+            return monster_goal, "monster"
+        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
+            return self.get_full_health_goal(), "heal"
+        elif self.actions_taken_so_far % 10 == 0 and random.random() < 0.25:
+            # TODO - choose a lower depth for current branch of the dungeon
+            lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
+                                             self.current_game_state.player_depth)
+            return "(place {})".format(lower_place_str), "stairsdown"
+        else:
+            goal = self.get_random_nonvisited_nonwall_playerat_goal()
+            selected_goal = goal
+            return selected_goal, "explore"
+
+    def get_random_simple_action(self):
+        simple_commands = [Command.MOVE_OR_ATTACK_N,
+                           Command.MOVE_OR_ATTACK_S,
+                           Command.MOVE_OR_ATTACK_E,
+                           Command.MOVE_OR_ATTACK_W,
+                           Command.MOVE_OR_ATTACK_NE,
+                           Command.MOVE_OR_ATTACK_NW,
+                           Command.MOVE_OR_ATTACK_SW,
+                           Command.MOVE_OR_ATTACK_SE]
+        return random.choice(simple_commands)
+
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
 
@@ -319,47 +363,24 @@ class FastDownwardPlanningAgent(Agent):
             print("More prompt is true, making a plan of 1 action to send Enter Key")
             self.plan = [Command.ENTER_KEY]
 
-        if self.plan is None or len(self.plan) == 0:
-            if self.actions_taken_so_far % 10 == 0:
-                if random.random() < 0.50:
-                    stair_plan = self.can_create_plan_to_reach_next_floor()
-                    if stair_plan:
-                        self.plan = stair_plan
-                        print("PLAN: Going to next level via stairs down")
+        self.new_goal, self.new_goal_type = self.goal_selection()
 
-        while_loop_iterations = 0
-        while self.plan is None or len(self.plan) == 0:
-            # select a new goal and plan until we find a plan that's non empty
 
-            selected_goal = None
-
-            # attack monsters first
-            monster_goal = self.get_first_monster_goal()
-            if monster_goal:
-                self.plan = self.get_plan_from_fast_downward(goals=[monster_goal])
-                selected_goal = monster_goal
-            elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
-                selected_goal = self.get_full_health_goal()
-                self.plan = self.get_plan_from_fast_downward(goals=[selected_goal])
-            else:
-                goal = self.get_random_nonvisited_nonwall_playerat_goal()
-                self.plan = self.get_plan_from_fast_downward(goals=[goal])
-                selected_goal = goal
-
-            while_loop_iterations += 1
-            if while_loop_iterations > 1:
-                print("  in while loop, goal is {}, iterations is {}".format(selected_goal, while_loop_iterations))
-
-            # if self.plan and len(self.plan) > 0:
-            #    print("New plan is:")
-            #    for action_i in self.plan:
-            #        print("   {}".format(action_i))
+        if self.new_goal and self.new_goal_type and self.new_goal_type != self.previous_goal_type:
+            self.current_goal = self.new_goal
+            self.current_goal_type = self.new_goal_type
+            # plan
+            print("Planning with goal {}".format(self.new_goal))
+            self.plan = self.get_plan_from_fast_downward(goals=[self.new_goal])
+            self.previous_goal = self.new_goal
+            self.previous_goal_type = self.new_goal_type
 
         next_action = None
-        if len(self.plan) > 0:
+        if self.plan and len(self.plan) > 0:
             next_action = self.plan.pop(0)
             self.actions_taken_so_far += 1
         else:
-            print("warning - no plan!")
+            print("warning - no plan, taking random action!")
+            next_action = self.get_random_simple_action()
 
         return next_action

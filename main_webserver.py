@@ -56,7 +56,15 @@ def main():
         if next_action not in Action.command_to_msg.keys():
             print("Action {} is not implemented yet, skipping for now".format(next_action))
             continue
-        print("Sending next action {}".format(next_action))
+        if isinstance(agent, FastDownwardPlanningAgent):
+            next_next_action = "N/A"
+            if agent.plan:
+                if len(agent.plan) > 1:
+                    next_next_action = agent.plan[0]
+                print("Goal: {}, type={}, Plan length: {}, Next action: {}, Next^2 Action: {}".format(agent.current_goal, agent.current_goal_type, len(agent.plan), next_action, next_next_action))
+            else:
+                print("No goal, no plan...")
+
         asyncio.get_event_loop().run_until_complete(game.send_and_receive_command_ws(next_action))
         game_state = game.get_gamestate()
         i += 1

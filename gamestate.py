@@ -107,6 +107,7 @@ class Monster:
                              'h',  # quokka
                              'l',  # frilled lizard
                              'w',  # worm
+                             'Z',  # Zombie
                              ]
 
     # current theory: each monster has a unique id, so use this class variable to track them
@@ -161,8 +162,11 @@ class Monster:
         # this should happen when a monster dies or is no longer in view
         self.cell = None
 
-    def get_pddl_str(self, pddl_cell_str):
-        return "(monsterat {} {} {})".format(self.name, self.id, pddl_cell_str)
+    def get_pddl_strs(self, pddl_cell_str):
+        strs = [
+            "(monsterat {} {} {})".format(self.name, self.id, pddl_cell_str),
+        ]
+        return strs
 
 
 class CellRawStrDatum(Enum):
@@ -212,12 +216,12 @@ class Cell:
         self.has_scroll = False
         self.teleport_trap = False  # TODO not handled anywhere
         self.has_multiple_items = False  # TODO not handled anywhere
-        self.has_throwing_item = False
+        self.has_items = False
         self.has_gold = False
         self.has_monster = False
         self.has_shaft = False
-        self.has_weapon_item = False
         self.has_corpse = False
+        self.has_fountain = False
 
         # TODO add condition for †
         self.monster = None  # there can only be up to 1 monster in a cell
@@ -273,10 +277,13 @@ class Cell:
             elif self.g == '8':
                 self.has_statue = True
 
+            elif self.g == '⌠':
+                self.has_fountain = True
+
             elif self.g == '≈' or self.g == '§':
                 self.has_lava = True
 
-            elif self.g == '☘':
+            elif self.g in ['☘', '♣']:
                 self.has_tree = True
 
             elif self.g == '†':
@@ -302,12 +309,8 @@ class Cell:
             elif self.g == '?':
                 self.has_scroll = True
 
-            elif self.g == '(':
-                self.has_throwing_item = True
-
-            elif self.g == ')':
-                self.has_weapon_item = True
-                print("Found weapon(g=\')\') on tile x={},y={}".format(self.x, self.y))
+            elif self.g in ['(', ')']:
+                self.has_items = True
 
             # TODO Figure out how much gold (information is at least in messages)
             elif self.g == '$':
@@ -315,7 +318,7 @@ class Cell:
 
             else:
                 print("Found an unknown g value: {}".format(self.g))
-                time.sleep(20)
+                #time.sleep(20)
 
             # elif self.g in string.ascii_lowercase+string.ascii_uppercase:
             #    print("We may have a monster represented by g={}, vals are {}".format(self.g, vals))
@@ -367,8 +370,15 @@ class Cell:
             pddl_facts.append('(plant {})'.format(self.get_pddl_name()))
         if self.has_tree:
             pddl_facts.append('(tree {})'.format(self.get_pddl_name()))
+        if self.has_stairs_down:
+            pddl_facts.append('(hasstairsdown {})'.format(self.get_pddl_name()))
+        if self.has_stairs_up:
+            pddl_facts.append('(hasstairsup {})'.format(self.get_pddl_name()))
+        if self.has_monster:
+            pddl_facts.append("(hasmonster {})".format(self.get_pddl_name()))
         if self.monster:
-            pddl_facts.append(self.monster.get_pddl_str(self.get_pddl_name()))
+            for fact_i in self.monster.get_pddl_strs(self.get_pddl_name()):
+                pddl_facts.append(fact_i)
         return pddl_facts
 
     def straight_line_distance(self, cell):
@@ -803,6 +813,8 @@ class GameState:
         self.noise_level = None
         self.adjusted_noise_level = None
 
+        self.general_knowledge_pddl_filename = "models/general_dcss_knowledge.pddl"
+
         self.id = GameState.ID
         GameState.ID += 1
 
@@ -1093,14 +1105,17 @@ class GameState:
 
             else:
                 print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
-                time.sleep(10)
+                print("****DATA HAS DATA:")
+                for k,v in data.items():
+                    print("   {}:{}".format(k,v))
+                time.sleep(20)
 
     def get_pddl_current_state_player(self):
         player_object_strs = []
         player_fact_strs = []
 
         # TODO - put all player fact information here
-
+        player_fact_strs.append("(place {}_{})".format(self.player_place.lower().strip(), self.player_depth))
         return player_object_strs, player_fact_strs
 
     def get_pddl_player_info(self):
@@ -1134,6 +1149,13 @@ class GameState:
         pddl_str += ")\n"
 
         pddl_str += "(:init \n"
+
+        # read in common knowledge facts and put them first
+        with open(self.general_knowledge_pddl_filename, 'r') as f2:
+            for line in f2.readlines():
+                if not line.startswith(';'):
+                    pddl_str += line.strip() + '\n'
+
         for fact in fact_strs:
             pddl_str += "  {}\n".format(fact)
         pddl_str += ")\n"
