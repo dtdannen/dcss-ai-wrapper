@@ -71,7 +71,7 @@ class GameConnection:
         assert isinstance(self.config, config.WebserverConfig)
 
         play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
-        await self.send_and_receive(play_game_msg)
+        await self.send_and_receive_ws(play_game_msg)
 
     async def get_all_server_messages(self):
         i = 0
@@ -82,15 +82,31 @@ class GameConnection:
                 future = self.websocket.recv()
                 # print("** AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
                 data_recv = await asyncio.wait_for(future, timeout=0.5)
-
+                #print("data_recv_raw is {}".format(data_recv))
                 # print("** POST-AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
 
                 data_recv += bytes([0, 0, 255, 255])
                 json_message = self.decomp.decompress(data_recv)
                 #print("Just received json_message:\n{}".format(json_message))
+
                 json_message = json_message.decode("utf-8")
 
+                def pretty_print_json(j, spaces="  "):
+                    for k, v in j.items():
+                        if isinstance(v, dict):
+                            print("{}{}:".format(spaces, k))
+                            return pretty_print_json(v, spaces+"  ")
+                        if isinstance(v, list):
+                            print("{}{}:".format(spaces, k))
+                            for item in v:
+                                return pretty_print_json(item, spaces + "  ")
+                        else:
+                            print("{}{}:{}".format(spaces, k, v))
+                            return
+
                 msg_from_server = json.loads(json_message)
+
+                #pretty_print_json(msg_from_server)
                 self._handle_msgs(msg_from_server)
 
                 # if 'msgs' in msg_from_server:
@@ -122,9 +138,10 @@ class GameConnection:
                 self.begin_shutdown = True
             except asyncio.TimeoutError:
                 # server is now ready for input
+                print("Got an asyncio Timeout Error")
                 SERVER_READY_FOR_INPUT = True
-            # except Exception as e:
-            #    logging.warning("Caught exception {} in get_all_server_messages()".format(e))
+            except Exception as e:
+                logging.warning("Caught exception {} in get_all_server_messages()".format(e))
             i += 1
 
         if request_pong:
@@ -277,6 +294,7 @@ class GameConnection:
         return ''
 
     def _handle_msgs(self, msgs):
+        print("Getting msgs from the webserver")
         self.game_state.update(msgs)
 
     def get_gamestate(self):

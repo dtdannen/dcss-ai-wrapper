@@ -33,7 +33,8 @@
     ; has monster if there is a monster at that cell
     (hasmonster ?cell)
     ; levels
-    (place ?dungeon_level)
+    (place ?anylevel)
+    (playerplace ?dungeon_level)
     (deeper ?place_above ?place_below)
     (connected ?currentplace ?nextlowestplace)
     (hasstairsdown ?cell)
@@ -49,7 +50,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -69,7 +69,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -89,7 +88,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -109,7 +107,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -129,7 +126,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -149,7 +145,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -169,7 +164,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -189,7 +183,6 @@
         (not (lava ?destcell))
         (not (plant ?destcell))
         (not (tree ?destcell))
-        (not (closeddoor ?destcell))
         (playerat ?currcell)
     )
     :effect
@@ -491,12 +484,13 @@
     (and
         (playerat ?currcell)
         (hasstairsdown ?currcell)
-        (place ?currentplace)
+        (playerplace ?currentplace)
         (connected ?currentplace ?nextlowestplace)
     )
     :effect
     (and
-        (place ?nextlowestplace)
+        (not (playerplace ?currentplace))
+        (playerplace ?nextlowestplace)
     )
 )
 

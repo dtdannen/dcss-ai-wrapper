@@ -6,7 +6,7 @@ RECAP FROM LAST TIME (Feb 11, 2021):
    whenever current health is < 50% of maximum
 
 
-TONIGHT (Feb 18, 2021):
+Stream on Feb 18, 2021:
 1. (DONE) Discussion: Why I'm doing this
 2. (DONE) Add code to catch new g values (solves the smoke problem from last time)
 3. (DONE) Better monster goal; separate out attack from movement actions
@@ -27,7 +27,20 @@ TONIGHT (Feb 18, 2021):
 5. (Bonus) Figure out how to reconnect to an existing game (Quality of Life Improvement)
 
 
+TONIGHT (Feb 25, 2021):
+1. (DONE) Pick up where we left off - decoupling the goal selection with every action
+2. Allow the agent to reconnect in the middle of a game
+   2.1: Need a way to determine whether a game already exists
+   2.2: Make sure that parsing of messages sent when connecting to an existing game is working
+        (LEFT OFF) - When checking the websocket messages being sent using chrome's developer
+                     tools we see that there are 13+ binary messages being sent, however we're
+                      only getting a few of these through our websocket connection.
+
+             Next time start off looking at game_connection.py: get_all_server_messages()
+3. Begin looking at vector representations of the state (to support reinforcement learning)
+
 Future issues to solve:
+* only select heal goal if there are no monsters nearby
 * check if time (from the game) has changed - if not we have a problem
 * investigate situation where monsters are not being seen
 * add smoke to the objects that can be detected in cells

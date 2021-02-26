@@ -449,6 +449,17 @@ class CellMap:
             self.agent_x = x
             self.agent_y = y
 
+        # safety check - cell with player matches x and y
+        if self.agent_x and self.agent_y:
+            player_cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(self.agent_x, self.agent_y)]
+            if not player_cell.has_player:
+                print("WARNING - discrepancy in player location:")
+                print("     agent.x = {}".format(self.agent_x))
+                print("     agent.y = {}".format(self.agent_y))
+                print("     playercell.x = {}".format(player_cell.x))
+                print("     playercell.y = {}".format(player_cell.y))
+
+
     def draw_cell_map(self):
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
@@ -572,6 +583,7 @@ class CellMap:
         return self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth]
 
     def get_player_cell(self):
+
         return self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(self.agent_x, self.agent_y)]
 
 
@@ -823,10 +835,6 @@ class GameState:
             # print(str(self.state))
             logging.info(str(msg_from_server))
             self._process_raw_state(msg_from_server)
-            # self.draw_map()
-            # self.compute_asp_str()
-            # print(self.training_asp_str)
-            # print(self.background_asp_str)
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))
 
@@ -1115,7 +1123,7 @@ class GameState:
         player_fact_strs = []
 
         # TODO - put all player fact information here
-        player_fact_strs.append("(place {}_{})".format(self.player_place.lower().strip(), self.player_depth))
+        player_fact_strs.append("(playerplace {}_{})".format(self.player_place.lower().strip(), self.player_depth))
         return player_object_strs, player_fact_strs
 
     def get_pddl_player_info(self):

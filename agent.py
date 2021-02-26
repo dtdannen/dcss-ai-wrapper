@@ -187,7 +187,7 @@ class FastDownwardPlanningAgent(Agent):
             target_cells = new_target_cells
             i += 1
 
-        print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
+        #print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if i < 4 and len(closed_door_cells) > 1:
             # print("Attempting to choose a closed door as a goal if possible")
@@ -196,7 +196,7 @@ class FastDownwardPlanningAgent(Agent):
             goal_cell = random.choice(farthest_away_cells)
             # print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
         goal_str = "(playerat {})".format(goal_cell.get_pddl_name())
-        print("Returning goal str of {}".format(goal_str))
+        #print("Returning goal str of {}".format(goal_str))
         return goal_str
 
     def get_first_monster_goal(self):
@@ -215,7 +215,7 @@ class FastDownwardPlanningAgent(Agent):
 
         monster_cell_goal = random.choice(cells_with_monsters)
         monster_goal_str = "(not (hasmonster {}))".format(monster_cell_goal.get_pddl_name())
-        print("about to return monster goal: {}".format(monster_goal_str))
+        #print("about to return monster goal: {}".format(monster_goal_str))
         # time.sleep(1)
         return monster_goal_str
 
@@ -272,6 +272,9 @@ class FastDownwardPlanningAgent(Agent):
         except FileNotFoundError:
             print("Plan could not be generated...")
             # Todo - change the goal here
+            return
+        except:
+            print("Unknown error preventing plan from being generated")
             return
 
         # for ps in plan:
@@ -335,11 +338,11 @@ class FastDownwardPlanningAgent(Agent):
             return monster_goal, "monster"
         elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
             return self.get_full_health_goal(), "heal"
-        elif self.actions_taken_so_far % 10 == 0 and random.random() < 0.25:
-            # TODO - choose a lower depth for current branch of the dungeon
-            lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
-                                             self.current_game_state.player_depth)
-            return "(place {})".format(lower_place_str), "stairsdown"
+        # elif self.actions_taken_so_far % 10 == 0 and random.random() < 0.25:
+        #     # TODO - choose a lower depth for current branch of the dungeon
+        #     lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
+        #                                      self.current_game_state.player_depth)
+        #     return "(playerplace {})".format(lower_place_str), "stairsdown"
         else:
             goal = self.get_random_nonvisited_nonwall_playerat_goal()
             selected_goal = goal
@@ -359,14 +362,18 @@ class FastDownwardPlanningAgent(Agent):
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
 
+        # TODO - make this a goal and a single action plan
         if self.current_game_state.more_prompt:
             print("More prompt is true, making a plan of 1 action to send Enter Key")
-            self.plan = [Command.ENTER_KEY]
+            return Command.ENTER_KEY
 
         self.new_goal, self.new_goal_type = self.goal_selection()
+        print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
+        print("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
+        for a in self.plan:
+            print("  plan action is {}".format(a))
 
-
-        if self.new_goal and self.new_goal_type and self.new_goal_type != self.previous_goal_type:
+        if self.new_goal and self.new_goal_type and (len(self.plan) < 1 or self.new_goal_type != self.previous_goal_type):
             self.current_goal = self.new_goal
             self.current_goal_type = self.new_goal_type
             # plan

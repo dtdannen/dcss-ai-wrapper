@@ -29,18 +29,20 @@ def main():
     print("Waiting 3 seconds....")
     time.sleep(3)
 
-    setup_actions = agent.get_game_mode_setup_actions_webserver()
-    for action in setup_actions:
-        print("Sending setup action {}".format(action))
-        asyncio.get_event_loop().run_until_complete(game.send_and_receive_dict_ws(action))
-        print("Waiting 3 seconds....")
-        time.sleep(3)
+    #game.send_and_receive_command_ws(Command.ENTER_KEY)
+
+    # setup_actions = agent.get_game_mode_setup_actions_webserver()
+    # for action in setup_actions:
+    #    print("Sending setup action {}".format(action))
+    #    asyncio.get_event_loop().run_until_complete(game.send_and_receive_dict_ws(action))
+    #    print("Waiting 3 seconds....")
+    #    time.sleep(3)
 
     print("About to start playing the game")
     game_state = game.get_gamestate()
     i = 0
     while not game_state.has_agent_died():
-        print(game_state.draw_cell_map())
+        #print(game_state.draw_cell_map())
         #print("Visible Monsters are:")
         #for m_id, mon in Monster.ids_to_monsters.items():
         #    if mon.cell and mon.ascii_sym:
@@ -63,7 +65,7 @@ def main():
                     next_next_action = agent.plan[0]
                 print("Goal: {}, type={}, Plan length: {}, Next action: {}, Next^2 Action: {}".format(agent.current_goal, agent.current_goal_type, len(agent.plan), next_action, next_next_action))
             else:
-                print("No goal, no plan...")
+                pass
 
         asyncio.get_event_loop().run_until_complete(game.send_and_receive_command_ws(next_action))
         game_state = game.get_gamestate()
