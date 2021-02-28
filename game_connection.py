@@ -16,7 +16,6 @@ import websockets
 import zlib
 
 
-
 class GameConnection:
 
     def __init__(self, config=config.DefaultConfig()):
@@ -32,40 +31,65 @@ class GameConnection:
 
         self.websocket = None
         self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
+        self.messages_received = []
 
     @staticmethod
     def json_encode(value):
         return json.dumps(value).replace("</", "<\\/")
 
-    async def login_webserver(self):
+
+
+    async def consumer(self, message):
+        self.messages_received.append(message)
+        json_message_fixed = message + bytes([0, 0, 255, 255])
+        json_message = self.decomp.decompress(json_message_fixed)
+        print("Received a message: {}".format(json.loads(json_message.decode('utf-8'))))
+
+    async def only_receive_ws(self):
+        async for message in self.websocket:
+            await self.consumer(message)
+
+    def start(self):
+        # connect to the websocket and set self.websocket to the actual websocket
+        asyncio.get_event_loop().run_until_complete(self.connect_webserver2())
+
+        # start listening on anything from the webserver
+        asyncio.ensure_future(self.only_receive_ws())
+
+        # send the login info
+        asyncio.get_event_loop().run_until_complete(self.login_webserver())
+
+        # send pong info
+        asyncio.get_event_loop().run_until_complete(self.send_pong())
+
+
+    async def connect_webserver2(self):
         assert isinstance(self.config, config.WebserverConfig)
 
         # connect
-        logging.debug("Connecting to URI " + str(self.config.server_uri) + " ...")
+        logging.info("Connecting to URI " + str(self.config.server_uri) + " ...")
         # print("AWAITING ON WEBSOCKET_3 CONNECT")
         self.websocket = await websockets.connect(self.config.server_uri)
         # print("POST-AWAITING ON WEBSOCKET_3 CONNECT")
         logging.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
 
+    async def login_webserver(self):
+        assert isinstance(self.config, config.WebserverConfig)
+
         # login
-        logging.debug("Sending login message...")
+        logging.info("Sending login message...")
         login_msg = {'msg': 'login',
                      'username': self.config.agent_name,
                      'password': self.config.agent_password}
-        await self.send_and_receive(login_msg)
 
-        # break apart msg from server
-        # msgs = []
-        # if 'msgs' in msg_from_server.keys():
-        #    msgs = msg_from_server['msgs']
+        await self.websocket.send(json.dumps(login_msg))
+        logging.info("Sent login message")
 
-        logging.debug("Sending pong")
+    async def send_pong(self):
+        logging.info("Sending pong")
 
-        # send pong
-        # for msg_i in msgs:
-        #    if msg_i['msg'] == 'ping':
-        #        logging.debug("Received message ping from server, about to send pong")
         await self.websocket.send(json.dumps({'msg': 'pong'}))
+
 
     async def load_game_on_webserver(self):
         assert isinstance(self.config, config.WebserverConfig)
@@ -167,6 +191,8 @@ class GameConnection:
 
         await self.get_all_server_messages()
 
+
+
     async def send_and_receive_command_ws(self, command):
         # send data to server
         #print("AWAITING ON WEBSOCKET_1 SEND - sending command: "+str(command))
@@ -196,6 +222,13 @@ class GameConnection:
         await self.login_webserver()
         print("Loading game...")
         await self.load_game_on_webserver()
+
+    async def connect_ws(self):
+         self.websocket = websockets.connect(self.config.server_uri)
+
+
+
+
 
     def connect(self):
         try:

@@ -833,7 +833,7 @@ class GameState:
     def update(self, msg_from_server):
         try:
             # print(str(self.state))
-            logging.info(str(msg_from_server))
+            logging.info("gamestate.update() is now processing: {}".format(str(msg_from_server)))
             self._process_raw_state(msg_from_server)
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))

@@ -7,80 +7,104 @@ Make sure to run crawl before running this demo, see:
 
 """
 
-from game_connection import GameConnection
+from game_connection_4 import DCSSProtocol
 from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningAgent
 from actions import Command, Action
 import config
 import asyncio
 import logging
 import time
+import threading
 from gamestate import Monster
+from autobahn.asyncio.websocket import WebSocketClientFactory
 
-#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def main():
-    game = GameConnection(config=config.WebserverConfig())
-    asyncio.get_event_loop().run_until_complete(game.connect_webserver())
-    print("Connected!")
-    #agent = SimpleRandomAgent()
+    factory = WebSocketClientFactory(config.WebserverConfig.server_uri)
+    factory.protocol = DCSSProtocol
+
+    loop = asyncio.get_event_loop()
+    coro = loop.create_connection(factory, config.WebserverConfig.server_ip, config.WebserverConfig.server_port)
+    loop.run_until_complete(coro)
+    loop.run_forever()
+
     agent = FastDownwardPlanningAgent()
 
-    print("Waiting 3 seconds....")
-    time.sleep(3)
-
-    #game.send_and_receive_command_ws(Command.ENTER_KEY)
-
+    loop.close()
+    #
+    # game = GameConnection(config=config.WebserverConfig())
+    # asyncio.get_event_loop().run_until_complete(game.connect_webserver())
+    # time.sleep(3)
+    # asyncio.get_event_loop().run_until_complete(game.login_webserver())
+    # time.sleep(3)
+    # asyncio.get_event_loop().run_until_complete(game.load_game_on_webserver())
+    #
+    # print("Ready to start the agent playing")
+    # #agent = SimpleRandomAgent()
+    # agent = FastDownwardPlanningAgent()
+    #
+    # print("Waiting 3 seconds....")
+    # time.sleep(3)
+    #
+    # #game.send_and_receive_command_ws(Command.ENTER_KEY)
+    #
     # setup_actions = agent.get_game_mode_setup_actions_webserver()
+    # i = 0
     # for action in setup_actions:
-    #    print("Sending setup action {}".format(action))
-    #    asyncio.get_event_loop().run_until_complete(game.send_and_receive_dict_ws(action))
-    #    print("Waiting 3 seconds....")
-    #    time.sleep(3)
-
-    print("About to start playing the game")
-    game_state = game.get_gamestate()
-    i = 0
-    while not game_state.has_agent_died():
-        #print(game_state.draw_cell_map())
-        #print("Visible Monsters are:")
-        #for m_id, mon in Monster.ids_to_monsters.items():
-        #    if mon.cell and mon.ascii_sym:
-        #        print("  {} with id {} and symbol {} on cell {}".format(mon.name, m_id, mon.ascii_sym, "{},{}".format(mon.cell.x, mon.cell.y)))
-        #print("Monsters away from us (or dead) are:")
-        #for m_id, mon in Monster.ids_to_monsters.items():
-        #    if mon.cell:
-        #        pass
-        #    else:
-        #        print("  {} with id {} and symbol {}".format(mon.name, m_id, mon.ascii_sym))
-
-        next_action = agent.get_action(game_state)
-        if next_action not in Action.command_to_msg.keys():
-            print("Action {} is not implemented yet, skipping for now".format(next_action))
-            continue
-        if isinstance(agent, FastDownwardPlanningAgent):
-            next_next_action = "N/A"
-            if agent.plan:
-                if len(agent.plan) > 1:
-                    next_next_action = agent.plan[0]
-                print("Goal: {}, type={}, Plan length: {}, Next action: {}, Next^2 Action: {}".format(agent.current_goal, agent.current_goal_type, len(agent.plan), next_action, next_next_action))
-            else:
-                pass
-
-        asyncio.get_event_loop().run_until_complete(game.send_and_receive_command_ws(next_action))
-        game_state = game.get_gamestate()
-        i += 1
-
-    if game_state.has_agent_died():
-        # Quit and delete the game
-        game.send_and_receive_command_ws(Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME)
-        game.send_and_receive_command_ws(Command.RESPOND_YES_TO_PROMPT)
-        game.send_and_receive_command_ws(Command.ENTER_KEY)
-        game.send_and_receive_command_ws(Command.ENTER_KEY)
-        game.send_and_receive_command_ws(Command.ENTER_KEY)
-
-    game.close()
-
+    #     print("Sending setup action {} with content {}".format(i, action))
+    #     asyncio.get_event_loop().run_until_complete(game.send_and_receive_ws(action))
+    #     print("Waiting 3 seconds....")
+    #     time.sleep(3)
+    #     i+=1
+    #
+    # time.sleep(3)
+    #
+    # print("About to start playing the game")
+    # game_state = game.get_gamestate()
+    # i = 0
+    # while not game_state.has_agent_died():
+    #     #print(game_state.draw_cell_map())
+    #     #print("Visible Monsters are:")
+    #     #for m_id, mon in Monster.ids_to_monsters.items():
+    #     #    if mon.cell and mon.ascii_sym:
+    #     #        print("  {} with id {} and symbol {} on cell {}".format(mon.name, m_id, mon.ascii_sym, "{},{}".format(mon.cell.x, mon.cell.y)))
+    #     #print("Monsters away from us (or dead) are:")
+    #     #for m_id, mon in Monster.ids_to_monsters.items():
+    #     #    if mon.cell:
+    #     #        pass
+    #     #    else:
+    #     #        print("  {} with id {} and symbol {}".format(mon.name, m_id, mon.ascii_sym))
+    #
+    #     next_action = agent.get_action(game_state)
+    #     if next_action not in Action.command_to_msg.keys():
+    #         print("Action {} is not implemented yet, skipping for now".format(next_action))
+    #         continue
+    #     if isinstance(agent, FastDownwardPlanningAgent):
+    #         next_next_action = "N/A"
+    #         if agent.plan:
+    #             if len(agent.plan) > 1:
+    #                 next_next_action = agent.plan[0]
+    #             print("Goal: {}, type={}, Plan length: {}, Next action: {}, Next^2 Action: {}".format(agent.current_goal, agent.current_goal_type, len(agent.plan), next_action, next_next_action))
+    #         else:
+    #             pass
+    #
+    #     game.send_and_receive_command_ws(next_action)
+    #
+    #     game_state = game.get_gamestate()
+    #     i += 1
+    #
+    # if game_state.has_agent_died():
+    #     # Quit and delete the game
+    #     game.send_and_receive_command_ws(Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME)
+    #     game.send_and_receive_command_ws(Command.RESPOND_YES_TO_PROMPT)
+    #     game.send_and_receive_command_ws(Command.ENTER_KEY)
+    #     game.send_and_receive_command_ws(Command.ENTER_KEY)
+    #     game.send_and_receive_command_ws(Command.ENTER_KEY)
+    #
+    #
+    #
 
 if __name__ == "__main__":
     main()

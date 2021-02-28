@@ -5,7 +5,9 @@ class DefaultConfig:
 
 
 class WebserverConfig:
-    server_uri = 'ws://localhost:8080/socket'
+    server_uri = 'ws://127.0.0.1:8080/socket'
+    server_ip = '127.0.0.1'
+    server_port = '8080'
     agent_name = 'midca'
     agent_password = 'midca'
     game_id = 'dcss-web-trunk'

@@ -1,0 +1,314 @@
+from gamestate import GameState
+from actions import Action
+
+import socket
+import json
+from datetime import datetime, timedelta
+import warnings
+import os
+import random
+import logging
+import time
+import sys
+import config
+import asyncio
+import websockets
+import zlib
+import threading
+
+from nested_lookup import nested_lookup
+
+
+import asyncio
+
+from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
+
+
+class MyClientProtocol(WebSocketClientProtocol):
+
+    def onConnect(self, response):
+        print("Server connected: {0}".format(response.peer))
+
+
+    async def onOpen(self):
+        print("WebSocket connection open.")
+
+        # start sending messages every second ..
+        while True:
+            self.sendMessage("Hello, world!".encode('utf8'))
+            self.sendMessage(b"\x00\x01\x03\x04", isBinary=True)
+            await asyncio.sleep(1)
+
+    def onMessage(self, payload, isBinary):
+        if isBinary:
+            print("Binary message received: {0} bytes".format(len(payload)))
+        else:
+            print("Text message received: {0}".format(payload.decode('utf8')))
+
+    def onClose(self, wasClean, code, reason):
+        print("WebSocket connection closed: {0}".format(reason))
+
+
+class DCSSProtocol(WebSocketClientProtocol):
+
+    def __init__(self):
+        super().__init__()
+        self.game_state = GameState()
+        self.config = config.WebserverConfig
+        self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
+
+        # States of the connection which determines which messages are relevant to send when
+        self._READY_TO_CONNECT = True
+        self._CONNECTED = False
+        self._READY_TO_LOGIN = False
+        self._LOGGED_IN = False
+        self._NEEDS_PONG = False
+        self._READY_TO_SELECT_GAME_MODE = False
+        self._GAME_MODE_SELECTED = False
+        self._READY_TO_SEND_ACTION = False
+        self._LOBBY_IS_CLEAR = False
+
+        self.messages_received_counter = 0
+
+    def onConnect(self, response):
+        print("Server connected: {0}".format(response.peer))
+        self._CONNECTED = True
+        self._READY_TO_LOGIN = True
+
+    async def onOpen(self):
+        print("WebSocket connection open.")
+
+        # start sending messages every second ..
+        while True:
+            if self._CONNECTED and not self._LOGGED_IN:
+                login_msg = {'msg': 'login',
+                             'username': self.config.agent_name,
+                             'password': self.config.agent_password}
+                self.sendMessage(json.dumps(login_msg).encode('utf-8'))
+
+            elif self._LOGGED_IN and not self._GAME_MODE_SELECTED:
+                # TODO left off here
+                pass
+
+
+            #self.sendMessage("Hello, world!".encode('utf8'))
+            #self.sendMessage(b"\x00\x01\x03\x04", isBinary=True)
+            await asyncio.sleep(1)
+
+    def onMessage(self, payload, isBinary):
+        print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))
+        self.messages_received_counter += 1
+        message_as_str = None
+        if isBinary:
+            print("Binary message received: {0} bytes".format(len(payload)))
+            payload += bytes([0, 0, 255, 255])
+            json_message = self.decomp.decompress(payload)
+            json_message_decoded = json_message.decode("utf-8")
+            print("   Decoding turns it into: {}".format(json_message_decoded))
+            message_as_str = json_message_decoded
+        else:
+            print("Text message received: {0}".format(payload.decode('utf8')))
+            message_as_str = payload.decode('utf-8')
+
+        message_as_json = json.loads(message_as_str)
+
+        self.perform_state_checks(message_as_json)
+
+    def perform_state_checks(self, json_msg):
+        if self.check_for_pong(json_msg):
+            self._NEEDS_PONG = True
+            self._CONNECTED = True
+
+        if self.check_for_select_game(json_msg):
+            self._GAME_MODE_SELECTED = True
+
+        if self.check_for_login_success(json_msg):
+            self._LOGGED_IN = True
+
+        if self.check_for_lobby_clear(json_msg):
+            self._LOBBY_IS_CLEAR = True
+
+    def check_for_select_game(self, json_msg):
+        for v in nested_lookup('msg', json_msg):
+            if v == 'set_game_links':
+                return True
+        return False
+
+    def check_for_pong(self, json_msg):
+        for v in nested_lookup('msg', json_msg):
+            if v == 'ping':
+                return True
+        return False
+
+    def check_for_login_success(self, json_msg):
+        for v in nested_lookup('msg', json_msg):
+            if v == 'login_success':
+                return True
+        return False
+
+    def check_for_lobby_clear(self, json_msg):
+        for v in nested_lookup('msg', json_msg):
+            if v == 'lobby_clear':
+                return True
+        return False
+
+
+    def onClose(self, wasClean, code, reason):
+        print("WebSocket connection closed: {0}".format(reason))
+
+
+    #
+    # def __init__(self, config=config.DefaultConfig()):
+    #
+    #     self.config = config
+    #     self.crawl_socket = None
+    #     self.game_state = GameState()
+    #     self.msg_buffer = None
+    #     self.recent_msg_data_raw = None
+    #     self.recent_msg_data_decoded = None
+    #
+    #     self.num_times_to_try_pressing_enter_read_msg = 5
+    #     self.num_times_pressed_enter_read_msg = 0
+    #
+    #     self.websocket = None
+    #     self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
+    #     self.messages_received = []
+    #
+    #     # state variables for handling login information and other information
+    #     self._READY_TO_CONNECT = True
+    #     self._CONNECTED = False
+    #     self._READY_TO_LOGIN = False
+    #     self._LOGGED_IN = False
+    #     self._NEEDS_PONG = False
+    #     self._READY_TO_SELECT_GAME_MODE = False
+    #     self._GAME_MODE_SELECTED = False
+    #     self._READY_TO_SEND_ACTION = False
+    #
+    #     self._STATE_CHANGED = False
+    #
+    # @staticmethod
+    # def json_encode(value):
+    #     return json.dumps(value).replace("</", "<\\/")
+    #
+    # def get_gamestate(self):
+    #     return self.game_state
+    #
+    # async def connect_webserver(self):
+    #     assert isinstance(self.config, config.WebserverConfig)
+    #
+    #     # connect
+    #     logging.info("Connecting to URI " + str(self.config.server_uri) + " ...")
+    #     # print("AWAITING ON WEBSOCKET_3 CONNECT")
+    #     self.websocket = await websockets.connect(self.config.server_uri)
+    #     # print("POST-AWAITING ON WEBSOCKET_3 CONNECT")
+    #     logging.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
+    #
+    # async def login_webserver(self):
+    #     assert isinstance(self.config, config.WebserverConfig)
+    #
+    #     # login
+    #     logging.info("Sending login message...")
+    #     login_msg = {'msg': 'login',
+    #                  'username': self.config.agent_name,
+    #                  'password': self.config.agent_password}
+    #
+    #     await self.send_and_receive_ws(json.dumps(login_msg))
+    #     logging.info("Sent login message")
+    #
+    # async def load_game_on_webserver(self):
+    #     assert isinstance(self.config, config.WebserverConfig)
+    #
+    #     play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
+    #     await self.send_and_receive_ws(play_game_msg)
+    #
+    # async def send_and_receive_ws(self, message):
+    #     # send data to server
+    #     #print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
+    #     await self.websocket.send(json.dumps(message))
+    #     # print("POST-AWAITING ON WEBSOCKET_1 SEND")
+    #     # wait for server to get back
+    #
+    #     await self.get_all_server_messages()
+    #
+    # async def send_and_receive_command_ws(self, command):
+    #     # send data to server
+    #     #print("AWAITING ON WEBSOCKET_1 SEND - sending command: "+str(command))
+    #     await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
+    #     # print("POST-AWAITING ON WEBSOCKET_1 SEND")
+    #     # wait for server to get back
+    #
+    #     await self.get_all_server_messages()
+    #
+    # async def get_all_server_messages(self):
+    #     i = 0
+    #     SERVER_READY_FOR_INPUT = False
+    #     request_pong = False
+    #     while not SERVER_READY_FOR_INPUT:
+    #         try:
+    #             future = self.websocket.recv()
+    #             # print("** AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
+    #             data_recv = await asyncio.wait_for(future, timeout=0.5)
+    #             # print("data_recv_raw is {}".format(data_recv))
+    #             # print("** POST-AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
+    #
+    #             data_recv += bytes([0, 0, 255, 255])
+    #             json_message = self.decomp.decompress(data_recv)
+    #             # print("Just received json_message:\n{}".format(json_message))
+    #
+    #             json_message = json_message.decode("utf-8")
+    #
+    #             def pretty_print_json(j, spaces="  "):
+    #                 for k, v in j.items():
+    #                     if isinstance(v, dict):
+    #                         print("{}{}:".format(spaces, k))
+    #                         return pretty_print_json(v, spaces + "  ")
+    #                     if isinstance(v, list):
+    #                         print("{}{}:".format(spaces, k))
+    #                         for item in v:
+    #                             return pretty_print_json(item, spaces + "  ")
+    #                     else:
+    #                         print("{}{}:{}".format(spaces, k, v))
+    #                         return
+    #
+    #             msg_from_server = json.loads(json_message)
+    #
+    #             # pretty_print_json(msg_from_server)
+    #             self.game_state.update(msg_from_server)
+    #
+    #             # if 'msgs' in msg_from_server:
+    #             #     for msg in msg_from_server['msgs']:
+    #             #         if 'msg' in msg:
+    #             #             if msg['msg'] == "ping":
+    #             #                 request_pong = True
+    #             #
+    #             # # json_messages_from_server_file.write(pprint.pformat(msg_from_server,indent=2)+'\n')
+    #             # # json_messages_from_server_file.flush()
+    #             #
+    #             # logging.debug("i=" + str(i) + "Received Message:\n" + str(msg_from_server))
+    #             #
+    #             # if self.ai:
+    #             #     self.ai.add_server_message(msg_from_server)
+    #             #
+    #             # # {'msgs': [{'mode': 1, 'msg': 'input_mode'}]}
+    #             # # if 'msgs' in msg_from_server.keys():
+    #             # #     for msg in msg_from_server['msgs']:
+    #             # #         if 'msg' in msg.keys() and 'mode' in msg.keys():
+    #             # #             if msg['msg'] == 'input_mode' and msg['mode'] == 1:
+    #             # #                 SERVER_READY_FOR_INPUT = True
+    #             # #                 print("Server is now ready for input!")
+    #
+    #         except ValueError as e:
+    #             logging.warning("i=" + str(i) + "Ignoring unparseable JSON (error: %s): %s.", e.args[0], json_message)
+    #         except asyncio.CancelledError:
+    #             logging.info('Received message to cancel - ignoring so recv can finish up')
+    #             self.begin_shutdown = True
+    #         except asyncio.TimeoutError:
+    #             # server is now ready for input
+    #             print("Got an asyncio Timeout Error")
+    #             SERVER_READY_FOR_INPUT = True
+    #         except Exception as e:
+    #             logging.warning("Caught exception {} in get_all_server_messages()".format(e))
+    #         i += 1
+    #
+    #     if request_pong:
+    #         await self.websocket.send(json.dumps({"msg": "pong"}))
