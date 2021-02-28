@@ -67,32 +67,46 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._GAME_MODE_SELECTED = False
         self._READY_TO_SEND_ACTION = False
         self._LOBBY_IS_CLEAR = False
+        self._IN_LOBBY = False
+        self._GAME_STARTED = False
+        self._IN_MENU_SELECT_SPECIES = False
 
         self.messages_received_counter = 0
+        self.species_options = None
 
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
+        print("setting _CONNECTED = True")
         self._CONNECTED = True
-        self._READY_TO_LOGIN = True
 
     async def onOpen(self):
         print("WebSocket connection open.")
 
         # start sending messages every second ..
         while True:
-            if self._CONNECTED and not self._LOGGED_IN:
-                login_msg = {'msg': 'login',
-                             'username': self.config.agent_name,
-                             'password': self.config.agent_password}
-                self.sendMessage(json.dumps(login_msg).encode('utf-8'))
 
-            elif self._LOGGED_IN and not self._GAME_MODE_SELECTED:
-                # TODO left off here
-                pass
+            if self._CONNECTED and self._NEEDS_PONG:
+                print("SENDING PONG MESSAGE")
+                pong_msg = {"msg": "pong"}
+                self.sendMessage(json.dumps(pong_msg).encode('utf-8'))
+                self._NEEDS_PONG = False
+            else:
+                if self._CONNECTED and not self._LOGGED_IN:
+                    print("SENDING LOGIN MESSAGE")
+                    login_msg = {'msg': 'login',
+                                 'username': self.config.agent_name,
+                                 'password': self.config.agent_password}
+                    self.sendMessage(json.dumps(login_msg).encode('utf-8'))
 
+                elif self._LOGGED_IN and self._IN_LOBBY and not self._GAME_STARTED:
+                    print("SENDING GAME MODE SELECTION MESSAGE")
+                    play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
+                    self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
 
-            #self.sendMessage("Hello, world!".encode('utf8'))
-            #self.sendMessage(b"\x00\x01\x03\x04", isBinary=True)
+                elif self._GAME_STARTED:
+                    if self._IN_MENU_SELECT_SPECIES:
+                        pass
+
             await asyncio.sleep(1)
 
     def onMessage(self, payload, isBinary):
@@ -118,17 +132,34 @@ class DCSSProtocol(WebSocketClientProtocol):
         if self.check_for_pong(json_msg):
             self._NEEDS_PONG = True
             self._CONNECTED = True
+            print("setting _NEEDS_PONG = TRUE")
+            print("setting _CONNECTED = TRUE")
 
-        if self.check_for_select_game(json_msg):
-            self._GAME_MODE_SELECTED = True
+        if self.check_for_in_lobby(json_msg):
+            self._IN_LOBBY = True
+            print("setting _IN_LOBBY = TRUE")
 
         if self.check_for_login_success(json_msg):
             self._LOGGED_IN = True
+            print("setting _LOGGED_IN = TRUE")
 
         if self.check_for_lobby_clear(json_msg):
             self._LOBBY_IS_CLEAR = True
+            print("setting _LOBBY_IS_CLEAR = TRUE")
 
-    def check_for_select_game(self, json_msg):
+        if self.check_for_game_started(json_msg):
+            print("setting _GAME_STARTED = TRUE")
+            self._GAME_STARTED = True
+            self._IN_LOBBY = False
+
+        if self.check_for_species_selection_menu(json_msg):
+            print("setting IN_MENU_SELECT_SPECIES = True")
+            self._IN_MENU_SELECT_SPECIES = True
+            self.species_options = self.get_species_options(json_msg)
+
+
+
+    def check_for_in_lobby(self, json_msg):
         for v in nested_lookup('msg', json_msg):
             if v == 'set_game_links':
                 return True
@@ -152,9 +183,50 @@ class DCSSProtocol(WebSocketClientProtocol):
                 return True
         return False
 
+    def check_for_game_started(self, json_msg):
+        for v in nested_lookup('msg', json_msg):
+            if v == 'game_started':
+                return True
+        return False
+
+    def check_for_species_selection_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'Please select your species' in v:
+                return True
+        return False
+
+    def get_species_options(self, json_msg):
+        in_species_main_menu = False
+        for v in nested_lookup('menu_id', json_msg):
+            if v == 'species-main':
+                in_species_main_menu = True
+
+        if in_species_main_menu:
+            species_name_to_hotkeys = {}
+            for buttons_list in nested_lookup('buttons', json_msg):
+                for species_option in buttons_list:
+                    print("species_option: {}".format(species_option))
+                    hotkey = species_option["hotkey"]
+                    species_name = None
+                    if 'labels' in species_option.keys():
+                        species_name = species_option["labels"][0].split('-')[-1].strip()
+                    elif 'label' in species_option.keys():
+                        species_name = species_option["label"].split('-')[-1].strip()
+                    else:
+                        print("WARNING - Could not label for species option json: {}".format(species_option))
+
+                    if species_name:
+                        print("Just found species {} with hotkey {}".format(species_name, hotkey))
+                        species_name_to_hotkeys[species_name] = int(hotkey)
+            return species_name_to_hotkeys
+
+    def get_hotkey_json_as_msg(self, hotkey):
+        return {"keycode": hotkey, "msg":"key"}
+
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))
+
 
 
     #

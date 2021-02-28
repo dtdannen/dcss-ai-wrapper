@@ -13,3 +13,9 @@ class WebserverConfig:
     game_id = 'dcss-web-trunk'
 
 
+class CharacterCreationConfig:
+    species = 'Minotaur'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
+    background = "Berserker"  # species name must match exactly to the string in the dcss menu after the dash
+
+
+
