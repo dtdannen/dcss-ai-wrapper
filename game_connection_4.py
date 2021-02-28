@@ -55,6 +55,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         super().__init__()
         self.game_state = GameState()
         self.config = config.WebserverConfig
+        self.character_config = config.CharacterCreationConfig
         self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
 
         # States of the connection which determines which messages are relevant to send when
@@ -70,9 +71,10 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._IN_LOBBY = False
         self._GAME_STARTED = False
         self._IN_MENU_SELECT_SPECIES = False
+        self._SENT_SPECIES_SELECTION = False
 
         self.messages_received_counter = 0
-        self.species_options = None
+        self.species_options = {}
 
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
@@ -104,8 +106,15 @@ class DCSSProtocol(WebSocketClientProtocol):
                     self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
 
                 elif self._GAME_STARTED:
-                    if self._IN_MENU_SELECT_SPECIES:
-                        pass
+                    if self._IN_MENU_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
+                        if self.character_config.species not in self.species_options.keys():
+                            print("ERROR species {} specified in config is not available. Available choices are: {}".format(self.character_config.species, self.species_options.keys()))
+                        else:
+                            species_selection_hotkey = self.species_options[self.character_config.species]
+                            species_selection_msg = self.get_hotkey_json_as_msg(species_selection_hotkey)
+                            print("SENDING SPECIES SELECTION MESSAGE OF: {}".format(species_selection_msg))
+                            self._SENT_SPECIES_SELECTION = True
+                            self.sendMessage(json.dumps(species_selection_msg).encode('utf-8'))
 
             await asyncio.sleep(1)
 

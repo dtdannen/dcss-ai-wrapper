@@ -15,7 +15,7 @@ class WebserverConfig:
 
 class CharacterCreationConfig:
     species = 'Minotaur'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
-    background = "Berserker"  # species name must match exactly to the string in the dcss menu after the dash
-
+    background = "Berserker"  # background name must match exactly to the string in the dcss menu after the dash
+    starting_weapon = "hand axe"  # starting_weapon name must match exactly to the string in the dcss menu after the dash
 
 
