@@ -22,7 +22,7 @@ from nested_lookup import nested_lookup
 import asyncio
 
 from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
-
+from enum import Enum
 
 class MyClientProtocol(WebSocketClientProtocol):
 
@@ -49,6 +49,13 @@ class MyClientProtocol(WebSocketClientProtocol):
         print("WebSocket connection closed: {0}".format(reason))
 
 
+class Menu(Enum):
+    NO_MENU = 1
+    CHARACTER_CREATION_SELECT_SPECIES = 2
+    CHARACTER_CREATION_SELECT_BACKGROUND = 3
+    CHARACTER_CREATION_SELECT_WEAPON = 4
+
+
 class DCSSProtocol(WebSocketClientProtocol):
 
     def __init__(self):
@@ -70,7 +77,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._LOBBY_IS_CLEAR = False
         self._IN_LOBBY = False
         self._GAME_STARTED = False
-        self._IN_MENU_SELECT_SPECIES = False
+        self._IN_MENU = Menu.NO_MENU  # TODO LEFT OFF HERE - change menus to use this single menu variable
         self._SENT_SPECIES_SELECTION = False
 
         self.messages_received_counter = 0
@@ -166,6 +173,12 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._IN_MENU_SELECT_SPECIES = True
             self.species_options = self.get_species_options(json_msg)
 
+        if self.check_for_species_selection_menu(json_msg):
+
+            print("setting IN_MENU_SELECT_SPECIES = True")
+            self._IN_MENU_SELECT_SPECIES = True
+            self.species_options = self.get_species_options(json_msg)
+
 
 
     def check_for_in_lobby(self, json_msg):
@@ -222,12 +235,43 @@ class DCSSProtocol(WebSocketClientProtocol):
                     elif 'label' in species_option.keys():
                         species_name = species_option["label"].split('-')[-1].strip()
                     else:
-                        print("WARNING - Could not label for species option json: {}".format(species_option))
+                        print("WARNING - Could not find label for species option json: {}".format(species_option))
 
                     if species_name:
                         print("Just found species {} with hotkey {}".format(species_name, hotkey))
                         species_name_to_hotkeys[species_name] = int(hotkey)
             return species_name_to_hotkeys
+
+    def check_for_background_selection_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'Please select your background' in v:
+                return True
+        return False
+
+    def get_background_options(self, json_msg):
+        in_background_main_menu = False
+        for v in nested_lookup('menu_id', json_msg):
+            if v == 'background-main':
+                in_background_main_menu = True
+
+        if in_background_main_menu:
+            background_name_to_hotkeys = {}
+            for buttons_list in nested_lookup('buttons', json_msg):
+                for background_option in buttons_list:
+                    print("background_option: {}".format(background_option))
+                    hotkey = background_option["hotkey"]
+                    background_name = None
+                    if 'labels' in background_option.keys():
+                        background_name = background_option["labels"][0].split('-')[-1].strip()
+                    elif 'label' in background_option.keys():
+                        background_name = background_option["label"].split('-')[-1].strip()
+                    else:
+                        print("WARNING - Could not find label for background option json: {}".format(background_option))
+
+                    if background_name:
+                        print("Just found background {} with hotkey {}".format(background_name, hotkey))
+                        background_name_to_hotkeys[background_name] = int(hotkey)
+            return background_name_to_hotkeys
 
     def get_hotkey_json_as_msg(self, hotkey):
         return {"keycode": hotkey, "msg":"key"}
