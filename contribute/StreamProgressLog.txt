@@ -42,10 +42,14 @@ Stream on Feb 25, 2021:
 TONIGHT (March 3rd, 2021):
 1. Finish refactoring the websocket connection code
 1.1. Test an agent can connect and play, for a new game
-2. Develop an agent that can connect in the middle of a game, and test!
+1.2. (LEFT OFF HERE) Fix problems with creating a new game and updating the gamestate object
+2. (DONE) Develop an agent that can connect in the middle of a game, and test!
+3. Rename game_connection_4
+4. Clean up print statements for early menus
 
 
 Future issues to solve:
+* Detect when someone is spectating, and print special information if they are
 * only select heal goal if there are no monsters nearby
 * check if time (from the game) has changed - if not we have a problem
 * investigate situation where monsters are not being seen

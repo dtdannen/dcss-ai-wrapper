@@ -20,9 +20,11 @@ from nested_lookup import nested_lookup
 
 
 import asyncio
-
+import importlib
 from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
 from enum import Enum
+from agent import *  # We need to import all AI classes so that whatever one is in the config file, it will be found
+
 
 class MyClientProtocol(WebSocketClientProtocol):
 
@@ -83,11 +85,17 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._SENT_SPECIES_SELECTION = False
         self._SENT_BACKGROUND_SELECTION = False
         self._SENT_WEAPON_SELECTION = False
+        self._IN_CHARACTER_CREATION_MENUS = False
+
+        self.last_message_sent = None
+        self.next_action_msg = None
 
         self.messages_received_counter = 0
         self.species_options = {}
         self.background_options = {}
         self.weapon_options = {}
+
+        self.load_ai_agent()  # loads the ai agent specific in the AIConfig in config.py
 
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
@@ -127,6 +135,8 @@ class DCSSProtocol(WebSocketClientProtocol):
                             species_selection_msg = self.get_hotkey_json_as_msg(species_selection_hotkey)
                             print("SENDING SPECIES SELECTION MESSAGE OF: {}".format(species_selection_msg))
                             self._SENT_SPECIES_SELECTION = True
+                            # Right before we send the message, clear the menu - this only fails if the message being sent fails
+                            self._IN_MENU = Menu.NO_MENU
                             self.sendMessage(json.dumps(species_selection_msg).encode('utf-8'))
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_BACKGROUND and not self._SENT_BACKGROUND_SELECTION:
@@ -137,6 +147,8 @@ class DCSSProtocol(WebSocketClientProtocol):
                             background_selection_msg = self.get_hotkey_json_as_msg(background_selection_hotkey)
                             print("SENDING BACKGROUND SELECTION MESSAGE OF: {}".format(background_selection_msg))
                             self._SENT_BACKGROUND_SELECTION = True
+                            # Right before we send the message, clear the menu - this only fails if the message being sent fails
+                            self._IN_MENU = Menu.NO_MENU
                             self.sendMessage(json.dumps(background_selection_msg).encode('utf-8'))
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_WEAPON and not self._SENT_WEAPON_SELECTION:
@@ -147,12 +159,27 @@ class DCSSProtocol(WebSocketClientProtocol):
                             weapon_selection_msg = self.get_hotkey_json_as_msg(weapon_selection_hotkey)
                             print("SENDING WEAPON SELECTION MESSAGE OF: {}".format(weapon_selection_msg))
                             self._SENT_WEAPON_SELECTION = True
+                            # Right before we send the message, clear the menu - this only fails if the message being sent fails
+                            self._IN_MENU = Menu.NO_MENU
+                            self._IN_CHARACTER_CREATION_MENUS = False
                             self.sendMessage(json.dumps(weapon_selection_msg).encode('utf-8'))
+
 
                     # TODO check for inventory menu and other menus
 
-                    if not self._IN_MENU:
-                        pass
+                    if self._IN_MENU == Menu.NO_MENU:
+                        if not self._READY_TO_SEND_ACTION:
+                            self._READY_TO_SEND_ACTION = True
+                            print("We are now ready to send an action")
+                        elif self._READY_TO_SEND_ACTION:
+                            self._READY_TO_SEND_ACTION = False
+                            next_action = self.get_agent_next_action()
+                            if next_action:
+                                print("We are about to send action: {}".format(self.next_action_msg))
+                                self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
+                                self.last_message_sent = next_action
+                            self._READY_TO_SEND_ACTION = True
+                            print("We are now ready to send an action")
 
             await asyncio.sleep(1)
 
@@ -171,12 +198,16 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("Text message received: {0}".format(payload.decode('utf-8')))
             message_as_str = payload.decode('utf-8')
 
+        message_as_json = {}
         try:
             message_as_json = json.loads(message_as_str)
         except:
             print("Failure to parse message_as_json")
+            time.sleep(5)
 
         self.perform_state_checks(message_as_json)
+
+        self.game_state.update(message_as_json)
 
     def perform_state_checks(self, json_msg):
         if self.check_for_ping(json_msg):
@@ -204,6 +235,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):
+                self._IN_CHARACTER_CREATION_MENUS = True
                 print("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES")
                 self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES
                 self.species_options = self.get_species_options(json_msg)
@@ -298,17 +330,19 @@ class DCSSProtocol(WebSocketClientProtocol):
                 for background_option in buttons_list:
                     print("background_option: {}".format(background_option))
                     hotkey = background_option["hotkey"]
-                    background_name = None
-                    if 'labels' in background_option.keys():
-                        background_name = background_option["labels"][0].split('-')[-1].strip()
-                    elif 'label' in background_option.keys():
-                        background_name = background_option["label"].split('-')[-1].strip()
-                    else:
-                        print("WARNING - Could not find label for background option json: {}".format(background_option))
+                    if hotkey != 9:
+                        # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
+                        background_name = None
+                        if 'labels' in background_option.keys():
+                            background_name = background_option["labels"][0].split('-')[-1].strip()
+                        elif 'label' in background_option.keys():
+                            background_name = background_option["label"].split('-')[-1].strip()
+                        else:
+                            print("WARNING - Could not find label for background option json: {}".format(background_option))
 
-                    if background_name:
-                        print("Just found background {} with hotkey {}".format(background_name, hotkey))
-                        background_name_to_hotkeys[background_name] = int(hotkey)
+                        if background_name:
+                            print("Just found background {} with hotkey {}".format(background_name, hotkey))
+                            background_name_to_hotkeys[background_name] = int(hotkey)
             return background_name_to_hotkeys
 
     def check_for_weapon_selection_menu(self, json_msg):
@@ -328,8 +362,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             for buttons_list in nested_lookup('buttons', json_msg):
                 for weapon_option in buttons_list:
                     print("weapon_option: {}".format(weapon_option))
-                    if weapon_option['description'] == '':
-                        hotkey = weapon_option["hotkey"]
+                    hotkey = weapon_option["hotkey"]
+                    if hotkey != 9:
+                        # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
+
                         weapon_name = None
                         if 'labels' in weapon_option.keys():
                             weapon_name = weapon_option["labels"][0].split('-')[-1].strip()
@@ -346,6 +382,22 @@ class DCSSProtocol(WebSocketClientProtocol):
     def get_hotkey_json_as_msg(self, hotkey):
         return {"keycode": hotkey, "msg":"key"}
 
+    def ready_to_send_action(self):
+        return self._READY_TO_SEND_ACTION
+
+    def get_agent_next_action(self):
+        if self.agent:
+            next_action = self.agent.get_action(self.game_state)
+            return next_action
+
+        return None
+
+    def get_gamestate(self):
+        return self.game_state
+
+    def load_ai_agent(self):
+        module = importlib.import_module('agent')
+        self.agent = getattr(module, config.AIConfig.ai_python_class)()
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection closed: {0}".format(reason))

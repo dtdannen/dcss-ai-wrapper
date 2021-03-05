@@ -19,3 +19,5 @@ class CharacterCreationConfig:
     starting_weapon = "hand axe"  # starting_weapon name must match exactly to the string in the dcss menu after the dash
 
 
+class AIConfig:
+    ai_python_class = 'FastDownwardPlanningAgent'
