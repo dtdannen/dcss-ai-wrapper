@@ -54,6 +54,8 @@ class Menu(Enum):
     CHARACTER_CREATION_SELECT_SPECIES = 2
     CHARACTER_CREATION_SELECT_BACKGROUND = 3
     CHARACTER_CREATION_SELECT_WEAPON = 4
+    CHARACTER_INVENTORY_MENU = 5
+    CHARACTER_ITEM_SPECIFIC_MENU = 6
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -79,9 +81,13 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._GAME_STARTED = False
         self._IN_MENU = Menu.NO_MENU  # TODO LEFT OFF HERE - change menus to use this single menu variable
         self._SENT_SPECIES_SELECTION = False
+        self._SENT_BACKGROUND_SELECTION = False
+        self._SENT_WEAPON_SELECTION = False
 
         self.messages_received_counter = 0
         self.species_options = {}
+        self.background_options = {}
+        self.weapon_options = {}
 
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
@@ -113,7 +119,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                     self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
 
                 elif self._GAME_STARTED:
-                    if self._IN_MENU_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
+                    if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
                         if self.character_config.species not in self.species_options.keys():
                             print("ERROR species {} specified in config is not available. Available choices are: {}".format(self.character_config.species, self.species_options.keys()))
                         else:
@@ -122,6 +128,31 @@ class DCSSProtocol(WebSocketClientProtocol):
                             print("SENDING SPECIES SELECTION MESSAGE OF: {}".format(species_selection_msg))
                             self._SENT_SPECIES_SELECTION = True
                             self.sendMessage(json.dumps(species_selection_msg).encode('utf-8'))
+
+                    if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_BACKGROUND and not self._SENT_BACKGROUND_SELECTION:
+                        if self.character_config.background not in self.background_options.keys():
+                            print("ERROR background {} specified in config is not available. Available choices are: {}".format(self.character_config.background, self.background_options.keys()))
+                        else:
+                            background_selection_hotkey = self.background_options[self.character_config.background]
+                            background_selection_msg = self.get_hotkey_json_as_msg(background_selection_hotkey)
+                            print("SENDING BACKGROUND SELECTION MESSAGE OF: {}".format(background_selection_msg))
+                            self._SENT_BACKGROUND_SELECTION = True
+                            self.sendMessage(json.dumps(background_selection_msg).encode('utf-8'))
+
+                    if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_WEAPON and not self._SENT_WEAPON_SELECTION:
+                        if self.character_config.starting_weapon not in self.weapon_options.keys():
+                            print("ERROR weapon {} specified in config is not available. Available choices are: {}".format(self.character_config.starting_weapon, self.weapon_options.keys()))
+                        else:
+                            weapon_selection_hotkey = self.weapon_options[self.character_config.starting_weapon]
+                            weapon_selection_msg = self.get_hotkey_json_as_msg(weapon_selection_hotkey)
+                            print("SENDING WEAPON SELECTION MESSAGE OF: {}".format(weapon_selection_msg))
+                            self._SENT_WEAPON_SELECTION = True
+                            self.sendMessage(json.dumps(weapon_selection_msg).encode('utf-8'))
+
+                    # TODO check for inventory menu and other menus
+
+                    if not self._IN_MENU:
+                        pass
 
             await asyncio.sleep(1)
 
@@ -137,15 +168,18 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("   Decoding turns it into: {}".format(json_message_decoded))
             message_as_str = json_message_decoded
         else:
-            print("Text message received: {0}".format(payload.decode('utf8')))
+            print("Text message received: {0}".format(payload.decode('utf-8')))
             message_as_str = payload.decode('utf-8')
 
-        message_as_json = json.loads(message_as_str)
+        try:
+            message_as_json = json.loads(message_as_str)
+        except:
+            print("Failure to parse message_as_json")
 
         self.perform_state_checks(message_as_json)
 
     def perform_state_checks(self, json_msg):
-        if self.check_for_pong(json_msg):
+        if self.check_for_ping(json_msg):
             self._NEEDS_PONG = True
             self._CONNECTED = True
             print("setting _NEEDS_PONG = TRUE")
@@ -168,17 +202,21 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._GAME_STARTED = True
             self._IN_LOBBY = False
 
-        if self.check_for_species_selection_menu(json_msg):
-            print("setting IN_MENU_SELECT_SPECIES = True")
-            self._IN_MENU_SELECT_SPECIES = True
-            self.species_options = self.get_species_options(json_msg)
+        if self._GAME_STARTED:
+            if self.check_for_species_selection_menu(json_msg):
+                print("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES")
+                self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES
+                self.species_options = self.get_species_options(json_msg)
 
-        if self.check_for_species_selection_menu(json_msg):
+            if self.check_for_background_selection_menu(json_msg):
+                print("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_BACKGROUND")
+                self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_BACKGROUND
+                self.background_options = self.get_background_options(json_msg)
 
-            print("setting IN_MENU_SELECT_SPECIES = True")
-            self._IN_MENU_SELECT_SPECIES = True
-            self.species_options = self.get_species_options(json_msg)
-
+            if self.check_for_weapon_selection_menu(json_msg):
+                print("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_WEAPON")
+                self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_WEAPON
+                self.weapon_options = self.get_weapon_options(json_msg)
 
 
     def check_for_in_lobby(self, json_msg):
@@ -187,7 +225,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                 return True
         return False
 
-    def check_for_pong(self, json_msg):
+    def check_for_ping(self, json_msg):
         for v in nested_lookup('msg', json_msg):
             if v == 'ping':
                 return True
@@ -272,6 +310,38 @@ class DCSSProtocol(WebSocketClientProtocol):
                         print("Just found background {} with hotkey {}".format(background_name, hotkey))
                         background_name_to_hotkeys[background_name] = int(hotkey)
             return background_name_to_hotkeys
+
+    def check_for_weapon_selection_menu(self, json_msg):
+        for v in nested_lookup('prompt', json_msg):
+            if 'You have a choice of weapons' in v:
+                return True
+        return False
+
+    def get_weapon_options(self, json_msg):
+        in_weapon_main_menu = False
+        for v in nested_lookup('menu_id', json_msg):
+            if v == 'weapon-main':
+                in_weapon_main_menu = True
+
+        if in_weapon_main_menu:
+            weapon_name_to_hotkeys = {}
+            for buttons_list in nested_lookup('buttons', json_msg):
+                for weapon_option in buttons_list:
+                    print("weapon_option: {}".format(weapon_option))
+                    if weapon_option['description'] == '':
+                        hotkey = weapon_option["hotkey"]
+                        weapon_name = None
+                        if 'labels' in weapon_option.keys():
+                            weapon_name = weapon_option["labels"][0].split('-')[-1].strip()
+                        elif 'label' in weapon_option.keys():
+                            weapon_name = weapon_option["label"].split('-')[-1].strip()
+                        else:
+                            print("WARNING - Could not find label for weapon option json: {}".format(weapon_option))
+
+                        if weapon_name:
+                            print("Just found weapon {} with hotkey {}".format(weapon_name, hotkey))
+                            weapon_name_to_hotkeys[weapon_name] = int(hotkey)
+            return weapon_name_to_hotkeys
 
     def get_hotkey_json_as_msg(self, hotkey):
         return {"keycode": hotkey, "msg":"key"}

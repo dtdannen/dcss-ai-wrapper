@@ -27,7 +27,7 @@ Stream on Feb 18, 2021:
 5. (Bonus) Figure out how to reconnect to an existing game (Quality of Life Improvement)
 
 
-TONIGHT (Feb 25, 2021):
+Stream on Feb 25, 2021:
 1. (DONE) Pick up where we left off - decoupling the goal selection with every action
 2. Allow the agent to reconnect in the middle of a game
    2.1: Need a way to determine whether a game already exists
@@ -38,6 +38,12 @@ TONIGHT (Feb 25, 2021):
 
              Next time start off looking at game_connection.py: get_all_server_messages()
 3. Begin looking at vector representations of the state (to support reinforcement learning)
+
+TONIGHT (March 3rd, 2021):
+1. Finish refactoring the websocket connection code
+1.1. Test an agent can connect and play, for a new game
+2. Develop an agent that can connect in the middle of a game, and test!
+
 
 Future issues to solve:
 * only select heal goal if there are no monsters nearby
