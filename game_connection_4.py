@@ -86,6 +86,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._SENT_BACKGROUND_SELECTION = False
         self._SENT_WEAPON_SELECTION = False
         self._IN_CHARACTER_CREATION_MENUS = False
+        self._RECEIVED_MAP_DATA = False
 
         self.last_message_sent = None
         self.next_action_msg = None
@@ -167,11 +168,12 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                     # TODO check for inventory menu and other menus
 
-                    if self._IN_MENU == Menu.NO_MENU:
+                    if self._IN_MENU == Menu.NO_MENU and not self._IN_CHARACTER_CREATION_MENUS and self._RECEIVED_MAP_DATA:
                         if not self._READY_TO_SEND_ACTION:
                             self._READY_TO_SEND_ACTION = True
                             print("We are now ready to send an action")
                         elif self._READY_TO_SEND_ACTION:
+                            self.game_state.draw_cell_map()
                             self._READY_TO_SEND_ACTION = False
                             next_action = self.get_agent_next_action()
                             if next_action:
@@ -203,11 +205,12 @@ class DCSSProtocol(WebSocketClientProtocol):
             message_as_json = json.loads(message_as_str)
         except:
             print("Failure to parse message_as_json")
-            time.sleep(5)
+            time.sleep(20)
+
+        self.game_state.update(message_as_json)
 
         self.perform_state_checks(message_as_json)
 
-        self.game_state.update(message_as_json)
 
     def perform_state_checks(self, json_msg):
         if self.check_for_ping(json_msg):
@@ -232,6 +235,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("setting _GAME_STARTED = TRUE")
             self._GAME_STARTED = True
             self._IN_LOBBY = False
+
+        if not self._RECEIVED_MAP_DATA and self.check_received_map_data(json_msg):
+            print("setting _RECEIVED_MAP_DATA = TRUE")
+            self._RECEIVED_MAP_DATA = True
 
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):
@@ -281,6 +288,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                 return True
         return False
 
+    def check_received_map_data(self, json_msg):
+        for v in nested_lookup('msg', json_msg):
+            if v == 'map':
+                return True
+        return False
+
     def check_for_species_selection_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):
             if 'Please select your species' in v:
@@ -297,7 +310,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             species_name_to_hotkeys = {}
             for buttons_list in nested_lookup('buttons', json_msg):
                 for species_option in buttons_list:
-                    print("species_option: {}".format(species_option))
+                    #print("species_option: {}".format(species_option))
                     hotkey = species_option["hotkey"]
                     species_name = None
                     if 'labels' in species_option.keys():
@@ -308,7 +321,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         print("WARNING - Could not find label for species option json: {}".format(species_option))
 
                     if species_name:
-                        print("Just found species {} with hotkey {}".format(species_name, hotkey))
+                        #print("Just found species {} with hotkey {}".format(species_name, hotkey))
                         species_name_to_hotkeys[species_name] = int(hotkey)
             return species_name_to_hotkeys
 
@@ -328,7 +341,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             background_name_to_hotkeys = {}
             for buttons_list in nested_lookup('buttons', json_msg):
                 for background_option in buttons_list:
-                    print("background_option: {}".format(background_option))
+                    #print("background_option: {}".format(background_option))
                     hotkey = background_option["hotkey"]
                     if hotkey != 9:
                         # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
@@ -341,7 +354,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             print("WARNING - Could not find label for background option json: {}".format(background_option))
 
                         if background_name:
-                            print("Just found background {} with hotkey {}".format(background_name, hotkey))
+                            #print("Just found background {} with hotkey {}".format(background_name, hotkey))
                             background_name_to_hotkeys[background_name] = int(hotkey)
             return background_name_to_hotkeys
 
@@ -361,7 +374,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             weapon_name_to_hotkeys = {}
             for buttons_list in nested_lookup('buttons', json_msg):
                 for weapon_option in buttons_list:
-                    print("weapon_option: {}".format(weapon_option))
+                    #print("weapon_option: {}".format(weapon_option))
                     hotkey = weapon_option["hotkey"]
                     if hotkey != 9:
                         # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
@@ -375,7 +388,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             print("WARNING - Could not find label for weapon option json: {}".format(weapon_option))
 
                         if weapon_name:
-                            print("Just found weapon {} with hotkey {}".format(weapon_name, hotkey))
+                            #print("Just found weapon {} with hotkey {}".format(weapon_name, hotkey))
                             weapon_name_to_hotkeys[weapon_name] = int(hotkey)
             return weapon_name_to_hotkeys
 

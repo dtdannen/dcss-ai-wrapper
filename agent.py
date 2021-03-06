@@ -192,9 +192,13 @@ class FastDownwardPlanningAgent(Agent):
         if i < 4 and len(closed_door_cells) > 1:
             # print("Attempting to choose a closed door as a goal if possible")
             goal_cell = random.choice(closed_door_cells)
-        else:
+        elif len(farthest_away_cells) > 0:
             goal_cell = random.choice(farthest_away_cells)
             # print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
+        else:
+            # can't find any cells
+            return None
+
         goal_str = "(playerat {})".format(goal_cell.get_pddl_name())
         #print("Returning goal str of {}".format(goal_str))
         return goal_str

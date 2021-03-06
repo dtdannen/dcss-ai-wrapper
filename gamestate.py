@@ -403,15 +403,16 @@ class CellMap:
         self.max_x = None
         self.max_y = None
         self.num_cells = 0
-        self.place_depth_to_x_y_to_cells = {}  # key is depth, then key is an (x,y) tuple, val is the cell at that spot
-        self.current_depth = 1
         self.current_place = "Dungeon"
+        self.current_depth = 1
+        self.place_depth_to_x_y_to_cells = {}  # key is depth, then key is an (x,y) tuple, val is the cell at that spot
         self.agent_x = None
         self.agent_y = None
         # unknown_vals = {k:None for k in CellRawStrDatum} # test this
         # self.unknown_cell = Cell(
 
     def add_or_update_cell(self, x, y, vals):
+        #print("add_or_update_cell with args {} {} {}".format(x, y, vals))
         # print("vals={}".format(str(vals)))
 
         if self.current_place not in self.place_depth_to_x_y_to_cells.keys():
@@ -580,6 +581,9 @@ class CellMap:
         return object_strs, fact_strs
 
     def get_xy_to_cells_dict(self):
+        if self.current_depth == 0:
+            # depth is only 0 when the player is in the character creation menus in the beginning
+            return {}
         return self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth]
 
     def get_player_cell(self):
@@ -1240,7 +1244,9 @@ class GameState:
         """
 
         for equip_slot, equip_item in data.items():
-            print("equip slot {} has value {}".format(equip_slot, equip_item))
+            # TODO parse what the player has equipped
+            #print("equip slot {} has value {}".format(equip_slot, equip_item))
+            pass
 
         # Todo - if an item is equipped, find the item in the inventory, and update the is_equipped flag
 
