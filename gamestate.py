@@ -412,29 +412,22 @@ class Cell:
 
         if self.has_player:
             return 1
-        elif self.has_monster:
+        elif self.has_monster or self.has_plant:
             return 2
-        elif self.has_lava:
+        elif self.has_lava or self.has_tree or self.has_statue or self.has_wall:
+            # represents any obstacle that prevents moving into this space
             return 3
-        elif self.has_plant or self.has_tree:
-            return 4
-        elif self.has_stairs_up:
-            return 5
-        elif self.has_stairs_down:
-            return 6
-        elif self.has_statue or self.has_wall:
-            return 7
         elif self.has_open_door:
-            return 8
+            return 4
         elif self.has_closed_door:
-            return 9
+            return 5
         else:
             return 0  # signifies being empty
 
     @staticmethod
     def get_simple_vector_value_for_nonexistent_cell():
         """In the situation where we need to represent a tile that doesn't exist, use this as the default value"""
-        return 7 # same as a statue or a wall
+        return 3  # same as an obstacle
 
     def __str__(self):
         if self.g and len(self.g) >= 1:
