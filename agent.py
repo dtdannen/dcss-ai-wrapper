@@ -11,9 +11,6 @@ class Agent:
     def __init__(self):
         pass
 
-    def get_game_mode_setup_actions(self):
-        raise NotImplementedError()
-
     def get_action(self, gamestate: GameState):
         raise NotImplementedError()
 
@@ -52,6 +49,25 @@ class SimpleRandomAgent(Agent):
         return self.do_dungeon_webserver()
 
     def get_action(self, gamestate):
+        simple_commands = [Command.MOVE_OR_ATTACK_N,
+                           Command.MOVE_OR_ATTACK_S,
+                           Command.MOVE_OR_ATTACK_E,
+                           Command.MOVE_OR_ATTACK_W,
+                           Command.MOVE_OR_ATTACK_NE,
+                           Command.MOVE_OR_ATTACK_NW,
+                           Command.MOVE_OR_ATTACK_SW,
+                           Command.MOVE_OR_ATTACK_SE]
+        return random.choice(simple_commands)
+
+
+class SimpleRLAgent:
+
+    def get_action(self, gamestate):
+        r = 2
+        print("---------------------")
+        print("Radius around agent (r={}):".format(r))
+        print(gamestate.get_cell_map().print_radius_around_agent(r=r))
+        print("---------------------")
         simple_commands = [Command.MOVE_OR_ATTACK_N,
                            Command.MOVE_OR_ATTACK_S,
                            Command.MOVE_OR_ATTACK_E,

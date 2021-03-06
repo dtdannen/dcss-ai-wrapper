@@ -296,7 +296,8 @@ class Cell:
             elif self.g == '†':
                 self.has_corpse = True
 
-            # TODO - add detection of smoke
+            elif self.g == '§':
+                self.has_smoke = True
 
             # now check for monsters
             elif self.g == 'P':
@@ -540,14 +541,16 @@ class CellMap:
         x_min = self.agent_x - r
         x_max = self.agent_x + r
         y_min = self.agent_y - r
-        y_max = self.agent_y - r
+        y_max = self.agent_y + r
+        print("x_min={}, x_max={}, y_min={}, y_max={}".format(x_min, x_max, y_min, y_max))
         s = ""
         for curr_y in range(y_min, y_max + 1):
+            #print("curr_y is {}".format(curr_y))
             for curr_x in range(x_min, x_max + 1):
                 if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
                     s += str(self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)])
                 else:
-                    s += " "
+                    s += "x"
             s += '\n'
         return s
 
