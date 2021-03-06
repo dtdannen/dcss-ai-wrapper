@@ -66,7 +66,14 @@ class SimpleRLAgent:
         r = 2
         print("---------------------")
         print("Radius around agent (r={}):".format(r))
-        print(gamestate.get_cell_map().print_radius_around_agent(r=r))
+        num_rows = (2*r) + 1
+        row_size = (2*r) + 1
+        cell_vector = gamestate.get_cell_map().get_radius_around_agent_vector(r=2, tile_vector_repr='simple')
+        for r in range(num_rows):
+            s = ''
+            for c in range(row_size):
+                s += str(cell_vector[(r*row_size)+c])
+            print(s)
         print("---------------------")
         simple_commands = [Command.MOVE_OR_ATTACK_N,
                            Command.MOVE_OR_ATTACK_S,
