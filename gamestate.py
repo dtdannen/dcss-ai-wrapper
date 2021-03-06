@@ -135,6 +135,9 @@ class Monster:
                 new_monster.update(vals, ascii_sym)
                 Monster.ids_to_monsters[new_monster.id] = new_monster
                 return new_monster
+        elif 'name' in vals.keys() and vals['name'] == 'plant':
+            # a plant is not a monster
+            return 'plant'
         else:
             raise Exception("Monster with no id, here's the vals: {}".format(vals))
 
@@ -238,7 +241,11 @@ class Cell:
             if vals['mon']:
                 # we have a live monster in this cell
                 self.monster = Monster.create_or_update_monster(vals['mon'], ascii_sym=self.g)
-                self.monster.set_cell(self)
+                if self.monster == 'plant':  # sometimes monsters are plants, but we don't want to consider it a monster for our sake
+                    self.has_plant = True
+                    self.monster = None
+                else:
+                    self.monster.set_cell(self)
                 # print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x, self.y))))
             else:
                 # a monster either died here or moved to a different cell, either way it's not in this cell
