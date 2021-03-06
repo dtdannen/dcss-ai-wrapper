@@ -178,12 +178,8 @@ class Action:
         Command.ATTACK_WITHOUT_MOVE_W: {'msg': 'key', "keycode": -230},
         Command.ATTACK_WITHOUT_MOVE_NW: {'msg': 'key', "keycode": -227},
         Command.ATTACK_WITHOUT_MOVE_SW: {'msg': 'key', "keycode": -226},
-
-         #  Todo - similar issue to github issue 9
-         # Command.ATTACK_WITHOUT_MOVE_NE: {'msg': 'key', "keycode": },
-
-         #  Todo - similar issue to github issue 9
-         # Command.ATTACK_WITHOUT_MOVE_SE: {'msg': 'key', "keycode": },
+        Command.ATTACK_WITHOUT_MOVE_NE: {'msg': 'key', "keycode": -224},
+        Command.ATTACK_WITHOUT_MOVE_SE: {'msg': 'key', "keycode": -223},
 
         Command.AUTO_FIGHT: {'msg': 'key', 'keycode': 9},
 
