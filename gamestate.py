@@ -392,6 +392,45 @@ class Cell:
         # this considers diagonal movements
         return max(abs(self.x - cell.x), abs(self.y - cell.y))
 
+    def get_simple_vector(self):
+        """
+        Returns a vector based representation of the cell for use in RL approaches.
+
+        This vector has length 1 and is highly simplified. Possible values are:
+        0 - empty
+        1 - player
+        2 - monster
+        3 - lava
+        4 - plant or tree
+        5 - stairsup
+        6 - stairsdown
+        7 - statue or wall or
+        8 - open door
+        9 - closed door
+        """
+
+        if self.has_player:
+            return 1
+        elif self.has_monster:
+            return 2
+        elif self.has_lava:
+            return 3
+        elif self.has_plant or self.has_tree:
+            return 4
+        elif self.has_stairs_up:
+            return 5
+        elif self.has_stairs_down:
+            return 6
+        elif self.has_statue or self.has_wall:
+            return 7
+        elif self.has_open_door:
+            return 8
+        elif self.has_closed_door:
+            return 9
+        else:
+            return 0  # signifies being empty
+
+
     def __str__(self):
         if self.g and len(self.g) >= 1:
             return self.g
