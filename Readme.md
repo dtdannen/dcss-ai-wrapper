@@ -26,21 +26,93 @@ Join the chat at https://gitter.im/dcss-ai-wrapper/community
 
 # Quickstart
 
-1. Clone this repository
+Clone this repository
 
-2. Create a virtualenv...
 
-3. Pull a pre-made docker image with the webserver installed
+    git clone https://github.com/dtdannen/dcss-ai-wrapper.git    
 
-4. Run the docker
+Create a virtualenv and install packages
 
-5. Open your browser
 
-6. Run your agent
+    python3 -m venv .env
 
-7. Click on the agent's name in the browser to spectate
+On Linux in the shell:
 
-# Installation
+
+    source .env/bin/activate
+
+Or on Windows from powershell:
+
+    ./Scripts/Activate.ps1
+
+Then to install all packages into this virtualenv:
+
+    pip install -r requirements.txt
+
+
+Pull a pre-made docker image with the DCSS webserver installed (if you'd like to create your own docker or install DCSS yourself, see instructions below):
+
+    
+    docker pull dtdannen34/dcss-ai-wrapper
+
+Run the docker and open an interactive shell
+
+
+    docker run -it -p 8080:8080 b3d5cdf181b8
+
+
+Now launch the webserver from within the docker interactive shell by first activate python:
+
+    cd /dcss/crawl/crawl-ref/source/webserver
+    source venv/bin/activate
+
+Then run the webserver:
+
+    cd ..
+    python webserver/server.py
+    
+
+Now you can leave the docker alone, as long as it keeps running agents can connect and play the game.
+
+Open your browser to http://localhost:8080/ to the DCSS browser interface, which should look like:
+
+
+![](contribute/dcss_browser_screenshot_1.png)
+
+
+Click on the 'Register' button and create an account with the following values:
+
+* Username: midca
+* Password: midca
+* Repeat password: midca
+* *Leave the Email Address field blank*
+
+![](contribute/dcss_browser_screenshot_2.png)
+
+Then click 'Submit'.
+
+By default you'll be logged in on the browser but it's recommended for you to be logged out so go ahead and click the 'Logout' button.
+
+**Note:** Do not login on the browser yourself, creating the account is so that the agent in the API can connect and play. You will spectate the agent without logging in yourself.
+
+
+Now you can run your agent by running main_webserver.py:
+
+
+    python main_webserver.py
+
+Within 1-2 seconds you should see the agent show up in the lobby of the web browser, something like this:
+
+![](contribute/dcss_browser_screenshot_3.png)
+
+Wait for the agent to get past the character creation menus (there's a strange bug that appears if you spectate too early - this should only take a few seconds), then click on the agent's name, which in this case is 'midca'. You will now be spectating the agent, for example:
+
+![](contribute/dcss_browser_screenshot_4.png)
+
+
+Now you're all set to go! The rest of this README file contains additional details on using the DCSS AI Wrapper.
+
+# Installing DCSS from Source
 
 ## Pre-requisites
 
