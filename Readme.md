@@ -22,6 +22,24 @@ If you'd like to contribute to the research effort aligned with this project, se
 
 Join the chat at https://gitter.im/dcss-ai-wrapper/community
 
+(New) Checkout the YouTube channel for live streams and tutorial videos (more content to come soon): https://www.youtube.com/channel/UCPR_UzIThpHNGEZos1SVmLQ 
+
+# Quickstart
+
+1. Clone this repository
+
+2. Create a virtualenv...
+
+3. Pull a pre-made docker image with the webserver installed
+
+4. Run the docker
+
+5. Open your browser
+
+6. Run your agent
+
+7. Click on the agent's name in the browser to spectate
+
 # Installation
 
 ## Pre-requisites
