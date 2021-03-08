@@ -3,7 +3,7 @@
 import random
 import numpy as np
 from collections import defaultdict
-
+from actions import  Command
 # Hyperparameters
 alpha = 0.1
 gamma = 0.6
@@ -55,4 +55,4 @@ class RLAgent:
             action = np.argmax(self.q_table[str(state)])  # Exploit learned values
             self.last_action = action
 
-            return action
+            return Command(action)
