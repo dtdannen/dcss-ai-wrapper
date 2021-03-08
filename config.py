@@ -20,4 +20,4 @@ class CharacterCreationConfig:
 
 
 class AIConfig:
-    ai_python_class = 'SimpleRLAgent'
+    ai_python_class = 'HumanInterfaceAgentDataTracking'

@@ -575,7 +575,78 @@ class CellMap:
             s += '\n'
         return s
 
-    def get_cell_map_pddl(self):
+    def get_cell_map_pddl_global(self):
+        object_strs = []
+        fact_strs = []
+        for place in self.place_depth_to_x_y_to_cells.keys():
+            for depth in self.place_depth_to_x_y_to_cells[place].keys():
+                for (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[place][depth].keys():
+                    cell = self.place_depth_to_x_y_to_cells[place][depth][(curr_x, curr_y)]
+                    object_strs.append(cell.get_pddl_name())
+
+                    for f in cell.get_pddl_facts():
+                        fact_strs.append(f)
+
+                    # print('cellxy = {}, cellname is {}'.format(str((curr_x, curr_y)), cell.get_pddl_name()))
+                    northcellxy = (cell.x, cell.y - 1)
+                    # print("northcellxy = {}".format(northcellxy))
+                    if northcellxy in self.place_depth_to_x_y_to_cells[place][depth].keys():
+                        northcell = self.place_depth_to_x_y_to_cells[place][depth][
+                            northcellxy]
+                        # print("northcell = {}".format(northcell.get_pddl_name()))
+                        fact_strs.append("(northof {} {})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
+
+                    southcellxy = (cell.x, cell.y + 1)
+                    if southcellxy in self.place_depth_to_x_y_to_cells[place][depth].keys():
+                        southcell = self.place_depth_to_x_y_to_cells[place][depth][
+                            southcellxy]
+                        fact_strs.append("(southof {} {})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
+
+                    westcellxy = (cell.x - 1, cell.y)
+                    if westcellxy in self.place_depth_to_x_y_to_cells[place][depth].keys():
+                        westcell = self.place_depth_to_x_y_to_cells[place][depth][westcellxy]
+                        fact_strs.append("(westof {} {})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
+
+                    eastcellxy = (cell.x + 1, cell.y)
+                    if eastcellxy in self.place_depth_to_x_y_to_cells[place][depth].keys():
+                        eastcell = self.place_depth_to_x_y_to_cells[place][depth][eastcellxy]
+                        fact_strs.append("(eastof {} {})".format(cell.get_pddl_name(), eastcell.get_pddl_name()))
+
+                    northeastcellxy = (cell.x + 1, cell.y - 1)
+                    if northeastcellxy in self.place_depth_to_x_y_to_cells[place][
+                        depth].keys():
+                        northeastcell = self.place_depth_to_x_y_to_cells[place][depth][
+                            northeastcellxy]
+                        fact_strs.append(
+                            "(northeastof {} {})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
+
+                    northwestcellxy = (cell.x - 1, cell.y - 1)
+                    if northwestcellxy in self.place_depth_to_x_y_to_cells[place][
+                        depth].keys():
+                        northwestcell = self.place_depth_to_x_y_to_cells[place][depth][
+                            northwestcellxy]
+                        fact_strs.append(
+                            "(northwestof {} {})".format(cell.get_pddl_name(), northwestcell.get_pddl_name()))
+
+                    southeastcellxy = (cell.x + 1, cell.y + 1)
+                    if southeastcellxy in self.place_depth_to_x_y_to_cells[place][
+                        depth].keys():
+                        southeastcell = self.place_depth_to_x_y_to_cells[place][depth][
+                            southeastcellxy]
+                        fact_strs.append(
+                            "(southeastof {} {})".format(cell.get_pddl_name(), southeastcell.get_pddl_name()))
+
+                    southwestcellxy = (cell.x - 1, cell.y + 1)
+                    if southwestcellxy in self.place_depth_to_x_y_to_cells[place][
+                        depth].keys():
+                        southwestcell = self.place_depth_to_x_y_to_cells[place][depth][
+                            southwestcellxy]
+                        fact_strs.append(
+                            "(southwestof {} {})".format(cell.get_pddl_name(), southwestcell.get_pddl_name()))
+
+        return object_strs, fact_strs
+
+    def get_cell_map_pddl_current_place_only(self):
 
         object_strs = []
         fact_strs = []
@@ -1212,9 +1283,23 @@ class GameState:
 
         return player_pddl_strs
 
-    def get_pddl_current_state_cellmap(self):
-        object_strs, fact_strs = self.cellmap.get_cell_map_pddl()
+    def get_pddl_current_state_cellmap(self, current_place_only=True):
+        if current_place_only:
+            object_strs, fact_strs = self.cellmap.get_cell_map_pddl_current_place_only()
+        else:
+            object_strs, fact_strs = self.cellmap.get_cell_map_pddl_global()
         return object_strs, fact_strs
+
+    def get_current_game_turn(self):
+        return self.game_turn
+
+    def get_current_game_time(self):
+        return self.game_time
+
+    def get_all_pddl_facts(self):
+        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap(current_place_only=False)
+        fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
+        return fact_strs
 
     def write_pddl_current_state_to_file(self, filename, goals):
         """Filename is assumed to be a relevant filename from the folder that the main script is running"""
