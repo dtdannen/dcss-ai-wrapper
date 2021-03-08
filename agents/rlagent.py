@@ -27,6 +27,7 @@ class RLAgent:
             self.update(state, self.last_action)
         return self.get_action(state)
 
+    # TODO: write the reward function
     def get_reward(self, state):
         return 0
 
