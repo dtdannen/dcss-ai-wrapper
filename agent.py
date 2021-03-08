@@ -1,3 +1,4 @@
+from agents.rlagent import RLAgent
 from gamestate import GameState
 from actions import Command, Action
 import subprocess
@@ -5,7 +6,7 @@ import random
 import platform
 import os
 import time
-
+from agents import rlagent
 
 class Agent:
     def __init__(self):
@@ -61,6 +62,16 @@ class SimpleRandomAgent(Agent):
 
 
 class SimpleRLAgent:
+    simple_commands = [Command.MOVE_OR_ATTACK_N,
+                       Command.MOVE_OR_ATTACK_S,
+                       Command.MOVE_OR_ATTACK_E,
+                       Command.MOVE_OR_ATTACK_W,
+                       Command.MOVE_OR_ATTACK_NE,
+                       Command.MOVE_OR_ATTACK_NW,
+                       Command.MOVE_OR_ATTACK_SW,
+                       Command.MOVE_OR_ATTACK_SE]
+
+    agent = RLAgent(actions=simple_commands)
 
     def get_action(self, gamestate):
         r = 2
@@ -69,21 +80,18 @@ class SimpleRLAgent:
         num_rows = (2*r) + 1
         row_size = (2*r) + 1
         cell_vector = gamestate.get_cell_map().get_radius_around_agent_vector(r=2, tile_vector_repr='simple')
+        string_ints = [str(i) for i in cell_vector]
+        state = ''.join(string_ints)
+        next_action = self.agent.run(state)
+        # print(cell_vector)
         for r in range(num_rows):
             s = ''
             for c in range(row_size):
                 s += str(cell_vector[(r*row_size)+c])
             print(s)
         print("---------------------")
-        simple_commands = [Command.MOVE_OR_ATTACK_N,
-                           Command.MOVE_OR_ATTACK_S,
-                           Command.MOVE_OR_ATTACK_E,
-                           Command.MOVE_OR_ATTACK_W,
-                           Command.MOVE_OR_ATTACK_NE,
-                           Command.MOVE_OR_ATTACK_NW,
-                           Command.MOVE_OR_ATTACK_SW,
-                           Command.MOVE_OR_ATTACK_SE]
-        return random.choice(simple_commands)
+        print("action", next_action)
+        return next_action
 
 
 class TestAllCommandsAgent(Agent):
