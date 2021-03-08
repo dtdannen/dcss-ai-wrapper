@@ -20,4 +20,6 @@ class CharacterCreationConfig:
 
 
 class AIConfig:
-    ai_python_class = 'SimpleRandomAgent'
+
+    ai_python_class = 'SimpleRLAgent'
+

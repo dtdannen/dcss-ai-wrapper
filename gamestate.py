@@ -287,7 +287,7 @@ class Cell:
             elif self.g == '⌠':
                 self.has_fountain = True
 
-            elif self.g == '≈' or self.g == '§':
+            elif self.g == '≈':
                 self.has_lava = True
 
             elif self.g in ['☘', '♣']:
@@ -296,7 +296,8 @@ class Cell:
             elif self.g == '†':
                 self.has_corpse = True
 
-            # TODO - add detection of smoke
+            elif self.g == '§':
+                self.has_smoke = True
 
             # now check for monsters
             elif self.g == 'P':
@@ -391,6 +392,42 @@ class Cell:
     def straight_line_distance(self, cell):
         # this considers diagonal movements
         return max(abs(self.x - cell.x), abs(self.y - cell.y))
+
+    def get_simple_vector_value(self):
+        """
+        Returns a vector based representation of the cell for use in RL approaches.
+
+        This vector has length 1 and is highly simplified. Possible values are:
+        0 - empty
+        1 - player
+        2 - monster
+        3 - lava
+        4 - plant or tree
+        5 - stairsup
+        6 - stairsdown
+        7 - statue or wall or
+        8 - open door
+        9 - closed door
+        """
+
+        if self.has_player:
+            return 1
+        elif self.has_monster or self.has_plant:
+            return 2
+        elif self.has_lava or self.has_tree or self.has_statue or self.has_wall:
+            # represents any obstacle that prevents moving into this space
+            return 3
+        elif self.has_open_door:
+            return 4
+        elif self.has_closed_door:
+            return 5
+        else:
+            return 0  # signifies being empty
+
+    @staticmethod
+    def get_simple_vector_value_for_nonexistent_cell():
+        """In the situation where we need to represent a tile that doesn't exist, use this as the default value"""
+        return 3  # same as an obstacle
 
     def __str__(self):
         if self.g and len(self.g) >= 1:
@@ -497,18 +534,44 @@ class CellMap:
     def set_current_place(self, place: str):
         self.current_place = place
 
-    def print_radius_around_agent(self, r=8):
+    def get_radius_around_agent_vector(self, r=2, tile_vector_repr='simple'):
+        """
+        Returns a vector of tiles around the agent. The length of the vector is (2r+1)^2
+        """
+        required_length_of_vector = ((2*r)+1)**2
+        cell_vector = []
+
         x_min = self.agent_x - r
         x_max = self.agent_x + r
         y_min = self.agent_y - r
-        y_max = self.agent_y - r
+        y_max = self.agent_y + r
+        for curr_y in range(y_min, y_max + 1):
+            for curr_x in range(x_min, x_max + 1):
+                if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                    if tile_vector_repr == 'simple':
+                        cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)]
+                        cell_vector.append(cell.get_simple_vector_value())
+                else:
+                    if tile_vector_repr == 'simple':
+                        cell_vector.append(Cell.get_simple_vector_value_for_nonexistent_cell())
+
+        if len(cell_vector) != required_length_of_vector:
+            raise Exception("ERROR - cell_vector has length {} but required length is {}".format(len(cell_vector), required_length_of_vector))
+
+        return cell_vector
+
+    def get_radius_around_agent_str(self, r=8):
+        x_min = self.agent_x - r
+        x_max = self.agent_x + r
+        y_min = self.agent_y - r
+        y_max = self.agent_y + r
         s = ""
         for curr_y in range(y_min, y_max + 1):
             for curr_x in range(x_min, x_max + 1):
                 if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
                     s += str(self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)])
                 else:
-                    s += " "
+                    s += "x"
             s += '\n'
         return s
 
