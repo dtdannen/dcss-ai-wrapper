@@ -75,11 +75,17 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._READY_TO_LOGIN = False
         self._LOGGED_IN = False
         self._NEEDS_PONG = False
+        self._NEEDS_ENTER = False
         self._READY_TO_SELECT_GAME_MODE = False
         self._GAME_MODE_SELECTED = False
         self._READY_TO_SEND_ACTION = False
         self._LOBBY_IS_CLEAR = False
         self._IN_LOBBY = False
+        self._IN_GAME_SEED_MENU = False
+        self._SENT_GAME_SEED = False
+        self._CHECKED_BOX_FOR_PREGENERATION = False
+        self._READY_TO_SEND_SEED_GAME_START = False
+        self._SENT_SEEDED_GAME_START = False
         self._GAME_STARTED = False
         self._IN_MENU = Menu.NO_MENU  # TODO LEFT OFF HERE - change menus to use this single menu variable
         self._SENT_SPECIES_SELECTION = False
@@ -114,6 +120,11 @@ class DCSSProtocol(WebSocketClientProtocol):
                 pong_msg = {"msg": "pong"}
                 self.sendMessage(json.dumps(pong_msg).encode('utf-8'))
                 self._NEEDS_PONG = False
+            elif self._CONNECTED and self._GAME_STARTED and self._NEEDS_ENTER:
+                print("SENDING ENTER KEY BECAUSE OF PROMPT")
+                enter_key_msg = {"text":"\r","msg":"input"}
+                self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
+                self._NEEDS_ENTER = False
             else:
                 if self._CONNECTED and not self._LOGGED_IN:
                     print("SENDING LOGIN MESSAGE")
@@ -126,6 +137,24 @@ class DCSSProtocol(WebSocketClientProtocol):
                     print("SENDING GAME MODE SELECTION MESSAGE")
                     play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
                     self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
+
+                elif self.config.game_id == 'seeded-web-trunk' and self._IN_GAME_SEED_MENU and not self._SENT_GAME_SEED:
+                    print("SENDING GAME SEED")
+                    game_seed_msg = {"text":str(config.WebserverConfig.seed),"generation_id":1,"widget_id":"seed","msg":"ui_state_sync"}
+                    self.sendMessage(json.dumps(game_seed_msg).encode('utf-8'))
+                    self._SENT_GAME_SEED = True
+
+                elif self.config.game_id == 'seeded-web-trunk' and self._SENT_GAME_SEED and not self._CHECKED_BOX_FOR_PREGENERATION:
+                    print("SENDING CHECKMARK TO CONFIRM PREGENERATION OF DUNGEON")
+                    pregeneration_checkbox_msg = {"checked":True,"generation_id":1,"widget_id":"pregenerate","msg":"ui_state_sync"}
+                    self.sendMessage(json.dumps(pregeneration_checkbox_msg).encode('utf-8'))
+                    self._CHECKED_BOX_FOR_PREGENERATION = True
+
+                elif self.config.game_id == 'seeded-web-trunk' and self._READY_TO_SEND_SEED_GAME_START and self._SENT_GAME_SEED and self._CHECKED_BOX_FOR_PREGENERATION and not self._SENT_SEEDED_GAME_START:
+                    print("SENDING MESSAGE TO START THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
+                    start_seeded_game_msg_button = {"generation_id":1,"widget_id":"btn-begin","msg":"ui_state_sync"}
+                    self.sendMessage(json.dumps(start_seeded_game_msg_button).encode('utf-8'))
+                    self._SENT_SEEDED_GAME_START = True
 
                 elif self._GAME_STARTED:
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
@@ -219,6 +248,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("setting _NEEDS_PONG = TRUE")
             print("setting _CONNECTED = TRUE")
 
+        if self.check_for_enter_key(json_msg):
+            print("Checking for enter key, msg is:{}".format(json_msg))
+            return False
+
         if self.check_for_in_lobby(json_msg):
             self._IN_LOBBY = True
             print("setting _IN_LOBBY = TRUE")
@@ -230,6 +263,14 @@ class DCSSProtocol(WebSocketClientProtocol):
         if self.check_for_lobby_clear(json_msg):
             self._LOBBY_IS_CLEAR = True
             print("setting _LOBBY_IS_CLEAR = TRUE")
+
+        if self.check_for_game_seed_menu(json_msg):
+            self._IN_GAME_SEED_MENU = True
+            print("setting _IN_GAME_SEED_MENU = TRUE")
+
+        if self.check_for_pregeneration_check_true(json_msg):
+            self._READY_TO_SEND_SEED_GAME_START = True
+            print("setting _READY_TO_SEND_SEED_GAME_START = True")
 
         if self.check_for_game_started(json_msg):
             print("setting _GAME_STARTED = TRUE")
@@ -269,6 +310,29 @@ class DCSSProtocol(WebSocketClientProtocol):
             if v == 'ping':
                 return True
         return False
+
+    def check_for_enter_key(self, json_msg):
+        return False
+
+    def check_for_game_seed_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'Play a game with a custom seed' in v:
+                return True
+        return False
+
+    def check_for_pregeneration_check_true(self, json_msg):
+        checked_is_true = False
+        pregenerate_widget = False
+        for v in nested_lookup('checked', json_msg):
+            if v:
+                checked_is_true = True
+
+        for v in nested_lookup('widget_id', json_msg):
+            if v == "pregenerate":
+                pregenerate_widget = True
+
+        return checked_is_true and pregenerate_widget
+
 
     def check_for_login_success(self, json_msg):
         for v in nested_lookup('msg', json_msg):

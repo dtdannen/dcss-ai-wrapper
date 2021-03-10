@@ -47,8 +47,11 @@ TONIGHT (March 3rd, 2021):
 3. Rename game_connection_4
 4. Clean up print statements for early menus
 
+Currently Working On:
+* Getting seeded games working - right now starting the seeded game isn't working
 
 Future issues to solve:
+* Gracefully handle when a player dies
 * Detect when someone is spectating, and print special information if they are
 * only select heal goal if there are no monsters nearby
 * check if time (from the game) has changed - if not we have a problem

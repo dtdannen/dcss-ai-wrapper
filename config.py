@@ -10,7 +10,13 @@ class WebserverConfig:
     server_port = '8080'
     agent_name = 'midca'
     agent_password = 'midca'
-    game_id = 'dcss-web-trunk'
+
+    # game_id is the type of game to play on the server
+    #   'dcss-web-trunk'   - play trunk no seed
+    #   'seeded-web-trunk' - play a seeded version of the game
+    game_id = 'seeded-web-trunk'
+
+    seed = 4675233756386659716
 
 
 class CharacterCreationConfig:
@@ -20,4 +26,8 @@ class CharacterCreationConfig:
 
 
 class AIConfig:
-    ai_python_class = 'HumanInterfaceAgentDataTracking'
+    ai_python_class = 'SimpleRandomAgent'
+
+
+# to actually start a seeded game:
+# {"generation_id":1,"widget_id":"btn-begin","msg":"ui_state_sync"}
