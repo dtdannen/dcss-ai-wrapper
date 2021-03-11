@@ -39,7 +39,7 @@ Stream on Feb 25, 2021:
              Next time start off looking at game_connection.py: get_all_server_messages()
 3. Begin looking at vector representations of the state (to support reinforcement learning)
 
-TONIGHT (March 3rd, 2021):
+Stream on March 3rd, 2021:
 1. Finish refactoring the websocket connection code
 1.1. Test an agent can connect and play, for a new game
 1.2. (LEFT OFF HERE) Fix problems with creating a new game and updating the gamestate object
@@ -47,8 +47,16 @@ TONIGHT (March 3rd, 2021):
 3. Rename game_connection_4
 4. Clean up print statements for early menus
 
-Currently Working On:
-* Getting seeded games working - right now starting the seeded game isn't working
+
+TONIGHT (March 11th, 2021):
+0. Introduction
+1. Demo Reconnecting in the middle of a game is now working
+2. Demo increasing speed is working
+3. Get seeded games to work
+4. Get tutorial games to work
+5. Restart the game if the player dies
+6. BONUS - add item goals
+
 
 Future issues to solve:
 * Gracefully handle when a player dies

@@ -212,7 +212,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self._READY_TO_SEND_ACTION = True
                             print("We are now ready to send an action")
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.05)
 
     def onMessage(self, payload, isBinary):
         print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))
