@@ -21,6 +21,9 @@ class WebserverConfig:
 
     tutorial_number = 1
 
+    # TODO - actually use this somewhere
+    start_new_game_on_death = True
+
 
 class CharacterCreationConfig:
     species = 'Human'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"

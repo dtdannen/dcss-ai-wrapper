@@ -100,15 +100,7 @@ class Monster:
 
     """
 
-    all_possible_g_values = ['g',  # goblin
-                             'b',  # bat
-                             'r',  # rat
-                             'K',  # Kobold
-                             'h',  # quokka
-                             'l',  # frilled lizard
-                             'w',  # worm
-                             'Z',  # Zombie
-                             ]
+    all_possible_g_values = string.ascii_lowercase + string.ascii_uppercase
 
     # current theory: each monster has a unique id, so use this class variable to track them
     ids_to_monsters = {}
@@ -124,6 +116,7 @@ class Monster:
     @staticmethod
     def create_or_update_monster(vals, ascii_sym):
         if 'id' in vals.keys():
+            # check if id already exists, if so, retrieve that Monster instance
             mon_id = vals['id']
             if mon_id in Monster.ids_to_monsters.keys():
                 # if this monster already exists, update instead of creating new one
@@ -138,6 +131,11 @@ class Monster:
         elif 'name' in vals.keys() and vals['name'] == 'plant':
             # a plant is not a monster
             return 'plant'
+        elif 'name' in vals.keys():
+            # create a new monster and don't give it an ID (IDs are reserved for the game to give us)
+            new_monster = Monster()
+            new_monster.update(vals, ascii_sym)
+            return new_monster
         else:
             raise Exception("Monster with no id, here's the vals: {}".format(vals))
 
@@ -146,8 +144,6 @@ class Monster:
         self.ascii_sym = ascii_sym
         if 'id' in vals.keys():
             self.id = vals['id']
-        else:
-            raise Exception("Monster with no id, other vals are: {}".format(vals))
 
         if 'name' in vals.keys():
             self.name = vals['name']
@@ -225,12 +221,17 @@ class Cell:
         self.has_shaft = False
         self.has_corpse = False
         self.has_fountain = False
+        self.has_magical_condensation_cloud = False
 
         # TODO add condition for †
         self.monster = None  # there can only be up to 1 monster in a cell
         self.set_vals(vals)
 
     def set_vals(self, vals):
+        # monsters are constantly moving,
+        # TODO VERY LIKELY TO INTRODUCE A BUG
+        self.monster = False
+
         if 'x' in vals.keys():
             self.x = vals['x']
         if 'f' in vals.keys():
@@ -245,6 +246,7 @@ class Cell:
                     self.has_plant = True
                     self.monster = None
                 else:
+                    self.has_monster = True
                     self.monster.set_cell(self)
                 # print("Just added monster: {}".format(self.monster.get_pddl_str('cell{}{}'.format(self.x, self.y))))
             else:
@@ -257,7 +259,8 @@ class Cell:
         if 'g' in vals.keys():
             self.g = vals['g']
 
-            if self.g in Monster.all_possible_g_values:
+            # ['p', 'P'] are plants
+            if self.g not in ['p', 'P'] and self.g in Monster.all_possible_g_values:
                 self.has_monster = True
 
             elif self.g == '#':
@@ -298,6 +301,9 @@ class Cell:
 
             elif self.g == '§':
                 self.has_smoke = True
+
+            elif self.g == '°' or self.g == '○':
+                self.has_magical_condensation_cloud = True
 
             # now check for monsters
             elif self.g == 'P':

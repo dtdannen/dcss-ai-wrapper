@@ -18,7 +18,7 @@ import threading
 from gamestate import Monster
 from autobahn.asyncio.websocket import WebSocketClientFactory
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 
 def main():

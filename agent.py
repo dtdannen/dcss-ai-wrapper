@@ -287,7 +287,7 @@ class FastDownwardPlanningAgent(Agent):
         """
         cells_with_monsters = []
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
-            if cell.monster and cell.monster.threat != 0:
+            if cell.monster:
                 cells_with_monsters.append(cell)
 
         if len(cells_with_monsters) == 0:
@@ -351,8 +351,7 @@ class FastDownwardPlanningAgent(Agent):
                         pass
         except FileNotFoundError:
             print("Plan could not be generated...")
-            # Todo - change the goal here
-            return
+            return []
         except:
             print("Unknown error preventing plan from being generated")
             return
@@ -416,8 +415,8 @@ class FastDownwardPlanningAgent(Agent):
         monster_goal = self.get_first_monster_goal()
         if monster_goal:
             return monster_goal, "monster"
-        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
-            return self.get_full_health_goal(), "heal"
+        #elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
+        #    return self.get_full_health_goal(), "heal"
         # elif self.actions_taken_so_far % 10 == 0 and random.random() < 0.25:
         #     # TODO - choose a lower depth for current branch of the dungeon
         #     lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
@@ -442,11 +441,6 @@ class FastDownwardPlanningAgent(Agent):
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
 
-        # TODO - make this a goal and a single action plan
-        if self.current_game_state.more_prompt:
-            print("More prompt is true, making a plan of 1 action to send Enter Key")
-            return Command.ENTER_KEY
-
         self.new_goal, self.new_goal_type = self.goal_selection()
         print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
         print("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
@@ -466,8 +460,8 @@ class FastDownwardPlanningAgent(Agent):
         if self.plan and len(self.plan) > 0:
             next_action = self.plan.pop(0)
             self.actions_taken_so_far += 1
-        else:
-            print("warning - no plan, taking random action!")
-            next_action = self.get_random_simple_action()
+            return next_action
 
+        print("warning - no plan, taking random action!")
+        next_action = self.get_random_simple_action()
         return next_action
