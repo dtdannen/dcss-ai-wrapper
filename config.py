@@ -14,7 +14,7 @@ class WebserverConfig:
     # game_id is the type of game to play on the server
     #   'dcss-web-trunk'   - play trunk no seed
     #   'seeded-web-trunk' - play a seeded version of the game
-    game_id = 'dcss-web-trunk'
+    game_id = 'seeded-web-trunk'
 
     seed = 4675233756386659716
 

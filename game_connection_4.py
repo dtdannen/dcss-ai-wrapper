@@ -86,6 +86,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._CHECKED_BOX_FOR_PREGENERATION = False
         self._READY_TO_SEND_SEED_GAME_START = False
         self._SENT_SEEDED_GAME_START = False
+        self._SENT_SEEDED_GAME_START_CONFIRMATION = False
         self._GAME_STARTED = False
         self._IN_MENU = Menu.NO_MENU  # TODO LEFT OFF HERE - change menus to use this single menu variable
         self._SENT_SPECIES_SELECTION = False
@@ -156,6 +157,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                     self.sendMessage(json.dumps(start_seeded_game_msg_button).encode('utf-8'))
                     self._SENT_SEEDED_GAME_START = True
 
+                elif self.config.game_id == 'seeded-web-trunk' and self._SENT_SEEDED_GAME_START and not self._SENT_SEEDED_GAME_START_CONFIRMATION:
+                    print("SENDING MESSAGE TO CONFIRM THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
+                    confirm_seeded_game_msg_button = {"keycode":13,"msg":"key"}
+                    self.sendMessage(json.dumps(confirm_seeded_game_msg_button).encode('utf-8'))
+                    self._SENT_SEEDED_GAME_START_CONFIRMATION = True
+
                 elif self._GAME_STARTED:
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
                         if self.character_config.species not in self.species_options.keys():
@@ -212,7 +219,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self._READY_TO_SEND_ACTION = True
                             print("We are now ready to send an action")
 
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.5)
 
     def onMessage(self, payload, isBinary):
         print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))

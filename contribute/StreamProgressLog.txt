@@ -49,10 +49,10 @@ Stream on March 3rd, 2021:
 
 
 TONIGHT (March 11th, 2021):
-0. Introduction
-1. Demo Reconnecting in the middle of a game is now working
-2. Demo increasing speed is working
-3. Get seeded games to work
+0. (DONE) Introduction
+1. (DONE) Demo Reconnecting in the middle of a game is now working
+2. (DONE) Demo increasing speed is working
+3. (DONE) Get seeded games to work
 4. Get tutorial games to work
 5. Restart the game if the player dies
 6. BONUS - add item goals
