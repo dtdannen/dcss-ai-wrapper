@@ -14,9 +14,12 @@ class WebserverConfig:
     # game_id is the type of game to play on the server
     #   'dcss-web-trunk'   - play trunk no seed
     #   'seeded-web-trunk' - play a seeded version of the game
-    game_id = 'seeded-web-trunk'
+    #   'tut-web-trunk'    - play a tutorial
+    game_id = 'dcss-web-trunk'
 
     seed = 4675233756386659716
+
+    tutorial_number = 1
 
 
 class CharacterCreationConfig:
@@ -27,8 +30,5 @@ class CharacterCreationConfig:
 
 class AIConfig:
     # any class that is in agent.py and is a subclass of Agent may be set as the ai_python_class
-    ai_python_class = 'FastDownwardPlanningAgent'
+    ai_python_class = 'SimpleRandomAgent'
 
-
-# to actually start a seeded game:
-# {"generation_id":1,"widget_id":"btn-begin","msg":"ui_state_sync"}

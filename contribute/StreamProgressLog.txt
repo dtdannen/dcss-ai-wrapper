@@ -53,7 +53,7 @@ TONIGHT (March 11th, 2021):
 1. (DONE) Demo Reconnecting in the middle of a game is now working
 2. (DONE) Demo increasing speed is working
 3. (DONE) Get seeded games to work
-4. Get tutorial games to work
+4. (DONE) Get tutorial games to work
 5. Restart the game if the player dies
 6. BONUS - add item goals
 

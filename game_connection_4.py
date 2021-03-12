@@ -26,29 +26,8 @@ from enum import Enum
 from agent import *  # We need to import all AI classes so that whatever one is in the config file, it will be found
 
 
-class MyClientProtocol(WebSocketClientProtocol):
-
-    def onConnect(self, response):
-        print("Server connected: {0}".format(response.peer))
-
-
-    async def onOpen(self):
-        print("WebSocket connection open.")
-
-        # start sending messages every second ..
-        while True:
-            self.sendMessage("Hello, world!".encode('utf8'))
-            self.sendMessage(b"\x00\x01\x03\x04", isBinary=True)
-            await asyncio.sleep(1)
-
-    def onMessage(self, payload, isBinary):
-        if isBinary:
-            print("Binary message received: {0} bytes".format(len(payload)))
-        else:
-            print("Text message received: {0}".format(payload.decode('utf8')))
-
-    def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {0}".format(reason))
+class MenuBackgroundKnowledge:
+    tutorial_lesson_number_to_hotkey = {1: 97, 2: 98, 3: 99, 4: 100, 5: 101}
 
 
 class Menu(Enum):
@@ -58,6 +37,7 @@ class Menu(Enum):
     CHARACTER_CREATION_SELECT_WEAPON = 4
     CHARACTER_INVENTORY_MENU = 5
     CHARACTER_ITEM_SPECIFIC_MENU = 6
+    TUTORIAL_SELECTION_MENU = 7
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -81,12 +61,14 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._READY_TO_SEND_ACTION = False
         self._LOBBY_IS_CLEAR = False
         self._IN_LOBBY = False
+
         self._IN_GAME_SEED_MENU = False
         self._SENT_GAME_SEED = False
         self._CHECKED_BOX_FOR_PREGENERATION = False
         self._READY_TO_SEND_SEED_GAME_START = False
         self._SENT_SEEDED_GAME_START = False
         self._SENT_SEEDED_GAME_START_CONFIRMATION = False
+
         self._GAME_STARTED = False
         self._IN_MENU = Menu.NO_MENU  # TODO LEFT OFF HERE - change menus to use this single menu variable
         self._SENT_SPECIES_SELECTION = False
@@ -139,6 +121,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                     play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
                     self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
 
+                #### BEGIN SEEDED GAME MENU NAVIGATION ####
                 elif self.config.game_id == 'seeded-web-trunk' and self._IN_GAME_SEED_MENU and not self._SENT_GAME_SEED:
                     print("SENDING GAME SEED")
                     game_seed_msg = {"text":str(config.WebserverConfig.seed),"generation_id":1,"widget_id":"seed","msg":"ui_state_sync"}
@@ -162,6 +145,16 @@ class DCSSProtocol(WebSocketClientProtocol):
                     confirm_seeded_game_msg_button = {"keycode":13,"msg":"key"}
                     self.sendMessage(json.dumps(confirm_seeded_game_msg_button).encode('utf-8'))
                     self._SENT_SEEDED_GAME_START_CONFIRMATION = True
+                #### END SEEDED GAME MENU NAVIGATION ####
+
+                #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
+                elif self.config.game_id == 'tut-web-trunk' and self._IN_MENU == Menu.TUTORIAL_SELECTION_MENU:
+                    print("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE TUTORIAL MENU".format(config.WebserverConfig.tutorial_number))
+                    hotkey = MenuBackgroundKnowledge.tutorial_lesson_number_to_hotkey[config.WebserverConfig.tutorial_number]
+                    tutorial_lesson_selection_message = {"keycode": hotkey, "msg": "key"}
+                    self.sendMessage(json.dumps(tutorial_lesson_selection_message).encode('utf-8'))
+                    self._IN_MENU = Menu.NO_MENU
+                #### END TUTORIAL GAME MENU NAVIGATION ####
 
                 elif self._GAME_STARTED:
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
@@ -219,7 +212,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self._READY_TO_SEND_ACTION = True
                             print("We are now ready to send an action")
 
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.2)
 
     def onMessage(self, payload, isBinary):
         print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))
@@ -278,6 +271,10 @@ class DCSSProtocol(WebSocketClientProtocol):
         if self.check_for_pregeneration_check_true(json_msg):
             self._READY_TO_SEND_SEED_GAME_START = True
             print("setting _READY_TO_SEND_SEED_GAME_START = True")
+
+        if self.check_for_tutorial_menu(json_msg):
+            self._IN_MENU = Menu.TUTORIAL_SELECTION_MENU
+            print("setting _IN_GAME_TUTORIAL_MENU = True")
 
         if self.check_for_game_started(json_msg):
             print("setting _GAME_STARTED = TRUE")
@@ -339,6 +336,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                 pregenerate_widget = True
 
         return checked_is_true and pregenerate_widget
+
+    def check_for_tutorial_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'You have a choice of lessons' in v:
+                return True
+        return False
 
 
     def check_for_login_success(self, json_msg):
