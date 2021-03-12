@@ -191,13 +191,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self._SENT_WEAPON_SELECTION = True
                             # Right before we send the message, clear the menu - this only fails if the message being sent fails
                             self._IN_MENU = Menu.NO_MENU
-                            self._IN_CHARACTER_CREATION_MENUS = False
                             self.sendMessage(json.dumps(weapon_selection_msg).encode('utf-8'))
 
 
                     # TODO check for inventory menu and other menus
 
-                    if self._IN_MENU == Menu.NO_MENU and not self._IN_CHARACTER_CREATION_MENUS and self._RECEIVED_MAP_DATA:
+                    if self._IN_MENU == Menu.NO_MENU and self._RECEIVED_MAP_DATA:
                         if not self._READY_TO_SEND_ACTION:
                             self._READY_TO_SEND_ACTION = True
                             print("We are now ready to send an action")
@@ -212,7 +211,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self._READY_TO_SEND_ACTION = True
                             print("We are now ready to send an action")
 
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(1)
 
     def onMessage(self, payload, isBinary):
         print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))
@@ -287,7 +286,6 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):
-                self._IN_CHARACTER_CREATION_MENUS = True
                 print("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES")
                 self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES
                 self.species_options = self.get_species_options(json_msg)

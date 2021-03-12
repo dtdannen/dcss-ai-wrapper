@@ -23,12 +23,13 @@ class WebserverConfig:
 
 
 class CharacterCreationConfig:
-    species = 'Minotaur'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
-    background = "Berserker"  # background name must match exactly to the string in the dcss menu after the dash
+    species = 'Human'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
+    background = "Enchanter"  # background name must match exactly to the string in the dcss menu after the dash
     starting_weapon = "hand axe"  # starting_weapon name must match exactly to the string in the dcss menu after the dash
 
 
 class AIConfig:
     # any class that is in agent.py and is a subclass of Agent may be set as the ai_python_class
-    ai_python_class = 'SimpleRandomAgent'
+    #
+    ai_python_class = 'FastDownwardPlanningAgent'
 
