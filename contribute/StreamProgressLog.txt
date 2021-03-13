@@ -69,11 +69,9 @@ NEXT TIME (March 18th, 2021):
 Future issues to solve:
 * Issue with monsters.... plants are considered monsters when they shouldnt be...
 * Solve problem where planner doesn't attack monster if one cell away
-* Gracefully handle when a player dies
 * Detect when someone is spectating, and print special information if they are
 * only select heal goal if there are no monsters nearby
 * check if time (from the game) has changed - if not we have a problem
 * investigate situation where monsters are not being seen
 * add smoke to the objects that can be detected in cells
-* gracefully handle agent death
 * shallow and deep water can have the same symbol
