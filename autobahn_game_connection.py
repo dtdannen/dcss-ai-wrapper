@@ -242,7 +242,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         try:
             message_as_json = json.loads(message_as_str)
         except:
-            print("Failure to parse message_as_json")
+            print("Failure to parse message_as_json\n****** you may have spectated too soon, best thing to do is just to restart the agent ******")
             time.sleep(20)
 
         self.game_state.update(message_as_json)
