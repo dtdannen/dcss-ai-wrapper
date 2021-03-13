@@ -16,13 +16,13 @@
 
 If you use this repository in your research, please cite the above paper.
 
-If you'd like to contribute to the research effort aligned with this project, see [Research Effort](contribute/ResearchEffort.md)
+If you'd like to contribute to the research effort aligned with this project, see [Research Effort](contribute/ResearchEffort.md) and [Roadmap](contribute/Roadmap.md)
 
 # Development Community
 
 Join the chat at https://gitter.im/dcss-ai-wrapper/community
 
-(New) Checkout the YouTube channel for live streams and tutorial videos (more content to come soon): https://www.youtube.com/channel/UCPR_UzIThpHNGEZos1SVmLQ 
+Checkout the YouTube channel for live coding streams and tutorial videos (more content to come soon): https://www.youtube.com/channel/UCPR_UzIThpHNGEZos1SVmLQ 
 
 # Quickstart
 
