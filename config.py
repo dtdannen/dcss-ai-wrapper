@@ -10,6 +10,8 @@ class WebserverConfig:
     server_port = '8080'
     agent_name = 'midca'
     agent_password = 'midca'
+    delay = 0.2  # delay in seconds to wait before sending the next message,
+                 # decrease at your own risk. 0.5 and 1.0 have been known to be safe values
 
     # game_id is the type of game to play on the server
     #   'dcss-web-trunk'   - play trunk no seed
@@ -26,13 +28,12 @@ class WebserverConfig:
 
 
 class CharacterCreationConfig:
-    species = 'Human'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
-    background = "Enchanter"  # background name must match exactly to the string in the dcss menu after the dash
+    species = 'Minotaur'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
+    background = "Berserker"  # background name must match exactly to the string in the dcss menu after the dash
     starting_weapon = "hand axe"  # starting_weapon name must match exactly to the string in the dcss menu after the dash
 
 
 class AIConfig:
     # any class that is in agent.py and is a subclass of Agent may be set as the ai_python_class
     #
-    ai_python_class = 'FastDownwardPlanningAgent'
-
+    ai_python_class = 'SimpleRandomAgent'
