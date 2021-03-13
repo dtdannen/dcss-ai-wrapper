@@ -221,7 +221,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         else:
                             print("Game Connection Does Not Have An Agent")
 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(1)
 
     def onMessage(self, payload, isBinary):
         print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))

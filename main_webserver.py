@@ -7,7 +7,7 @@ Make sure to run crawl before running this demo, see:
 
 """
 
-from game_connection_4 import DCSSProtocol
+from autobahn_game_connection import DCSSProtocol
 from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningAgent
 from actions import Command, Action
 import config
