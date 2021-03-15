@@ -31,13 +31,13 @@ class RLAgent:
 
     # TODO: write the reward function
     def get_reward(self, state):
-        # agent_loc = state.split(",")[1]
-        # print("agent_loc", agent_loc)
-        # if agent_loc in visited_state:
-        #     return -10
-        #
-        # visited_state.append(agent_loc)
-        # return 10
+        print(state)
+        if state == '70':
+            return 10
+        if state == '30':
+            return 5
+        if state == '20':
+            return 2
         return 0
 
     def update(self, pstate, action, new_state):

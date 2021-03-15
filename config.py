@@ -17,7 +17,7 @@ class WebserverConfig:
     #   'dcss-web-trunk'   - play trunk no seed
     #   'seeded-web-trunk' - play a seeded version of the game
     #   'tut-web-trunk'    - play a tutorial
-    game_id = 'dcss-web-trunk'
+    game_id = 'tut-web-trunk'
 
     seed = 4675233756386659716
 

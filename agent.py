@@ -98,11 +98,11 @@ class SimpleRLAgent:
         print(agent_loc)
         next_action = self.agent.run(agent_loc)
         # print(cell_vector)
-        for r in range(num_rows):
-            s = ''
-            for c in range(row_size):
-                s += str(cell_vector[(r*row_size)+c])
-            print(s)
+        # for r in range(num_rows):
+        #     s = ''
+        #     for c in range(row_size):
+        #         s += str(cell_vector[(r*row_size)+c])
+        #     print(s)
         print("---------------------")
         print("action", next_action)
         return next_action
