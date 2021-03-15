@@ -560,6 +560,9 @@ class CellMap:
 
         return cell_vector
 
+    def get_agent_xy_vector(self):
+        return [self.agent_x, self.agent_y]
+
     def get_radius_around_agent_str(self, r=8):
         x_min = self.agent_x - r
         x_max = self.agent_x + r

@@ -80,9 +80,15 @@ class SimpleRLAgent:
         num_rows = (2*r) + 1
         row_size = (2*r) + 1
         cell_vector = gamestate.get_cell_map().get_radius_around_agent_vector(r=2, tile_vector_repr='simple')
+        agent_xy_vector = gamestate.get_cell_map().get_agent_xy_vector()
+
         string_ints = [str(i) for i in cell_vector]
         state = ''.join(string_ints)
-        next_action = self.agent.run(state)
+
+        string_loc = [str(i) for i in agent_xy_vector]
+        agent_loc = ''.join(string_loc)
+        print(agent_loc)
+        next_action = self.agent.run(agent_loc)
         # print(cell_vector)
         for r in range(num_rows):
             s = ''
