@@ -39,7 +39,7 @@ Stream on Feb 25, 2021:
              Next time start off looking at game_connection.py: get_all_server_messages()
 3. Begin looking at vector representations of the state (to support reinforcement learning)
 
-TONIGHT (March 3rd, 2021):
+Stream on March 3rd, 2021:
 1. Finish refactoring the websocket connection code
 1.1. Test an agent can connect and play, for a new game
 1.2. (LEFT OFF HERE) Fix problems with creating a new game and updating the gamestate object
@@ -48,11 +48,30 @@ TONIGHT (March 3rd, 2021):
 4. Clean up print statements for early menus
 
 
+TONIGHT (March 11th, 2021):
+0. (DONE) Introduction
+1. (DONE) Demo Reconnecting in the middle of a game is now working
+2. (DONE) Demo increasing speed is working
+3. (DONE) Get seeded games to work
+4. (DONE) Get tutorial games to work
+4. Get sprint games to work
+5. (DONE (no, but really it is done)) Restart the game if the player dies
+6. (DONE) Handle the case when the weapon menu is optional
+7. Handle the case where planner doesn't like closed doors
+7. BONUS - add item goals
+
+NEXT TIME (March 18th, 2021):
+1. Get sprint games to work
+2. Debug monster issues
+3. Get item and stair goals to work!
+
+
 Future issues to solve:
+* Issue with monsters.... plants are considered monsters when they shouldnt be...
+* Solve problem where planner doesn't attack monster if one cell away
 * Detect when someone is spectating, and print special information if they are
 * only select heal goal if there are no monsters nearby
 * check if time (from the game) has changed - if not we have a problem
 * investigate situation where monsters are not being seen
 * add smoke to the objects that can be detected in cells
-* gracefully handle agent death
 * shallow and deep water can have the same symbol

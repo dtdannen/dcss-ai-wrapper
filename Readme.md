@@ -10,19 +10,19 @@
 
 # About
 
-**dcss-ai-wrapper** aims to create an API for Dungeon Crawl Stone Soup for Artificial Intelligence research. This effort started with the following paper: 
+**dcss-ai-wrapper** is an API for Dungeon Crawl Stone Soup for Artificial Intelligence research. This effort started with the following paper: 
 
 *Dannenhauer, D., Floyd, M., Decker, J., Aha D. W. [Dungeon Crawl Stone Soup as an Evaluation Domain for Artificial Intelligence.](https://arxiv.org/pdf/1902.01769) Workshop on Games and Simulations for Artificial Intelligence. Thirty-Third AAAI Conference on Artificial Intelligence. Honolulu, Hawaii, USA. 2019.*
 
 If you use this repository in your research, please cite the above paper.
 
-If you'd like to contribute to the research effort aligned with this project, see [Research Effort](contribute/ResearchEffort.md)
+If you'd like to contribute to the research effort aligned with this project, see [Research Effort](contribute/ResearchEffort.md) and [Roadmap](contribute/Roadmap.md)
 
 # Development Community
 
 Join the chat at https://gitter.im/dcss-ai-wrapper/community
 
-(New) Checkout the YouTube channel for live streams and tutorial videos (more content to come soon): https://www.youtube.com/channel/UCPR_UzIThpHNGEZos1SVmLQ 
+Checkout the YouTube channel for live coding streams and tutorial videos (more content to come soon): https://www.youtube.com/channel/UCPR_UzIThpHNGEZos1SVmLQ 
 
 # Quickstart
 
@@ -110,11 +110,25 @@ Wait for the agent to get past the character creation menus (there's a strange b
 ![](contribute/dcss_browser_screenshot_4.png)
 
 
-Now you're all set to go! The rest of this README file contains additional details on using the DCSS AI Wrapper.
+Now you're all set to go with the SimpleRandomAgent being able to play the game! The rest of this README file contains additional details on using the DCSS AI Wrapper.
 
-# Installing DCSS from Source
+Recommended next step: install FastDownward planner to run the FastDownwardPlanningAgent. 
 
-## Pre-requisites
+# Install and run the fastdownward planner 
+
+1. Download and compile the [fastdownward planner](http://www.fast-downward.org/ObtainingAndRunningFastDownward) and put it in a folder under dcss-ai-wrapper so the folder structure looks like this:
+
+    `dcss-ai-wrapper/FastDownward/fast-downward.py`
+
+2. Switch the agent in config.py `AIConfig.ai_python_class` to be the `FastDownwardPlanningAgent` agent, like:
+
+    `ai_python_class = 'FastDownwardPlanningAgent'`
+
+3. Run main_webserver.py and it should work. There's a chance that the fastdownward planner will fail to find a plan because of a missing feature of our api. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess in the FastDownwardPlanningAgent class.
+
+# Installing DCSS from Source on Ubuntu
+
+### Pre-requisites
 
 This guide has been tested on Ubuntu 18.04 LTS and assumes you have the following installed:
 
@@ -127,7 +141,7 @@ This guide has been tested on Ubuntu 18.04 LTS and assumes you have the followin
 
     `sudo apt-get install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev libz-dev pkg-config python-yaml libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev ttf-dejavu-core`
 
-## Installing Dungeon Crawl Stone Soup
+### Installing Dungeon Crawl Stone Soup
 
 While this API is likely to work with the current dcss master branch, it has been tested with the 23.1 version, which
 is the recommended version of crawl to use with this API. We recommend installing a local version of crawl inside this
@@ -184,18 +198,6 @@ project's folder.
 3. You should now be able to watch the agent in the terminal as this script is running, as shown in the demo gif at the top of this readme.
 
 
-# Run the fastdownward planning agent for simple goal exploration
-
-1. Download and compile the [fastdownward planner](http://www.fast-downward.org/ObtainingAndRunningFastDownward) and put it in a folder under dcss-ai-wrapper so the folder structure looks like this:
-
-    `dcss-ai-wrapper/FastDownward/fast-downward.py`
-
-2. Switch the agent in `main.py` to be the `FastDownwardPlanningAgent` agent, like:
-
-    `agent = FastDownwardPlanningAgent()`
-
-3. Run main.py and it should work. There's a chance that the fastdownward planner will fail to find a plan because of a missing feature of our api. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess.
-
 ## Web browser via Docker Image
 
 The docker image is the quickest way to get a server up and running so that you can watch the agent play by spectating the game in the browser.
@@ -231,9 +233,7 @@ The next step is to run the `main_webserver.py` script. After a second, you shou
 
 ### Older Instructions for manually setting up webserver
 
-There is no gaurauntee that these instructions are still valid - proceed at your own risk :)
-
-The following instructions need to be updated - see issue 8.
+There is no guarantee that these instructions are still valid - proceed at your own risk :)
 
 The following steps enable the API to connect to DCSS running on a webserver on the local host, which means you can watch
 your AI agent play DCSS in the tile version that runs in the web browser.
@@ -263,7 +263,6 @@ your AI agent play DCSS in the tile version that runs in the web browser.
 
 # Troubleshooting
 
-
   Problem: Errors during compiling
   Solution: Double check you installed all the packages listed at the
   beginning that crawl needs. These come from the install instructions
@@ -272,12 +271,12 @@ your AI agent play DCSS in the tile version that runs in the web browser.
   Problem: No images showing up and getting errors from the webserver like:
     'HTTPOutputError: Tried to write X number of bytes but error with content length'
     
-  Solution: Make sure you are using tornado 3.0 (not the version that installs by default)
+  Solution: Make sure you are using tornado 3.0 (which may not be the version that installs by default)
 
 # Running the webserver
 ----------
 
-Note these instructions may be outdated - they need to be double checked.
+Note these instructions may be outdated.
 
 ## Start webserver
 

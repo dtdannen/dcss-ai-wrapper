@@ -264,4 +264,30 @@ class Action:
         #print("Command is {}".format(command))
         return Action.command_to_msg[command]
 
+    @staticmethod
+    def get_command_from_human_keypress(keypress):
+        """
+        Return the command that matches the keypress from the user
+        """
+        keypress_to_command = {
+            '1': Command.MOVE_OR_ATTACK_SW,
+            '2': Command.MOVE_OR_ATTACK_S,
+            '3': Command.MOVE_OR_ATTACK_SE,
+            '4': Command.MOVE_OR_ATTACK_W,
+            '5': Command.REST_AND_LONG_WAIT,
+            '6': Command.MOVE_OR_ATTACK_E,
+            '7': Command.MOVE_OR_ATTACK_NW,
+            '8': Command.MOVE_OR_ATTACK_N,
+            '9': Command.MOVE_OR_ATTACK_NE,
+            'o': Command.AUTO_EXPLORE,
+            '\t':Command.AUTO_FIGHT,
+            'i':Command.SHOW_INVENTORY_LIST,
+            '>':Command.TRAVEL_STAIRCASE_DOWN,
+            '<': Command.TRAVEL_STAIRCASE_UP,
+            '\r':Command.ENTER_KEY,
+        }
+
+        return keypress_to_command[keypress]
+
+
 

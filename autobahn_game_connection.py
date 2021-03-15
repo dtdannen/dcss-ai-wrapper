@@ -15,6 +15,7 @@ import asyncio
 import websockets
 import zlib
 import threading
+import copy
 
 from nested_lookup import nested_lookup
 
@@ -26,29 +27,8 @@ from enum import Enum
 from agent import *  # We need to import all AI classes so that whatever one is in the config file, it will be found
 
 
-class MyClientProtocol(WebSocketClientProtocol):
-
-    def onConnect(self, response):
-        print("Server connected: {0}".format(response.peer))
-
-
-    async def onOpen(self):
-        print("WebSocket connection open.")
-
-        # start sending messages every second ..
-        while True:
-            self.sendMessage("Hello, world!".encode('utf8'))
-            self.sendMessage(b"\x00\x01\x03\x04", isBinary=True)
-            await asyncio.sleep(1)
-
-    def onMessage(self, payload, isBinary):
-        if isBinary:
-            print("Binary message received: {0} bytes".format(len(payload)))
-        else:
-            print("Text message received: {0}".format(payload.decode('utf8')))
-
-    def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {0}".format(reason))
+class MenuBackgroundKnowledge:
+    tutorial_lesson_number_to_hotkey = {1: 97, 2: 98, 3: 99, 4: 100, 5: 101}
 
 
 class Menu(Enum):
@@ -58,6 +38,7 @@ class Menu(Enum):
     CHARACTER_CREATION_SELECT_WEAPON = 4
     CHARACTER_INVENTORY_MENU = 5
     CHARACTER_ITEM_SPECIFIC_MENU = 6
+    TUTORIAL_SELECTION_MENU = 7
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -75,18 +56,27 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._READY_TO_LOGIN = False
         self._LOGGED_IN = False
         self._NEEDS_PONG = False
-        self._READY_TO_SELECT_GAME_MODE = False
+        self._NEEDS_ENTER = False
         self._GAME_MODE_SELECTED = False
-        self._READY_TO_SEND_ACTION = False
         self._LOBBY_IS_CLEAR = False
         self._IN_LOBBY = False
+
+        self._IN_GAME_SEED_MENU = False
+        self._SENT_GAME_SEED = False
+        self._CHECKED_BOX_FOR_PREGENERATION = False
+        self._READY_TO_SEND_SEED_GAME_START = False
+        self._SENT_SEEDED_GAME_START = False
+        self._SENT_SEEDED_GAME_START_CONFIRMATION = False
+
         self._GAME_STARTED = False
-        self._IN_MENU = Menu.NO_MENU  # TODO LEFT OFF HERE - change menus to use this single menu variable
+        self._IN_MENU = Menu.NO_MENU
         self._SENT_SPECIES_SELECTION = False
         self._SENT_BACKGROUND_SELECTION = False
         self._SENT_WEAPON_SELECTION = False
         self._IN_CHARACTER_CREATION_MENUS = False
         self._RECEIVED_MAP_DATA = False
+
+        self._PLAYER_DIED = False
 
         self.last_message_sent = None
         self.next_action_msg = None
@@ -96,7 +86,13 @@ class DCSSProtocol(WebSocketClientProtocol):
         self.background_options = {}
         self.weapon_options = {}
 
-        self.load_ai_agent()  # loads the ai agent specific in the AIConfig in config.py
+        self.death_summaries = []
+
+        self.agent = None
+        self.load_ai_agent()
+
+        self.previous_agents = []
+        self.previous_game_states = []
 
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
@@ -114,6 +110,11 @@ class DCSSProtocol(WebSocketClientProtocol):
                 pong_msg = {"msg": "pong"}
                 self.sendMessage(json.dumps(pong_msg).encode('utf-8'))
                 self._NEEDS_PONG = False
+            elif self._CONNECTED and self._NEEDS_ENTER:
+                print("SENDING ENTER KEY BECAUSE OF PROMPT")
+                enter_key_msg = {"text":"\r","msg":"input"}
+                self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
+                self._NEEDS_ENTER = False
             else:
                 if self._CONNECTED and not self._LOGGED_IN:
                     print("SENDING LOGIN MESSAGE")
@@ -126,6 +127,41 @@ class DCSSProtocol(WebSocketClientProtocol):
                     print("SENDING GAME MODE SELECTION MESSAGE")
                     play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
                     self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
+
+                #### BEGIN SEEDED GAME MENU NAVIGATION ####
+                elif self.config.game_id == 'seeded-web-trunk' and self._IN_GAME_SEED_MENU and not self._SENT_GAME_SEED:
+                    print("SENDING GAME SEED")
+                    game_seed_msg = {"text":str(config.WebserverConfig.seed),"generation_id":1,"widget_id":"seed","msg":"ui_state_sync"}
+                    self.sendMessage(json.dumps(game_seed_msg).encode('utf-8'))
+                    self._SENT_GAME_SEED = True
+
+                elif self.config.game_id == 'seeded-web-trunk' and self._SENT_GAME_SEED and not self._CHECKED_BOX_FOR_PREGENERATION:
+                    print("SENDING CHECKMARK TO CONFIRM PREGENERATION OF DUNGEON")
+                    pregeneration_checkbox_msg = {"checked":True,"generation_id":1,"widget_id":"pregenerate","msg":"ui_state_sync"}
+                    self.sendMessage(json.dumps(pregeneration_checkbox_msg).encode('utf-8'))
+                    self._CHECKED_BOX_FOR_PREGENERATION = True
+
+                elif self.config.game_id == 'seeded-web-trunk' and self._READY_TO_SEND_SEED_GAME_START and self._SENT_GAME_SEED and self._CHECKED_BOX_FOR_PREGENERATION and not self._SENT_SEEDED_GAME_START:
+                    print("SENDING MESSAGE TO START THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
+                    start_seeded_game_msg_button = {"generation_id":1,"widget_id":"btn-begin","msg":"ui_state_sync"}
+                    self.sendMessage(json.dumps(start_seeded_game_msg_button).encode('utf-8'))
+                    self._SENT_SEEDED_GAME_START = True
+
+                elif self.config.game_id == 'seeded-web-trunk' and self._SENT_SEEDED_GAME_START and not self._SENT_SEEDED_GAME_START_CONFIRMATION:
+                    print("SENDING MESSAGE TO CONFIRM THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
+                    confirm_seeded_game_msg_button = {"keycode":13,"msg":"key"}
+                    self.sendMessage(json.dumps(confirm_seeded_game_msg_button).encode('utf-8'))
+                    self._SENT_SEEDED_GAME_START_CONFIRMATION = True
+                #### END SEEDED GAME MENU NAVIGATION ####
+
+                #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
+                elif self.config.game_id == 'tut-web-trunk' and self._IN_MENU == Menu.TUTORIAL_SELECTION_MENU:
+                    print("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE TUTORIAL MENU".format(config.WebserverConfig.tutorial_number))
+                    hotkey = MenuBackgroundKnowledge.tutorial_lesson_number_to_hotkey[config.WebserverConfig.tutorial_number]
+                    tutorial_lesson_selection_message = {"keycode": hotkey, "msg": "key"}
+                    self.sendMessage(json.dumps(tutorial_lesson_selection_message).encode('utf-8'))
+                    self._IN_MENU = Menu.NO_MENU
+                #### END TUTORIAL GAME MENU NAVIGATION ####
 
                 elif self._GAME_STARTED:
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
@@ -162,28 +198,30 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self._SENT_WEAPON_SELECTION = True
                             # Right before we send the message, clear the menu - this only fails if the message being sent fails
                             self._IN_MENU = Menu.NO_MENU
-                            self._IN_CHARACTER_CREATION_MENUS = False
                             self.sendMessage(json.dumps(weapon_selection_msg).encode('utf-8'))
 
+                    if self._PLAYER_DIED and self._IN_MENU == Menu.CHARACTER_INVENTORY_MENU:
+                        print("SENDING ENTER KEY BECAUSE WE ARE IN THE INVENTORY AFTER DEATH MENU")
+                        enter_key_msg = {"text": "\r", "msg": "input"}
+                        self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
-                    # TODO check for inventory menu and other menus
+                    if self._IN_MENU == Menu.NO_MENU and self._RECEIVED_MAP_DATA:
+                        self.game_state.draw_cell_map()
+                        if self.agent:
+                            next_action = self.agent.get_action(self.game_state)
 
-                    if self._IN_MENU == Menu.NO_MENU and not self._IN_CHARACTER_CREATION_MENUS and self._RECEIVED_MAP_DATA:
-                        if not self._READY_TO_SEND_ACTION:
-                            self._READY_TO_SEND_ACTION = True
-                            print("We are now ready to send an action")
-                        elif self._READY_TO_SEND_ACTION:
-                            self.game_state.draw_cell_map()
-                            self._READY_TO_SEND_ACTION = False
-                            next_action = self.get_agent_next_action()
                             if next_action:
                                 print("We are about to send action: {}".format(self.next_action_msg))
                                 self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
                                 self.last_message_sent = next_action
-                            self._READY_TO_SEND_ACTION = True
-                            print("We are now ready to send an action")
+                            else:
+                                raise Exception("next_action is {}".format(next_action))
 
-            await asyncio.sleep(1)
+                            print("We are now ready to send an action")
+                        else:
+                            print("Game Connection Does Not Have An Agent")
+
+            await asyncio.sleep(config.WebserverConfig.delay)
 
     def onMessage(self, payload, isBinary):
         print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))
@@ -204,13 +242,49 @@ class DCSSProtocol(WebSocketClientProtocol):
         try:
             message_as_json = json.loads(message_as_str)
         except:
-            print("Failure to parse message_as_json")
+            print("Failure to parse message_as_json\n****** you may have spectated too soon, best thing to do is just to restart the agent ******")
             time.sleep(20)
 
         self.game_state.update(message_as_json)
 
         self.perform_state_checks(message_as_json)
 
+    def reset_before_next_game(self):
+        print("CALLING RESET BEFORE THE NEXT GAME")
+        # we return to the lobby after finishing a game, so reset up old state variables
+        self._GAME_MODE_SELECTED = False
+        self._LOBBY_IS_CLEAR = False
+        self._IN_LOBBY = False
+
+        self._IN_GAME_SEED_MENU = False
+        self._SENT_GAME_SEED = False
+        self._CHECKED_BOX_FOR_PREGENERATION = False
+        self._READY_TO_SEND_SEED_GAME_START = False
+        self._SENT_SEEDED_GAME_START = False
+        self._SENT_SEEDED_GAME_START_CONFIRMATION = False
+
+        self._GAME_STARTED = False
+        self._IN_MENU = Menu.NO_MENU
+        self._SENT_SPECIES_SELECTION = False
+        self._SENT_BACKGROUND_SELECTION = False
+        self._SENT_WEAPON_SELECTION = False
+        self._IN_CHARACTER_CREATION_MENUS = False
+        self._RECEIVED_MAP_DATA = False
+
+        self._PLAYER_DIED = False
+
+        # keep the old gamestate for data purposes
+        self.previous_game_states.append(copy.deepcopy(self.game_state))
+
+        # reset the game state!
+        self.game_state = GameState()
+
+        # keep the old agent for data purposes
+        self.previous_agents.append(copy.deepcopy(self.agent))
+        print("THERE ARE NOW {} PREVIOUS AGENTS".format(len(self.previous_agents)))
+
+        # reset the agent!
+        self.load_ai_agent()  # loads the ai agent specific in the AIConfig in config.py
 
     def perform_state_checks(self, json_msg):
         if self.check_for_ping(json_msg):
@@ -218,6 +292,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._CONNECTED = True
             print("setting _NEEDS_PONG = TRUE")
             print("setting _CONNECTED = TRUE")
+
+        if self.check_for_enter_key(json_msg):
+            print("setting _NEEDS_ENTER = TRUE")
+            self._NEEDS_ENTER = True
 
         if self.check_for_in_lobby(json_msg):
             self._IN_LOBBY = True
@@ -231,10 +309,36 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._LOBBY_IS_CLEAR = True
             print("setting _LOBBY_IS_CLEAR = TRUE")
 
+        if self.check_for_game_seed_menu(json_msg):
+            self._IN_GAME_SEED_MENU = True
+            print("setting _IN_GAME_SEED_MENU = TRUE")
+
+        if self.check_for_pregeneration_check_true(json_msg):
+            self._READY_TO_SEND_SEED_GAME_START = True
+            print("setting _READY_TO_SEND_SEED_GAME_START = True")
+
+        if self.check_for_tutorial_menu(json_msg):
+            self._IN_MENU = Menu.TUTORIAL_SELECTION_MENU
+            print("setting _IN_MENU = Menu.TUTORIAL_SELECTION_MENU")
+
+        if self.check_for_inventory_menu(json_msg):
+            self._IN_MENU = Menu.CHARACTER_INVENTORY_MENU
+            print("setting _IN_MENU = Menu.CHARACTER_INVENTORY_MENU")
+
         if self.check_for_game_started(json_msg):
             print("setting _GAME_STARTED = TRUE")
             self._GAME_STARTED = True
             self._IN_LOBBY = False
+
+        if self.check_for_death_message(json_msg):
+            # Reset the agent and other state variables because we return back to the lobby
+            # in between games
+            self.reset_before_next_game()
+
+            self.death_summaries.append(json_msg)
+            print("Just appended a new death message; death messages so far:")
+            for death_msg in self.death_summaries:
+                print("{}".format(death_msg))
 
         if not self._RECEIVED_MAP_DATA and self.check_received_map_data(json_msg):
             print("setting _RECEIVED_MAP_DATA = TRUE")
@@ -242,7 +346,6 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):
-                self._IN_CHARACTER_CREATION_MENUS = True
                 print("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES")
                 self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES
                 self.species_options = self.get_species_options(json_msg)
@@ -257,6 +360,9 @@ class DCSSProtocol(WebSocketClientProtocol):
                 self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_WEAPON
                 self.weapon_options = self.get_weapon_options(json_msg)
 
+            if self.check_if_player_died(json_msg):
+                self._PLAYER_DIED = True
+
 
     def check_for_in_lobby(self, json_msg):
         for v in nested_lookup('msg', json_msg):
@@ -267,6 +373,57 @@ class DCSSProtocol(WebSocketClientProtocol):
     def check_for_ping(self, json_msg):
         for v in nested_lookup('msg', json_msg):
             if v == 'ping':
+                return True
+        return False
+
+    def check_for_enter_key(self, json_msg):
+        input_mode_found = False
+        for v in nested_lookup('msg', json_msg):
+            if v == 'input_mode':
+                input_mode_found = True
+
+        mode_is_5 = False
+        for v in nested_lookup('mode', json_msg):
+            if v == 5:
+                mode_is_5 = True
+
+        return input_mode_found and mode_is_5
+
+    def check_for_inventory_menu(self, json_msg):
+        input_mode_found = False
+        for v in nested_lookup('msg', json_msg):
+            if v == 'input_mode':
+                input_mode_found = True
+
+        inventory_tag_found = False
+        for v in nested_lookup('tag', json_msg):
+            if v == 'inventory':
+                inventory_tag_found = True
+
+        return input_mode_found and inventory_tag_found
+
+    def check_for_game_seed_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'Play a game with a custom seed' in v:
+                return True
+        return False
+
+    def check_for_pregeneration_check_true(self, json_msg):
+        checked_is_true = False
+        pregenerate_widget = False
+        for v in nested_lookup('checked', json_msg):
+            if v:
+                checked_is_true = True
+
+        for v in nested_lookup('widget_id', json_msg):
+            if v == "pregenerate":
+                pregenerate_widget = True
+
+        return checked_is_true and pregenerate_widget
+
+    def check_for_tutorial_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'You have a choice of lessons' in v:
                 return True
         return False
 
@@ -293,6 +450,25 @@ class DCSSProtocol(WebSocketClientProtocol):
             if v == 'map':
                 return True
         return False
+
+    def check_if_player_died(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            if 'You die...' in v:
+                return True
+        return False
+
+    def check_for_death_message(self, json_msg):
+        reason_is_dead_found = False
+        for v in nested_lookup('reason', json_msg):
+            if v == 'dead':
+                reason_is_dead_found = True
+
+        message_game_ended = False
+        for v in nested_lookup('msg', json_msg):
+            if v == 'game_ended':
+                message_game_ended = True
+
+        return reason_is_dead_found and message_game_ended
 
     def check_for_species_selection_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):
@@ -394,16 +570,6 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def get_hotkey_json_as_msg(self, hotkey):
         return {"keycode": hotkey, "msg":"key"}
-
-    def ready_to_send_action(self):
-        return self._READY_TO_SEND_ACTION
-
-    def get_agent_next_action(self):
-        if self.agent:
-            next_action = self.agent.get_action(self.game_state)
-            return next_action
-
-        return None
 
     def get_gamestate(self):
         return self.game_state
