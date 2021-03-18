@@ -10,7 +10,7 @@ class WebserverConfig:
     server_port = '8080'
     agent_name = 'midca'
     agent_password = 'midca'
-    delay = 0.2  # delay in seconds to wait before sending the next message,
+    delay = 1  # delay in seconds to wait before sending the next message,
                  # decrease at your own risk. 0.5 and 1.0 have been known to be safe values
 
     # game_id is the type of game to play on the server

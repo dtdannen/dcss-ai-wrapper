@@ -48,7 +48,7 @@ Stream on March 3rd, 2021:
 4. Clean up print statements for early menus
 
 
-TONIGHT (March 11th, 2021):
+Stream on March 11th, 2021:
 0. (DONE) Introduction
 1. (DONE) Demo Reconnecting in the middle of a game is now working
 2. (DONE) Demo increasing speed is working
@@ -60,13 +60,14 @@ TONIGHT (March 11th, 2021):
 7. Handle the case where planner doesn't like closed doors
 7. BONUS - add item goals
 
-NEXT TIME (March 18th, 2021):
+Tonight's Stream on March 18th, 2021:
 1. Get sprint games to work
 2. Get autokill game to work when script is stopped
-3. Debug monster issues
-4. Get item pickup and stair goals to work!
-5. Get item equip-ing goals to work
-6. Get potion/scroll/food consume-ing goals to work
+3. Get item pickup and stair goals to work!
+4. Get item equip-ing goals to work
+5. Get potion/scroll/food consume-ing goals to work
+6. Debug monster issues
+
 
 
 Future issues to solve:
