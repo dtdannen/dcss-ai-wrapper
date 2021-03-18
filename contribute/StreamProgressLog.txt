@@ -61,7 +61,7 @@ Stream on March 11th, 2021:
 7. BONUS - add item goals
 
 Tonight's Stream on March 18th, 2021:
-1. Get sprint games to work
+1. (DONE) Get sprint games to work
 2. Get autokill game to work when script is stopped
 3. Get item pickup and stair goals to work!
 4. Get item equip-ing goals to work

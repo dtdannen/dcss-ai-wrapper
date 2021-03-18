@@ -17,11 +17,16 @@ class WebserverConfig:
     #   'dcss-web-trunk'   - play trunk no seed
     #   'seeded-web-trunk' - play a seeded version of the game
     #   'tut-web-trunk'    - play a tutorial
-    game_id = 'dcss-web-trunk'
+    #   'sprint-web-trunk'    - play a tutorial
+    game_id = 'sprint-web-trunk'
 
     seed = 4675233756386659716
 
     tutorial_number = 1
+
+    # this corresponds to the menu where you choose the map for the sprint
+    # for example, Sprint I: "Red Sonja" is the letter 'a'
+    sprint_map_letter = 'a'
 
     # TODO - actually use this somewhere
     start_new_game_on_death = True

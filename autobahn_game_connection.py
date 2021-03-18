@@ -29,6 +29,7 @@ from agent import *  # We need to import all AI classes so that whatever one is 
 
 class MenuBackgroundKnowledge:
     tutorial_lesson_number_to_hotkey = {1: 97, 2: 98, 3: 99, 4: 100, 5: 101}
+    sprint_map_letter_to_hotkey = {'a': 97, 'b': 98, 'c': 99, 'd': 100, 'e': 101, 'f': 102, 'g':103, 'h':104, 'i':105}
 
 
 class Menu(Enum):
@@ -39,6 +40,7 @@ class Menu(Enum):
     CHARACTER_INVENTORY_MENU = 5
     CHARACTER_ITEM_SPECIFIC_MENU = 6
     TUTORIAL_SELECTION_MENU = 7
+    SPRINT_MAP_SELECTION_MENU = 8
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -160,6 +162,15 @@ class DCSSProtocol(WebSocketClientProtocol):
                     hotkey = MenuBackgroundKnowledge.tutorial_lesson_number_to_hotkey[config.WebserverConfig.tutorial_number]
                     tutorial_lesson_selection_message = {"keycode": hotkey, "msg": "key"}
                     self.sendMessage(json.dumps(tutorial_lesson_selection_message).encode('utf-8'))
+                    self._IN_MENU = Menu.NO_MENU
+                #### END TUTORIAL GAME MENU NAVIGATION ####
+
+                #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
+                elif self.config.game_id == 'sprint-web-trunk' and self._IN_MENU == Menu.SPRINT_MAP_SELECTION_MENU:
+                    print("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE SPRINT MENU".format(config.WebserverConfig.tutorial_number))
+                    hotkey = MenuBackgroundKnowledge.sprint_map_letter_to_hotkey[config.WebserverConfig.sprint_map_letter]
+                    sprint_map_selection_message = {"keycode": hotkey, "msg": "key"}
+                    self.sendMessage(json.dumps(sprint_map_selection_message).encode('utf-8'))
                     self._IN_MENU = Menu.NO_MENU
                 #### END TUTORIAL GAME MENU NAVIGATION ####
 
@@ -363,6 +374,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             if self.check_if_player_died(json_msg):
                 self._PLAYER_DIED = True
 
+        if self.check_for_sprint_map_menu(json_msg):
+            self._IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU
+            print("setting _IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU")
+
 
     def check_for_in_lobby(self, json_msg):
         for v in nested_lookup('msg', json_msg):
@@ -401,6 +416,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                 inventory_tag_found = True
 
         return input_mode_found and inventory_tag_found
+
+    def check_for_sprint_map_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'You have a choice of maps' in v:
+                return True
+        return False
 
     def check_for_game_seed_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):
