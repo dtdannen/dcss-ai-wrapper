@@ -62,8 +62,11 @@ TONIGHT (March 11th, 2021):
 
 NEXT TIME (March 18th, 2021):
 1. Get sprint games to work
-2. Debug monster issues
-3. Get item and stair goals to work!
+2. Get autokill game to work when script is stopped
+3. Debug monster issues
+4. Get item pickup and stair goals to work!
+5. Get item equip-ing goals to work
+6. Get potion/scroll/food consume-ing goals to work
 
 
 Future issues to solve:

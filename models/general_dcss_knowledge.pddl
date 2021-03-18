@@ -1,5 +1,14 @@
 ;; This file contains all of the general pddl facts that don't differ between game states
 
+(hungerlevel fainting)
+(hungerlevel starving)
+(hungerlevel nearstarving)
+(hungerlevel veryhungry)
+(hungerlevel hungry)
+(hungerlevel full)
+(hungerlevel veryfull)
+(hungerlevel engorged)
+
 (place dungeon_1)
 (place dungeon_2)
 (place dungeon_3)
