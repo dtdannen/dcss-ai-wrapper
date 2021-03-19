@@ -18,7 +18,7 @@ class WebserverConfig:
     #   'seeded-web-trunk' - play a seeded version of the game
     #   'tut-web-trunk'    - play a tutorial
     #   'sprint-web-trunk'    - play a tutorial
-    game_id = 'sprint-web-trunk'
+    game_id = 'dcss-web-trunk'
 
     seed = 4675233756386659716
 
@@ -31,6 +31,10 @@ class WebserverConfig:
     # TODO - actually use this somewhere
     start_new_game_on_death = True
 
+    # maximum number of actions to execute
+    # -1 means infinite number of actions (i.e. don't stop agent after executing certain number of actions
+    max_actions = 20
+
 
 class CharacterCreationConfig:
     species = 'Minotaur'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
@@ -41,4 +45,4 @@ class CharacterCreationConfig:
 class AIConfig:
     # any class that is in agent.py and is a subclass of Agent may be set as the ai_python_class
     #
-    ai_python_class = 'SimpleRandomAgent'
+    ai_python_class = 'FastDownwardPlanningAgent'

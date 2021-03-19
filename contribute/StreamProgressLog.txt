@@ -62,13 +62,12 @@ Stream on March 11th, 2021:
 
 Tonight's Stream on March 18th, 2021:
 1. (DONE) Get sprint games to work
-2. Get autokill game to work when script is stopped
+2. (FAILED - need to investigate further) Get autokill game to work when script is stopped
+    2.1 (NEARLY WORKING - need to finalize agent restarting) Consolation prize - action limit
 3. Get item pickup and stair goals to work!
 4. Get item equip-ing goals to work
 5. Get potion/scroll/food consume-ing goals to work
 6. Debug monster issues
-
-
 
 Future issues to solve:
 * Issue with monsters.... plants are considered monsters when they shouldnt be...
