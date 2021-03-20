@@ -1,27 +1,17 @@
 from gamestate import GameState
 from actions import Action
 
-import socket
 import json
-from datetime import datetime, timedelta
-import warnings
-import os
-import random
-import logging
 import time
-import sys
-import config
-import asyncio
-import websockets
+from src.dcss import config
 import zlib
-import threading
 import copy
 
 from nested_lookup import nested_lookup
 
 import asyncio
 import importlib
-from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
+from autobahn.asyncio.websocket import WebSocketClientProtocol
 from enum import Enum
 from agent import *  # We need to import all AI classes so that whatever one is in the config file, it will be found
 

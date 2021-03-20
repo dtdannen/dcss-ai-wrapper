@@ -2,7 +2,7 @@ autobahn
 cffi==1.14.5
 cryptography==3.4.6
 hyperlink==21.0.0
-idna==3.1
+idna
 nested-lookup==0.2.22
 pycparser==2.20
 six==1.15.0

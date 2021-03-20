@@ -8,14 +8,10 @@ Make sure to run crawl before running this demo, see:
 """
 
 from autobahn_game_connection import DCSSProtocol
-from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningAgent
-from actions import Command, Action
-import config
+from src.dcss import config
 import asyncio
 import logging
 from autobahn.asyncio.websocket import WebSocketClientFactory
-import autobahn.websocket
-import signal
 
 logging.basicConfig(level=logging.WARNING)
 

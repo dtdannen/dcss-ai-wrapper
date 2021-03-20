@@ -6,11 +6,9 @@ import json
 from datetime import datetime, timedelta
 import warnings
 import os
-import random
 import logging
 import time
-import sys
-import config
+from src.dcss import config
 import asyncio
 import websockets
 import zlib
