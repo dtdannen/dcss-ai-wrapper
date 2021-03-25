@@ -77,6 +77,9 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._SENT_ENTER_2_TO_DELETE_GAME = False
         self._SENT_ENTER_3_TO_DELETE_GAME = False
 
+        self._CREATED_A_NEW_CHARACTER = False
+        self._PREV_GAME_ALREADY_EXISTS = False
+
         self.last_message_sent = None
         self.next_action_msg = None
         self.actions_sent = 0
@@ -204,6 +207,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             background_selection_msg = self.get_hotkey_json_as_msg(background_selection_hotkey)
                             print("SENDING BACKGROUND SELECTION MESSAGE OF: {}".format(background_selection_msg))
                             self._SENT_BACKGROUND_SELECTION = True
+                            self._CREATED_A_NEW_CHARACTER = True
                             # Right before we send the message, clear the menu - this only fails if the message being sent fails
                             self._IN_MENU = Menu.NO_MENU
                             self.sendMessage(json.dumps(background_selection_msg).encode('utf-8'))
@@ -415,6 +419,9 @@ class DCSSProtocol(WebSocketClientProtocol):
         if not self._RECEIVED_MAP_DATA and self.check_received_map_data(json_msg):
             print("setting _RECEIVED_MAP_DATA = TRUE")
             self._RECEIVED_MAP_DATA = True
+
+        if config.WebserverConfig.always_start_new_game and not self._CREATED_A_NEW_CHARACTER:
+            self._BEGIN_DELETING_GAME = True
 
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):

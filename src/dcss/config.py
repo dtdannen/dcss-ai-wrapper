@@ -33,7 +33,11 @@ class WebserverConfig:
 
     # maximum number of actions to execute
     # -1 means infinite number of actions (i.e. don't stop agent after executing certain number of actions
-    max_actions = 20
+    max_actions = -1
+
+    # If this is true, and there is an existing game for the agent, delete the game and
+    # start a new game
+    always_start_new_game = True
 
 
 class CharacterCreationConfig:
