@@ -191,9 +191,9 @@ class FastDownwardPlanningAgent(Agent):
         super().__init__()
         self.current_game_state = None
         self.next_command_id = 1
-        self.plan_domain_filename = "../../models/fastdownwardplanningagent_domain.pddl"
-        self.plan_current_pddl_state_filename = "../../models/fdtempfiles/gamestate.pddl"
-        self.plan_result_filename = "../../models/fdtempfiles/dcss_plan.sas"
+        self.plan_domain_filename = "models/fastdownwardplanningagent_domain.pddl"
+        self.plan_current_pddl_state_filename = "models/fdtempfiles/gamestate.pddl"
+        self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
         self.actions_taken_so_far = 0
         self.current_goal = None

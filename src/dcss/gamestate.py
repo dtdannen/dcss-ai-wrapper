@@ -3,6 +3,7 @@ This file stores the gamestate class that is used to keep track of
 the current state of the dcss game 
 '''
 
+import os
 import actions
 import logging
 import re
@@ -976,7 +977,7 @@ class GameState:
         self.noise_level = None
         self.adjusted_noise_level = None
 
-        self.general_knowledge_pddl_filename = "../../models/general_dcss_knowledge.pddl"
+        self.general_knowledge_pddl_filename = "models/general_dcss_knowledge.pddl"
 
         self.id = GameState.ID
         GameState.ID += 1
@@ -1324,6 +1325,7 @@ class GameState:
         pddl_str += "(:init \n"
 
         # read in common knowledge facts and put them first
+        print("Current directory is {}".format(os.getcwd()))
         with open(self.general_knowledge_pddl_filename, 'r') as f2:
             for line in f2.readlines():
                 if not line.startswith(';'):
