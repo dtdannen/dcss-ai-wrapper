@@ -263,6 +263,7 @@ class Cell:
             else:
                 # a monster either died here or moved to a different cell, either way it's not in this cell
                 # so we need to update the monster to tell it it's no longer in this cell
+                self.has_monster = False
                 if self.monster:
                     self.monster.remove_cell()
                     self.monster = None
@@ -291,7 +292,7 @@ class Cell:
                 self.has_closed_door = True
                 self.has_open_door = False
 
-            elif self.g == '\'':
+            elif self.g == "\'":
                 self.has_closed_door = False
                 self.has_open_door = True
 
@@ -325,8 +326,7 @@ class Cell:
 
             # A '.' means that its an empty tile
             elif self.g == '.':
-                pass
-                #print("Found a g value of \'.\' at x={},y={}".format(self.x, self.y))
+                self.remove_all_items()
 
             elif self.g == '!':
                 self.has_potion = True
@@ -380,14 +380,37 @@ class Cell:
             if not self.g == '@':
                 self.has_player = False
 
+        else:
+            # there is no 'g' here, so remove all items becauase nothing is here anymore
+            self.remove_all_items()
+
         if 't' in vals.keys():
             self.t = vals['t']
         if 'mf' in vals.keys():
+            # TODO - Hypothesis that mf value of 1 means a cell changed by something being removed, such as after picking up an item
             self.mf = vals['mf']
         if 'col' in vals.keys():
             self.col = vals['col']
 
         self.raw = vals
+
+    def remove_all_items(self):
+        self.has_plant = False
+        self.has_smoke = False
+        self.has_potion = False
+        self.has_scroll = False
+        self.has_gold = False
+        self.has_monster = False
+        self.has_orb_of_zot = False
+        self.has_ring = False
+        self.has_stave = False
+        self.has_hand_weapon = False
+        self.has_armour = False
+        self.has_missile = False
+        self.has_amulet = False
+        self.has_wand = False
+        self.has_book = False
+        self.has_misc_items = False
 
     def get_pddl_name(self):
         return "cellx{}y{}".format(self.x, self.y)
@@ -412,6 +435,8 @@ class Cell:
             pddl_facts.append('(wall {})'.format(self.get_pddl_name()))
         if self.has_closed_door:
             pddl_facts.append('(closeddoor {})'.format(self.get_pddl_name()))
+        if self.has_open_door:
+            pddl_facts.append('(opendoor {})'.format(self.get_pddl_name()))
         if self.has_player:
             pddl_facts.append('(playerat {})'.format(self.get_pddl_name()))
         if self.has_statue:
@@ -428,8 +453,6 @@ class Cell:
             pddl_facts.append('(hasstairsup {})'.format(self.get_pddl_name()))
         if self.has_monster:
             pddl_facts.append("(hasmonster {})".format(self.get_pddl_name()))
-        if self.has_hand_weapon:
-            pddl_facts.append("(hashandweapon {})".format(self.get_pddl_name()))
         if self.has_potion:
             pddl_facts.append("(haspotion {})".format(self.get_pddl_name()))
         if self.has_scroll:
@@ -452,7 +475,8 @@ class Cell:
             pddl_facts.append("(haswand {})".format(self.get_pddl_name()))
         if self.has_book:
             pddl_facts.append("(hasbook {})".format(self.get_pddl_name()))
-
+        if self.has_gold:
+            pddl_facts.append("(hasgold {})".format(self.get_pddl_name()))
         if self.monster:
             for fact_i in self.monster.get_pddl_strs(self.get_pddl_name()):
                 pddl_facts.append(fact_i)

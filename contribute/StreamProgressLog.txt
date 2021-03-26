@@ -75,8 +75,11 @@ Tonight's stream (March 25th, 2021):
    a. (DONE) How do we detect that a game exists?
    b. (DONE) If a game does exist, trigger the delete-game behavior
 2. (DONE) Keep playing after the player dies - play indefinitely
-3. Human Pass Through Agent
+3. (Progress) Human Pass Through Agent
 4. Add more funtionality for dealing with items
+   * Added support for the main categories of items
+   * UNRESOLVED issue with some items not showing up - may need to cancel calls to the function Cell.remove_all_items()
+        * BUT on a separate note, monsters are no longer lingering after they died
 
 
 
