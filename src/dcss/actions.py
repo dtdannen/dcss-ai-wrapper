@@ -287,6 +287,8 @@ class Action:
             '\r': Command.ENTER_KEY,
             'g': Command.PICKUP_ITEM,
             ',': Command.PICKUP_ITEM,
+            '\x11': Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME,
+
         }
 
         return keypress_to_command[keypress]

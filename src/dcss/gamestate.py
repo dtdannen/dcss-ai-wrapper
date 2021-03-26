@@ -289,7 +289,7 @@ class Cell:
 
             elif self.g == '+':
                 self.has_closed_door = True
-                self.has_closed_door = False
+                self.has_open_door = False
 
             elif self.g == '\'':
                 self.has_closed_door = False
@@ -430,6 +430,29 @@ class Cell:
             pddl_facts.append("(hasmonster {})".format(self.get_pddl_name()))
         if self.has_hand_weapon:
             pddl_facts.append("(hashandweapon {})".format(self.get_pddl_name()))
+        if self.has_potion:
+            pddl_facts.append("(haspotion {})".format(self.get_pddl_name()))
+        if self.has_scroll:
+            pddl_facts.append("(hasscroll {})".format(self.get_pddl_name()))
+        if self.has_orb_of_zot:
+            pddl_facts.append("(hasorbofzot {})".format(self.get_pddl_name()))
+        if self.has_ring:
+            pddl_facts.append("(hasring {})".format(self.get_pddl_name()))
+        if self.has_stave:
+            pddl_facts.append("(hasstave {})".format(self.get_pddl_name()))
+        if self.has_hand_weapon:
+            pddl_facts.append("(hashandweapon {})".format(self.get_pddl_name()))
+        if self.has_armour:
+            pddl_facts.append("(hasarmour {})".format(self.get_pddl_name()))
+        if self.has_missile:
+            pddl_facts.append("(hasmissile {})".format(self.get_pddl_name()))
+        if self.has_amulet:
+            pddl_facts.append("(hasamulet {})".format(self.get_pddl_name()))
+        if self.has_wand:
+            pddl_facts.append("(haswand {})".format(self.get_pddl_name()))
+        if self.has_book:
+            pddl_facts.append("(hasbook {})".format(self.get_pddl_name()))
+
         if self.monster:
             for fact_i in self.monster.get_pddl_strs(self.get_pddl_name()):
                 pddl_facts.append(fact_i)
@@ -605,6 +628,24 @@ class CellMap:
             raise Exception("ERROR - cell_vector has length {} but required length is {}".format(len(cell_vector), required_length_of_vector))
 
         return cell_vector
+
+    def get_radius_around_agent_cells(self, r=2):
+        """
+        Returns a list of Cell objects around the agent, given a radius.
+        """
+        cells = []
+
+        x_min = self.agent_x - r
+        x_max = self.agent_x + r
+        y_min = self.agent_y - r
+        y_max = self.agent_y + r
+        for curr_y in range(y_min, y_max + 1):
+            for curr_x in range(x_min, x_max + 1):
+                if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
+                    cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)]
+                    cells.append(cell)
+        return cells
+
 
     def get_radius_around_agent_str(self, r=8):
         x_min = self.agent_x - r

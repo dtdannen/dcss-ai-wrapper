@@ -1,4 +1,4 @@
-from gamestate import GameState
+from gamestate import GameState, Cell
 from actions import Command, Action
 import subprocess
 import random
@@ -159,8 +159,9 @@ class HumanInterfaceAgentDataTracking(Agent):
         gameturn = gamestate.get_current_game_turn()
         num_facts = len(gamestate.get_all_pddl_facts())
         self.gameturns.append(gameturn)
+        self.print_all_items_near_player(gamestate)
         self.num_game_facts.append(num_facts)
-        print("about to plot {}, {}".format(gameturn, num_facts))
+        #print("about to plot {}, {}".format(gameturn, num_facts))
         #plt.plot(self.gameturns, self.num_game_facts)
         #plt.draw()
         #plt.pause(0.001)
@@ -178,6 +179,12 @@ class HumanInterfaceAgentDataTracking(Agent):
         next_action_command = Action.get_command_from_human_keypress(next_action)
         print("Got next_action {} and command is {}".format(next_action, next_action_command))
         return next_action_command
+
+    def print_all_items_near_player(self, gamestate: GameState, r=1):
+        cells = gamestate.get_cell_map().get_radius_around_agent_cells(r=r)
+        for cell in cells: # type: Cell
+            for pddl_fact in cell.get_pddl_facts():
+                print("{}".format(pddl_fact))
 
 
 class FastDownwardPlanningAgent(Agent):
