@@ -10,7 +10,7 @@ class WebserverConfig:
     server_port = '8080'
     agent_name = 'midca'
     agent_password = 'midca'
-    delay = 1  # delay in seconds to wait before sending the next message,
+    delay = 0.4  # delay in seconds to wait before sending the next message,
                  # decrease at your own risk. 0.5 and 1.0 have been known to be safe values
 
     # game_id is the type of game to play on the server
@@ -28,8 +28,8 @@ class WebserverConfig:
     # for example, Sprint I: "Red Sonja" is the letter 'a'
     sprint_map_letter = 'a'
 
-    # TODO - actually use this somewhere
-    start_new_game_on_death = True
+    # start a new game after the last game ended
+    auto_start_new_game = True
 
     # maximum number of actions to execute
     # -1 means infinite number of actions (i.e. don't stop agent after executing certain number of actions
@@ -37,7 +37,7 @@ class WebserverConfig:
 
     # If this is true, and there is an existing game for the agent, delete the game and
     # start a new game
-    always_start_new_game = True
+    always_start_new_game = False
 
 
 class CharacterCreationConfig:
@@ -48,5 +48,4 @@ class CharacterCreationConfig:
 
 class AIConfig:
     # any class that is in agent.py and is a subclass of Agent may be set as the ai_python_class
-    #
     ai_python_class = 'FastDownwardPlanningAgent'

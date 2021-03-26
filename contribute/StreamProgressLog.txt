@@ -71,11 +71,10 @@ Stream on March 18th, 2021:
 
 Tonight's stream (March 25th, 2021):
 0. (DONE) Introduction
-1. New feature where agent starts a new game everytime (never have to press ctrl-q again)
-   a. How do we detect that a game exists?
-   b. If a game does exist, trigger the delete-game behavior
-   c. Ensure we create a new game
-2. Keep playing after the player dies - play indefinitely
+1. (DONE) New feature where agent starts a new game everytime (never have to press ctrl-q again)
+   a. (DONE) How do we detect that a game exists?
+   b. (DONE) If a game does exist, trigger the delete-game behavior
+2. (DONE) Keep playing after the player dies - play indefinitely
 3. Sketch out a complete draft of PDDL
 4. Revisit the roadmap
 

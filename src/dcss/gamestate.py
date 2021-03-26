@@ -216,12 +216,22 @@ class Cell:
         self.has_scroll = False
         self.teleport_trap = False  # TODO not handled anywhere
         self.has_multiple_items = False  # TODO not handled anywhere
-        self.has_items = False
         self.has_gold = False
         self.has_monster = False
         self.has_shaft = False
         self.has_corpse = False
         self.has_fountain = False
+        self.has_orb_of_zot = False
+        self.has_ring = False
+        self.has_stave = False
+        self.has_hand_weapon = False
+        self.has_armour = False
+        self.has_missile = False
+        self.has_amulet = False
+        self.has_wand = False
+        self.has_book = False
+        self.has_misc_items = False
+
         self.has_magical_condensation_cloud = False
 
         # TODO add condition for †
@@ -324,12 +334,39 @@ class Cell:
             elif self.g == '?':
                 self.has_scroll = True
 
-            elif self.g in ['(', ')']:
-                self.has_items = True
+            elif self.g == '(':
+                self.has_missile = True
+
+            elif self.g == ')':
+                self.has_hand_weapon = True
+
+            elif self.g == '[':
+                self.has_armour = True
+
+            elif self.g == '=':
+                self.has_ring = True
+
+            elif self.g == '"':
+                self.has_amulet = True
+
+            elif self.g == ':':
+                self.has_book = True
+
+            elif self.g == '/':
+                self.has_wand = True
+
+            elif self.g == '\\':
+                self.has_stave = True
+
+            elif self.g == '}':
+                self.has_misc_items = True
 
             # TODO Figure out how much gold (information is at least in messages)
             elif self.g == '$':
                 self.has_gold = True
+
+            elif self.g == '0':
+                self.has_orb_of_zot = True
 
             else:
                 print("Found an unknown g value: {}".format(self.g))
@@ -391,6 +428,8 @@ class Cell:
             pddl_facts.append('(hasstairsup {})'.format(self.get_pddl_name()))
         if self.has_monster:
             pddl_facts.append("(hasmonster {})".format(self.get_pddl_name()))
+        if self.has_hand_weapon:
+            pddl_facts.append("(hashandweapon {})".format(self.get_pddl_name()))
         if self.monster:
             for fact_i in self.monster.get_pddl_strs(self.get_pddl_name()):
                 pddl_facts.append(fact_i)

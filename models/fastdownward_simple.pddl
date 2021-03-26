@@ -8,7 +8,6 @@
         equipitem - item
         potion - consumeitem
         scroll - consumeitem
-        fooditem - consumeitem
         weapon - equipitem
         armour - equipitem
 
@@ -414,14 +413,6 @@
     )
 )
 
-(:action rest_and_long_wait
-    :parameters ()
-    :precondition
-    (and (playerlessthanfullhealth))
-    :effect
-    (and (playerfullhealth))
-)
-
 (:action attack_without_move_n
     :parameters (?currcell ?destcell)
     :precondition
@@ -548,6 +539,18 @@
     )
 )
 
+(:action rest_and_long_wait
+    :parameters ()
+    :precondition
+    (and
+        (playerlessthanfullhealth)
+    )
+    :effect
+    (and
+        (playerfullhealth)
+    )
+)
+
 (:action travel_staircase_down
     :parameters (?currentplace ?currcell ?nextlowestplace)
     :precondition
@@ -581,18 +584,8 @@
 )
 
 
-(:action eat
-    :parameters (?food)
-    :precondition
-    (and
-        (invhasfooditem ?food)
-        (or (playerhashunger fainting) (playerhashunger starving) (playerhashunger nearstarving) (playerhashunger hungry))
-    )
-    :effect
-    (and
-        (or (playerhashunger full) (playerhashunger veryfull) (playerhashunger engorged))
-    )
-)
+
+; (:action pickupitem)
 
 ; (:action pickupitems...
 ; (:action equipitems...

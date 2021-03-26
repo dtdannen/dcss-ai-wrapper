@@ -72,7 +72,7 @@ class Command(Enum):
     WEAR_ARMOUR = 39
     TAKE_OFF_ARMOUR = 40
     CHOP_CORPSE = 41
-    EAT = 42
+    EAT = 42  # Note that later versions of crawl do not have an eat action
     READ = 43
     QUAFF = 44
     PUT_ON_JEWELLERY = 45

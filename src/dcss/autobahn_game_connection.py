@@ -235,8 +235,11 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self.game_state.draw_cell_map()
                         if self.agent:
                             next_action = self.agent.get_action(self.game_state)
-
-                            if next_action:
+                            # If you've gotten to the point of sending actions and a character was not created
+                            # then delete game if config has always_start_new_game set to True
+                            if config.WebserverConfig.always_start_new_game and not self._CREATED_A_NEW_CHARACTER:
+                                self._BEGIN_DELETING_GAME = True
+                            elif next_action:
                                 print("We are about to send action: {}".format(self.next_action_msg))
                                 self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
                                 self.last_message_sent = next_action
@@ -319,7 +322,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         # we return to the lobby after finishing a game, so reset up old state variables
         self._GAME_MODE_SELECTED = False
         self._LOBBY_IS_CLEAR = False
-        self._IN_LOBBY = False
+        #self._IN_LOBBY = False
 
         self._IN_GAME_SEED_MENU = False
         self._SENT_GAME_SEED = False
@@ -419,9 +422,6 @@ class DCSSProtocol(WebSocketClientProtocol):
         if not self._RECEIVED_MAP_DATA and self.check_received_map_data(json_msg):
             print("setting _RECEIVED_MAP_DATA = TRUE")
             self._RECEIVED_MAP_DATA = True
-
-        if config.WebserverConfig.always_start_new_game and not self._CREATED_A_NEW_CHARACTER:
-            self._BEGIN_DELETING_GAME = True
 
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):
