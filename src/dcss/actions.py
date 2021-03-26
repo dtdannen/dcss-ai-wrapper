@@ -160,8 +160,8 @@ class Action:
         Command.AUTO_EXPLORE: {'msg': 'key', 'keycode': ord('o')},
         Command.INTERLEVEL_TRAVEL: {'text': 'G', 'msg': 'input'},
         Command.FIND_ITEMS: {'msg': 'key', "keycode": 6},
-         #  Todo - see github issue 9
-         # Command.SET_WAYPOINT: {...}
+        #  Todo - see github issue 9
+        # Command.SET_WAYPOINT: {...}
 
         Command.LONG_WALK_N: {'msg': 'key', "keycode": -243},
         Command.LONG_WALK_S: {'msg': 'key', "keycode": -242},
@@ -183,8 +183,8 @@ class Action:
 
         Command.AUTO_FIGHT: {'msg': 'key', 'keycode': 9},
 
-         #  Todo - similar issue to github issue 9
-         # Command.AUTO_FIGHT_WITHOUT_MOVE:
+        #  Todo - similar issue to github issue 9
+        # Command.AUTO_FIGHT_WITHOUT_MOVE:
 
         Command.WIELD_HAND_WEAPON: {'text': 'w', 'msg': 'input'},
         Command.QUIVER_MISSILE: {'text': 'Q', 'msg': 'input'},
@@ -253,7 +253,7 @@ class Action:
         Command.RESPOND_YES_TO_PROMPT: {'text': 'Y', 'msg': 'input'},
         Command.RESPOND_NO_TO_PROMPT: {'text': 'N', 'msg': 'input'},
         Command.ENTER_KEY: {'text': '\r', 'msg': 'input'},
-        }
+    }
 
     @staticmethod
     def get_execution_repr(command: Command):
@@ -261,7 +261,7 @@ class Action:
         Given a command, return the data that can be sent directly to the game to execute the command.
         :return: a message data structure that can be sent directly to the game to execute the command.
         """
-        #print("Command is {}".format(command))
+        # print("Command is {}".format(command))
         return Action.command_to_msg[command]
 
     @staticmethod
@@ -280,14 +280,13 @@ class Action:
             '8': Command.MOVE_OR_ATTACK_N,
             '9': Command.MOVE_OR_ATTACK_NE,
             'o': Command.AUTO_EXPLORE,
-            '\t':Command.AUTO_FIGHT,
-            'i':Command.SHOW_INVENTORY_LIST,
-            '>':Command.TRAVEL_STAIRCASE_DOWN,
+            '\t': Command.AUTO_FIGHT,
+            'i': Command.SHOW_INVENTORY_LIST,
+            '>': Command.TRAVEL_STAIRCASE_DOWN,
             '<': Command.TRAVEL_STAIRCASE_UP,
-            '\r':Command.ENTER_KEY,
+            '\r': Command.ENTER_KEY,
+            'g': Command.PICKUP_ITEM,
+            ',': Command.PICKUP_ITEM,
         }
 
         return keypress_to_command[keypress]
-
-
-

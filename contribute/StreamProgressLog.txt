@@ -75,11 +75,13 @@ Tonight's stream (March 25th, 2021):
    a. (DONE) How do we detect that a game exists?
    b. (DONE) If a game does exist, trigger the delete-game behavior
 2. (DONE) Keep playing after the player dies - play indefinitely
-3. Sketch out a complete draft of PDDL
-4. Revisit the roadmap
+3. Human Pass Through Agent
+4. Add more funtionality for dealing with items
+
 
 
 Future issues to solve:
+* Sketch out a complete draft of PDDL
 * Issue with monsters.... plants are considered monsters when they shouldnt be...
 * Solve problem where planner doesn't attack monster if one cell away
 * Detect when someone is spectating, and print special information if they are

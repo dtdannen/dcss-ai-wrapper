@@ -33,7 +33,7 @@ The following is a tentative roadmap for the project to reach version 1.0.
 *  Enable agent to receive spectator commands through spectator chat, including 'pause' and 'resume'
 
 ### v0.7
-*  Refactor code into a pip installable library
+*  ~~Refactor code into a pip installable library~~
 
 ### v0.8
 *  Code refactoring to adhere to better design principles

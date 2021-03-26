@@ -141,11 +141,11 @@ class HumanInterfaceAgentDataTracking(Agent):
     def __init__(self):
         super().__init__()
         #plt.axis([-50, 50, 0, 10000])
-        plt.ion()
-        plt.show()
+        #plt.ion()
+        #plt.show()
 
-        self.fig = plt.figure()
-        self.ax1 = self.fig.add_subplot(1,1,1)
+        #self.fig = plt.figure()
+        #self.ax1 = self.fig.add_subplot(1,1,1)
 
         self.gameturns = []
         self.num_game_facts = []
@@ -161,9 +161,9 @@ class HumanInterfaceAgentDataTracking(Agent):
         self.gameturns.append(gameturn)
         self.num_game_facts.append(num_facts)
         print("about to plot {}, {}".format(gameturn, num_facts))
-        plt.plot(self.gameturns, self.num_game_facts)
-        plt.draw()
-        plt.pause(0.001)
+        #plt.plot(self.gameturns, self.num_game_facts)
+        #plt.draw()
+        #plt.pause(0.001)
 
         # linux solution:
         #next_action = readchar.readchar()

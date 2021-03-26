@@ -3,7 +3,7 @@ from actions import Action
 
 import json
 import time
-from src.dcss import config
+import config
 import zlib
 import copy
 
