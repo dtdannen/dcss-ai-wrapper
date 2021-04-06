@@ -69,7 +69,7 @@ Stream on March 18th, 2021:
 5. Get potion/scroll/food consume-ing goals to work
 6. Debug monster issues
 
-Tonight's stream (March 25th, 2021):
+Stream on March 25th, 2021:
 0. (DONE) Introduction
 1. (DONE) New feature where agent starts a new game everytime (never have to press ctrl-q again)
    a. (DONE) How do we detect that a game exists?
@@ -82,6 +82,11 @@ Tonight's stream (March 25th, 2021):
         * BUT on a separate note, monsters are no longer lingering after they died
 
 
+Tonight's stream on April 6th, 2021:
+0. Intro
+1. Human pass through agent
+2. Unknown vs. known items
+3. Dealing with Menus
 
 Future issues to solve:
 * picking up a scroll doesn't remove it from the gamestate
