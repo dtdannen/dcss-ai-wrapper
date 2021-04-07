@@ -7,8 +7,8 @@ Make sure to run crawl before running this demo, see:
 
 """
 
-from autobahn_game_connection import DCSSProtocol
-import config
+from connection.autobahn_game_connection import DCSSProtocol
+from connection import config
 import asyncio
 import logging
 from autobahn.asyncio.websocket import WebSocketClientFactory

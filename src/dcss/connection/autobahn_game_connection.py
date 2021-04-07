@@ -1,36 +1,26 @@
-from gamestate import GameState
-from actions import Action
-
 import json
 import time
-import config
+
+from actions.action import Action
+from connection import config
 import zlib
 import copy
 
+from connection.menuknowledge import MenuBackgroundKnowledge
 from nested_lookup import nested_lookup
 
 import asyncio
 import importlib
 from autobahn.asyncio.websocket import WebSocketClientProtocol
-from enum import Enum
-from agent import *  # We need to import all AI classes so that whatever one is in the config file, it will be found
+from states.gamestate import GameState
+from states.menu import Menu
 
-
-class MenuBackgroundKnowledge:
-    tutorial_lesson_number_to_hotkey = {1: 97, 2: 98, 3: 99, 4: 100, 5: 101}
-    sprint_map_letter_to_hotkey = {'a': 97, 'b': 98, 'c': 99, 'd': 100, 'e': 101, 'f': 102, 'g': 103, 'h': 104,
-                                   'i': 105}
-
-
-class Menu(Enum):
-    NO_MENU = 1
-    CHARACTER_CREATION_SELECT_SPECIES = 2
-    CHARACTER_CREATION_SELECT_BACKGROUND = 3
-    CHARACTER_CREATION_SELECT_WEAPON = 4
-    CHARACTER_INVENTORY_MENU = 5
-    CHARACTER_ITEM_SPECIFIC_MENU = 6
-    TUTORIAL_SELECTION_MENU = 7
-    SPRINT_MAP_SELECTION_MENU = 8
+from dcss.agent.agent import Agent
+from dcss.agent.fastdownwardplanningagent import FastDownwardPlanningAgent
+from dcss.agent.humaninterfaceagent import HumanInterfaceAgentDataTracking
+from dcss.agent.simplerlagent import SimpleRLAgent
+from dcss.agent.SimpleRandomAgent import SimpleRandomAgent
+from dcss.agent.testallcommandsagent import TestAllCommandsAgent
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -240,7 +230,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             if config.WebserverConfig.always_start_new_game and not self._CREATED_A_NEW_CHARACTER:
                                 self._BEGIN_DELETING_GAME = True
                             elif next_action:
-                                print("We are about to send action: {}".format(self.next_action_msg))
+                                print("We are about to send action: {}".format(next_action))
                                 self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
                                 self.last_message_sent = next_action
                                 self.actions_sent += 1
@@ -319,7 +309,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def reset_before_next_game(self):
         print("CALLING RESET BEFORE THE NEXT GAME")
-        # we return to the lobby after finishing a game, so reset up old state variables
+        # we return to the lobby after finishing a game, so reset up old states variables
         self._GAME_MODE_SELECTED = False
         self._LOBBY_IS_CLEAR = False
         #self._IN_LOBBY = False
@@ -348,10 +338,10 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._SENT_ENTER_2_TO_DELETE_GAME = False
         self._SENT_ENTER_3_TO_DELETE_GAME = False
 
-        # keep the old gamestate for data purposes
+        # keep the old states for data purposes
         self.previous_game_states.append(copy.deepcopy(self.game_state))
 
-        # reset the game state!
+        # reset the game states!
         self.game_state = GameState()
 
         # keep the old agent for data purposes
@@ -406,7 +396,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._IN_LOBBY = False
 
         if self.check_for_death_message(json_msg):
-            # Reset the agent and other state variables because we return back to the lobby
+            # Reset the agent and other states variables because we return back to the lobby
             # in between games
             self.reset_before_next_game()
 
@@ -670,8 +660,13 @@ class DCSSProtocol(WebSocketClientProtocol):
         return self.game_state
 
     def load_ai_agent(self):
-        module = importlib.import_module('agent')
-        self.agent = getattr(module, config.AIConfig.ai_python_class)()
+        for sub in Agent.__subclasses__():
+            if config.AIConfig.ai_python_class == sub.__name__:
+                print("Loading {} agent...".format(sub.__name__))
+                self.agent = sub()
+
+        if not self.agent:
+            raise Exception("Error loading agent {} from config\nPossible Solutions:\n\t(1) Make sure the agent is in the dcss.agent folder and make sure the file autobahn_game_connection.py includes an import statement to that file.".format(config.AIConfig.ai_python_class))
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection onClose() called")
@@ -693,7 +688,7 @@ class DCSSProtocol(WebSocketClientProtocol):
     #     self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
     #     self.messages_received = []
     #
-    #     # state variables for handling login information and other information
+    #     # states variables for handling login information and other information
     #     self._READY_TO_CONNECT = True
     #     self._CONNECTED = False
     #     self._READY_TO_LOGIN = False

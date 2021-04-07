@@ -1,6 +1,6 @@
 '''
-This file stores the gamestate class that is used to keep track of
-the current state of the dcss game 
+This file stores the states class that is used to keep track of
+the current states of the dcss game
 
 TODO:
     - should this remain a seperate object from DCSSProvider?
@@ -52,10 +52,10 @@ class GameState():
     ID = 0
 
     def __init__(self):
-        # state is just a dictionary of key value pairs
+        # states is just a dictionary of key value pairs
         self.state = {}
 
-        # only state information we care about
+        # only states information we care about
         self.state_keys = ['hp', 'hp_max', 'depth', 'light', 'god', 'mp', 'species', 'dex', 'inv', 'cells', 'species']
 
         self.letter_to_number_lookup = { c : i for i,c in enumerate('abcdefghi') }
@@ -107,7 +107,7 @@ class GameState():
 
         self.asp_statement_re = re.compile('([a-z_]+)\(([^\)]+)\)\.')
 
-        # intiliaze values of state variables
+        # intiliaze values of states variables
         for k in self.state_keys:
             self.state[k] = None
 
@@ -587,7 +587,7 @@ class GameState():
     def get_map_obj(self):
         return self.map_obj
         
-    # Methods for external state queries
+    # Methods for external states queries
 
     # returns the quantity of items with passed item_name
     def item_in_inventory(self,item_name):

@@ -99,3 +99,4 @@ Future issues to solve:
 * investigate situation where monsters are not being seen
 * add smoke to the objects that can be detected in cells
 * shallow and deep water can have the same symbol
+* planning agent needs to avoid unreachable monsters

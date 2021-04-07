@@ -1,4 +1,4 @@
-from gamestate import GameState
+from states import GameState
 from actions import Action
 
 import socket
@@ -8,7 +8,7 @@ import warnings
 import os
 import logging
 import time
-from src.dcss import config
+from connection import config
 import asyncio
 import websockets
 import zlib
