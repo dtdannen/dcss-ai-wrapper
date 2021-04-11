@@ -130,9 +130,13 @@ Recommended next step: install FastDownward planner to run the FastDownwardPlann
 
 # Building the documentation
 
-On windows, use the make.bat script:
+Build the api documentation by:
 
-    .\make.bat html
+    sphinx-apidoc -f -o docs/api/ src/dcss/
+
+On windows, use the make.bat script to create the html files:
+
+    .\docs\make.bat html
     
 Then open `docs/_build/html/index.html` in your browser to view the documentation.
 
