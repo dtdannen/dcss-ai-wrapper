@@ -128,6 +128,14 @@ Recommended next step: install FastDownward planner to run the FastDownwardPlann
 
 3. Run main_webserver.py and it should work. There's a chance that the fastdownward planner will fail to find a plan because of a missing feature of our api. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess in the FastDownwardPlanningAgent class.
 
+# Building the documentation
+
+On windows, use the make.bat script:
+
+    .\make.bat html
+    
+Then open `docs/_build/html/index.html` in your browser to view the documentation.
+
 # Installing DCSS from Source on Ubuntu
 
 ### Pre-requisites

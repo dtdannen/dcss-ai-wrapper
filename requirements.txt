@@ -11,3 +11,5 @@ websockets==8.1
 numpy
 matplotlib
 readchar
+sphinx-rtd-theme
+mkdocs
