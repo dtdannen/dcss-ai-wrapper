@@ -1,5 +1,5 @@
 """Training the agent"""
-
+import os
 import random
 import numpy as np
 from collections import defaultdict
@@ -7,8 +7,9 @@ from actions import  Command
 # Hyperparameters
 alpha = 0.1
 gamma = 0.6
-epsilon = 0.4
+epsilon = 0.1
 visited_state = []
+import pickle
 
 def get_random_action(actions):
     return random.choice(actions)
@@ -18,6 +19,12 @@ class RLAgent:
     def __init__(self, actions):
         self.action_set = actions
         self.q_table = {}
+        if os.path.getsize('agents/qtable.txt') > 0:
+            with open('agents/qtable.txt', 'rb') as fp:
+                old_q = pickle.load(fp)
+                if old_q:
+                    self.q_table = old_q
+
         self.last_action = None
         self.last_state = None
 
@@ -33,14 +40,24 @@ class RLAgent:
     def get_reward(self, state):
         print(state)
         if state == '70':
-            return 10
+            with open('agents/qtable.txt', 'wb') as fp:
+                pickle.dump(self.q_table, fp)
+            return 64
+        # if state == '60':
+        #     return 32
+        # if state == '50':
+        #     return 16
+        # if state == '40':
+        #     return 8
         if state == '30':
-            return 5
+            return 4
         if state == '20':
             return 2
+
         return 0
 
     def update(self, pstate, action, new_state):
+        print("update: ", pstate, action, new_state)
         reward = self.get_reward(new_state)
         print("**action", action)
         old_value = self.q_table[pstate][action.value]
