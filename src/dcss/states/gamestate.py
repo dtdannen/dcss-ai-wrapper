@@ -120,6 +120,12 @@ class GameState:
         GameState.ID += 1
 
     def update(self, msg_from_server):
+        """
+        Updates the game state object with a message from the webserver.
+
+        Args:
+            msg_from_server (dict): message from the server
+        """
         try:
             # print(str(self.states))
             logging.info("states.update() is now processing: {}".format(str(msg_from_server)))
@@ -128,6 +134,9 @@ class GameState:
             raise Exception("Something went wrong: " + str(e))
 
     def record_movement(self, dir):
+        """
+        TODO: Write documentation
+        """
         self.last_recorded_movement = dir
         print('last recorded movement is ' + str(self.last_recorded_movement))
         if dir in actions.key_actions.keys():
@@ -144,21 +153,37 @@ class GameState:
         pass  # do nothing if the agent didn't move
 
     def shift_agent_x(self, change):
-        '''
+        """
         Performs an addition
-        '''
+
+
+        TODO: Write documentation
+
+        """
         self.agent_x += change
 
     def shift_agent_y(self, change):
-        '''
+        """
         Performs an addition
-        '''
+
+        TODO: Write documentation
+
+        """
         self.agent_y += change
 
     def get_cell_map(self):
+        """
+        Returns the cell map object.
+
+        Returns:
+            CellMap: the object containing all information per cell of the DCSS game so far
+        """
         return self.cellmap
 
     def _process_raw_state(self, s, last_key=''):
+        """
+        TODO: Write documentation
+        """
         # print("processing {}\n".format(s))
         if isinstance(s, list):
             for i in s:
