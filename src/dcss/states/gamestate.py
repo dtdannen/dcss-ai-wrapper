@@ -427,9 +427,9 @@ class GameState:
 
         return player_pddl_strs
 
-    def get_pddl_current_state_cellmap(self, current_place_only=True):
-        if current_place_only:
-            object_strs, fact_strs = self.cellmap.get_cell_map_pddl_current_place_only()
+    def get_pddl_current_state_cellmap(self, radius=8):
+        if radius >= 0:
+            object_strs, fact_strs = self.cellmap.get_cell_map_pddl_radius(radius=radius)
         else:
             object_strs, fact_strs = self.cellmap.get_cell_map_pddl_global()
         return object_strs, fact_strs

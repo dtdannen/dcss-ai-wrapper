@@ -229,12 +229,12 @@ class CellMap:
 
         return object_strs, fact_strs
 
-    def get_cell_map_pddl_current_place_only(self):
+    def get_cell_map_pddl_radius(self, radius=8):
 
         object_strs = []
         fact_strs = []
-        for curr_y in range(self.min_y, self.max_y + 1):
-            for curr_x in range(self.min_x, self.max_x + 1):
+        for curr_y in range(self.min_y, self.max_y + radius):
+            for curr_x in range(self.min_x, self.max_x + radius):
                 if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
                     cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)]
                     object_strs.append(cell.get_pddl_name())
