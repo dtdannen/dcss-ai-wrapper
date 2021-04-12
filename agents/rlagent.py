@@ -40,8 +40,8 @@ class RLAgent:
     def get_reward(self, state):
         print(state)
         if state == '70':
-            with open('agents/qtable.txt', 'wb') as fp:
-                pickle.dump(self.q_table, fp)
+            # with open('agents/qtable.txt', 'wb') as fp:
+            #     pickle.dump(self.q_table, fp)
             return 64
         # if state == '60':
         #     return 32
