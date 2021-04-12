@@ -21,6 +21,7 @@ from dcss.agent.humaninterfaceagent import HumanInterfaceAgentDataTracking
 from dcss.agent.simplerlagent import SimpleRLAgent
 from dcss.agent.SimpleRandomAgent import SimpleRandomAgent
 from dcss.agent.testallcommandsagent import TestAllCommandsAgent
+from dcss.agent.fastdownwardtutorial1 import FastDownwardPlanningAgentTut1
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -159,6 +160,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                     tutorial_lesson_selection_message = {"keycode": hotkey, "msg": "key"}
                     self.sendMessage(json.dumps(tutorial_lesson_selection_message).encode('utf-8'))
                     self._IN_MENU = Menu.NO_MENU
+                    self._CREATED_A_NEW_CHARACTER = True
                 #### END TUTORIAL GAME MENU NAVIGATION ####
 
                 #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
@@ -409,6 +411,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("ACTION LIMIT REACHED! setting _BEGIN_DELETING_GAME = True")
             self._BEGIN_DELETING_GAME = True
 
+        if self.check_agent_wants_to_start_next_game():
+            print("AGENT WANTS TO START A NEW GAME")
+            self._BEGIN_DELETING_GAME = True
+
         if not self._RECEIVED_MAP_DATA and self.check_received_map_data(json_msg):
             print("setting _RECEIVED_MAP_DATA = TRUE")
             self._RECEIVED_MAP_DATA = True
@@ -535,6 +541,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                 return True
         return False
 
+
     def check_for_death_message(self, json_msg):
         reason_is_dead_found = False
         for v in nested_lookup('reason', json_msg):
@@ -658,6 +665,9 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def get_gamestate(self):
         return self.game_state
+
+    def check_agent_wants_to_start_next_game(self):
+        return self.agent and self.agent.requesting_start_new_game()
 
     def load_ai_agent(self):
         for sub in Agent.__subclasses__():

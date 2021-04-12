@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class Command(Enum):
-    '''
+    """
     These are taken from the in-game manual of crawl.
-    '''
+    """
 
     #  Movement
     MOVE_OR_ATTACK_SW = 1
