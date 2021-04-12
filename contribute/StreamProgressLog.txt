@@ -48,7 +48,7 @@ Stream on March 3rd, 2021:
 4. Clean up print statements for early menus
 
 
-TONIGHT (March 11th, 2021):
+Stream on March 11th, 2021:
 0. (DONE) Introduction
 1. (DONE) Demo Reconnecting in the middle of a game is now working
 2. (DONE) Demo increasing speed is working
@@ -60,13 +60,37 @@ TONIGHT (March 11th, 2021):
 7. Handle the case where planner doesn't like closed doors
 7. BONUS - add item goals
 
-NEXT TIME (March 18th, 2021):
-1. Get sprint games to work
-2. Debug monster issues
-3. Get item and stair goals to work!
+Stream on March 18th, 2021:
+1. (DONE) Get sprint games to work
+2. (FAILED - need to investigate further) Get autokill game to work when script is stopped
+    2.1 (NEARLY WORKING - need to finalize agent restarting) Consolation prize - action limit
+3. Get item pickup and stair goals to work!
+4. Get item equip-ing goals to work
+5. Get potion/scroll/food consume-ing goals to work
+6. Debug monster issues
 
+Stream on March 25th, 2021:
+0. (DONE) Introduction
+1. (DONE) New feature where agent starts a new game everytime (never have to press ctrl-q again)
+   a. (DONE) How do we detect that a game exists?
+   b. (DONE) If a game does exist, trigger the delete-game behavior
+2. (DONE) Keep playing after the player dies - play indefinitely
+3. (Progress) Human Pass Through Agent
+4. Add more funtionality for dealing with items
+   * Added support for the main categories of items
+   * UNRESOLVED issue with some items not showing up - may need to cancel calls to the function Cell.remove_all_items()
+        * BUT on a separate note, monsters are no longer lingering after they died
+
+
+Tonight's stream on April 6th, 2021:
+0. Intro
+1. Human pass through agent
+2. Unknown vs. known items
+3. Dealing with Menus
 
 Future issues to solve:
+* picking up a scroll doesn't remove it from the gamestate
+* Sketch out a complete draft of PDDL
 * Issue with monsters.... plants are considered monsters when they shouldnt be...
 * Solve problem where planner doesn't attack monster if one cell away
 * Detect when someone is spectating, and print special information if they are
@@ -75,3 +99,4 @@ Future issues to solve:
 * investigate situation where monsters are not being seen
 * add smoke to the objects that can be detected in cells
 * shallow and deep water can have the same symbol
+* planning agent needs to avoid unreachable monsters

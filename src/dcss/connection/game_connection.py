@@ -1,4 +1,4 @@
-from gamestate import GameState
+from states import GameState
 from actions import Action
 
 import socket
@@ -6,11 +6,9 @@ import json
 from datetime import datetime, timedelta
 import warnings
 import os
-import random
 import logging
 import time
-import sys
-import config
+from connection import config
 import asyncio
 import websockets
 import zlib

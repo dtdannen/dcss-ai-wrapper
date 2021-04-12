@@ -2,10 +2,11 @@
 Make sure to run crawl before running this demo, see:
     start_crawl_terminal_sprint.sh
 """
+from actions.action import Action
+from actions.command import Command
+from connection.game_connection import GameConnection
+from agent import SimpleRandomAgent
 
-from game_connection import GameConnection
-from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningAgent
-from actions import Command, Action
 
 
 def main():
@@ -86,7 +87,7 @@ if __name__ == "__main__":
 #
 #     read_msgs()
 #
-#     # This will get all the state from the game at once
+#     # This will get all the states from the game at once
 #     # Parsing error with json library
 #     # msg = json_encode({
 #     #         "msg": "spectator_joined"

@@ -1,183 +1,11 @@
-from gamestate import GameState
-from actions import Command, Action
-import subprocess
-import random
-import platform
 import os
-import time
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib import style
-import readchar
-try:
-    import msvcrt
-except:
-    pass
+import platform
+import random
+import subprocess
 
-
-class Agent:
-    def __init__(self):
-        pass
-
-    def get_action(self, gamestate: GameState):
-        raise NotImplementedError()
-
-
-class SimpleRandomAgent(Agent):
-    """
-    Agent that takes random cardinal actions to move/attack.
-    """
-
-    def do_sprint(self):
-        # select sprint and character build
-        return [{'msg': 'key', 'keycode': ord('a')},
-                {'msg': 'key', 'keycode': ord('b')},
-                {'msg': 'key', 'keycode': ord('h')},
-                {'msg': 'key', 'keycode': ord('b')}
-                ]
-
-    def do_dungeon(self):
-        # select dungeon and character build
-        return [{'msg': 'key', 'keycode': ord('b')},
-                {'msg': 'key', 'keycode': ord('i')},
-                {'msg': 'key', 'keycode': ord('c')},
-                ]
-
-    def do_dungeon_webserver(self):
-        # select dungeon and character build
-        return [{'msg': 'input', 'text': 'b'},
-                {'msg': 'input', 'text': 'i'},
-                {'msg': 'input', 'text': 'c'},
-                ]
-
-    def get_game_mode_setup_actions(self):
-        return self.do_dungeon()
-
-    def get_game_mode_setup_actions_webserver(self):
-        return self.do_dungeon_webserver()
-
-    def get_action(self, gamestate):
-        simple_commands = [Command.MOVE_OR_ATTACK_N,
-                           Command.MOVE_OR_ATTACK_S,
-                           Command.MOVE_OR_ATTACK_E,
-                           Command.MOVE_OR_ATTACK_W,
-                           Command.MOVE_OR_ATTACK_NE,
-                           Command.MOVE_OR_ATTACK_NW,
-                           Command.MOVE_OR_ATTACK_SW,
-                           Command.MOVE_OR_ATTACK_SE]
-        return random.choice(simple_commands)
-
-
-class SimpleRLAgent:
-
-    def get_action(self, gamestate):
-        r = 2
-        print("---------------------")
-        print("Radius around agent (r={}):".format(r))
-        num_rows = (2*r) + 1
-        row_size = (2*r) + 1
-        cell_vector = gamestate.get_cell_map().get_radius_around_agent_vector(r=2, tile_vector_repr='simple')
-        for r in range(num_rows):
-            s = ''
-            for c in range(row_size):
-                s += str(cell_vector[(r*row_size)+c])
-            print(s)
-        print("---------------------")
-        simple_commands = [Command.MOVE_OR_ATTACK_N,
-                           Command.MOVE_OR_ATTACK_S,
-                           Command.MOVE_OR_ATTACK_E,
-                           Command.MOVE_OR_ATTACK_W,
-                           Command.MOVE_OR_ATTACK_NE,
-                           Command.MOVE_OR_ATTACK_NW,
-                           Command.MOVE_OR_ATTACK_SW,
-                           Command.MOVE_OR_ATTACK_SE]
-        return random.choice(simple_commands)
-
-
-class TestAllCommandsAgent(Agent):
-    """
-    Agent that serves to test all commands are working. Cycles through commands in actions.Command enum.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.next_command_id = 1
-
-    def do_dungeon(self):
-        # select dungeon and character build
-        return [{'msg': 'key', 'keycode': ord('b')},
-                {'msg': 'key', 'keycode': ord('h')},
-                {'msg': 'key', 'keycode': ord('b')},
-                ]
-
-    def get_game_mode_setup_actions(self):
-        return self.do_dungeon()
-
-    def get_action(self, gamestate):
-
-        problematic_actions = [Command.REST_AND_LONG_WAIT,  # some kind of message delay issue
-                               Command.WAIT_1_TURN,  # some kind of message delay issue
-                               Command.FIND_ITEMS,  # gets stuck on a prompt
-                               ]
-
-        try:
-            next_command = Command(self.next_command_id)
-        except IndexError:
-            self.next_command_id = 1
-            next_command = Command(self.next_command_id)
-
-        self.next_command_id += 1
-
-        #  skip any known problematic actions for now
-        while next_command in problematic_actions:
-            next_command = self.get_action(gamestate)
-
-        return next_command
-
-
-class HumanInterfaceAgentDataTracking(Agent):
-
-    def __init__(self):
-        super().__init__()
-        #plt.axis([-50, 50, 0, 10000])
-        plt.ion()
-        plt.show()
-
-        self.fig = plt.figure()
-        self.ax1 = self.fig.add_subplot(1,1,1)
-
-        self.gameturns = []
-        self.num_game_facts = []
-
-        self.state_facts_count_data = {}  # key is game turn, val is len(state_facts)
-        self.number_of_monsters_data = {}  # key is game turn, val is number of monsters
-        self.number_of_items_data = {}  # key is game turn, val is number of items seen in the game so far
-        self.number_of_cells_data = {}  # key is game turn, val is number of cells seen in the game so far
-
-    def get_action(self, gamestate):
-        gameturn = gamestate.get_current_game_turn()
-        num_facts = len(gamestate.get_all_pddl_facts())
-        self.gameturns.append(gameturn)
-        self.num_game_facts.append(num_facts)
-        print("about to plot {}, {}".format(gameturn, num_facts))
-        plt.plot(self.gameturns, self.num_game_facts)
-        plt.draw()
-        plt.pause(0.001)
-
-        # linux solution:
-        #next_action = readchar.readchar()
-
-        # windows solution
-        next_action = None
-        while not next_action:
-            try:
-                next_action = msvcrt.getch().decode()
-            except:
-                print("Sorry, couldn't decode that keypress, try again?")
-        next_action_command = Action.get_command_from_human_keypress(next_action)
-        print("Got next_action {} and command is {}".format(next_action, next_action_command))
-        return next_action_command
+from dcss.agent.agent import Agent
+from dcss.actions.command import Command
+from dcss.states.gamestate import GameState
 
 
 class FastDownwardPlanningAgent(Agent):
@@ -192,7 +20,7 @@ class FastDownwardPlanningAgent(Agent):
         self.current_game_state = None
         self.next_command_id = 1
         self.plan_domain_filename = "models/fastdownwardplanningagent_domain.pddl"
-        self.plan_current_pddl_state_filename = "models/fdtempfiles/gamestate.pddl"
+        self.plan_current_pddl_state_filename = "models/fdtempfiles/states.pddl"
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
         self.actions_taken_so_far = 0
@@ -300,12 +128,12 @@ class FastDownwardPlanningAgent(Agent):
         return monster_goal_str
 
     def get_plan_from_fast_downward(self, goals):
-        # step 1: write state output so fastdownward can read it in
+        # step 1: write states output so fastdownward can read it in
         if self.current_game_state:
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:
-            print("WARNING current game state is null when trying to call fast downward planner")
+            print("WARNING current game states is null when trying to call fast downward planner")
             return []
 
         # step 2: run fastdownward

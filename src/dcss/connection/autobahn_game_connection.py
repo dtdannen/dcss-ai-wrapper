@@ -1,44 +1,26 @@
-from gamestate import GameState
-from actions import Action
-
-import socket
 import json
-from datetime import datetime, timedelta
-import warnings
-import os
-import random
-import logging
 import time
-import sys
-import config
-import asyncio
-import websockets
+
+from actions.action import Action
+from connection import config
 import zlib
-import threading
 import copy
 
+from connection.menuknowledge import MenuBackgroundKnowledge
 from nested_lookup import nested_lookup
-
 
 import asyncio
 import importlib
-from autobahn.asyncio.websocket import WebSocketClientProtocol, WebSocketClientFactory
-from enum import Enum
-from agent import *  # We need to import all AI classes so that whatever one is in the config file, it will be found
+from autobahn.asyncio.websocket import WebSocketClientProtocol
+from states.gamestate import GameState
+from states.menu import Menu
 
-
-class MenuBackgroundKnowledge:
-    tutorial_lesson_number_to_hotkey = {1: 97, 2: 98, 3: 99, 4: 100, 5: 101}
-
-
-class Menu(Enum):
-    NO_MENU = 1
-    CHARACTER_CREATION_SELECT_SPECIES = 2
-    CHARACTER_CREATION_SELECT_BACKGROUND = 3
-    CHARACTER_CREATION_SELECT_WEAPON = 4
-    CHARACTER_INVENTORY_MENU = 5
-    CHARACTER_ITEM_SPECIFIC_MENU = 6
-    TUTORIAL_SELECTION_MENU = 7
+from dcss.agent.agent import Agent
+from dcss.agent.fastdownwardplanningagent import FastDownwardPlanningAgent
+from dcss.agent.humaninterfaceagent import HumanInterfaceAgentDataTracking
+from dcss.agent.simplerlagent import SimpleRLAgent
+from dcss.agent.SimpleRandomAgent import SimpleRandomAgent
+from dcss.agent.testallcommandsagent import TestAllCommandsAgent
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -78,8 +60,19 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         self._PLAYER_DIED = False
 
+        self._BEGIN_DELETING_GAME = False
+        self._SENT_CTRL_Q_TO_DELETE_GAME = False
+        self._SENT_YES_TEXT_TO_DELETE_GAME = False
+        self._SENT_ENTER_1_TO_DELETE_GAME = False
+        self._SENT_ENTER_2_TO_DELETE_GAME = False
+        self._SENT_ENTER_3_TO_DELETE_GAME = False
+
+        self._CREATED_A_NEW_CHARACTER = False
+        self._PREV_GAME_ALREADY_EXISTS = False
+
         self.last_message_sent = None
         self.next_action_msg = None
+        self.actions_sent = 0
 
         self.messages_received_counter = 0
         self.species_options = {}
@@ -112,7 +105,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                 self._NEEDS_PONG = False
             elif self._CONNECTED and self._NEEDS_ENTER:
                 print("SENDING ENTER KEY BECAUSE OF PROMPT")
-                enter_key_msg = {"text":"\r","msg":"input"}
+                enter_key_msg = {"text": "\r", "msg": "input"}
                 self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
                 self._NEEDS_ENTER = False
             else:
@@ -131,42 +124,60 @@ class DCSSProtocol(WebSocketClientProtocol):
                 #### BEGIN SEEDED GAME MENU NAVIGATION ####
                 elif self.config.game_id == 'seeded-web-trunk' and self._IN_GAME_SEED_MENU and not self._SENT_GAME_SEED:
                     print("SENDING GAME SEED")
-                    game_seed_msg = {"text":str(config.WebserverConfig.seed),"generation_id":1,"widget_id":"seed","msg":"ui_state_sync"}
+                    game_seed_msg = {"text": str(config.WebserverConfig.seed), "generation_id": 1, "widget_id": "seed",
+                                     "msg": "ui_state_sync"}
                     self.sendMessage(json.dumps(game_seed_msg).encode('utf-8'))
                     self._SENT_GAME_SEED = True
 
                 elif self.config.game_id == 'seeded-web-trunk' and self._SENT_GAME_SEED and not self._CHECKED_BOX_FOR_PREGENERATION:
                     print("SENDING CHECKMARK TO CONFIRM PREGENERATION OF DUNGEON")
-                    pregeneration_checkbox_msg = {"checked":True,"generation_id":1,"widget_id":"pregenerate","msg":"ui_state_sync"}
+                    pregeneration_checkbox_msg = {"checked": True, "generation_id": 1, "widget_id": "pregenerate",
+                                                  "msg": "ui_state_sync"}
                     self.sendMessage(json.dumps(pregeneration_checkbox_msg).encode('utf-8'))
                     self._CHECKED_BOX_FOR_PREGENERATION = True
 
                 elif self.config.game_id == 'seeded-web-trunk' and self._READY_TO_SEND_SEED_GAME_START and self._SENT_GAME_SEED and self._CHECKED_BOX_FOR_PREGENERATION and not self._SENT_SEEDED_GAME_START:
                     print("SENDING MESSAGE TO START THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
-                    start_seeded_game_msg_button = {"generation_id":1,"widget_id":"btn-begin","msg":"ui_state_sync"}
+                    start_seeded_game_msg_button = {"generation_id": 1, "widget_id": "btn-begin",
+                                                    "msg": "ui_state_sync"}
                     self.sendMessage(json.dumps(start_seeded_game_msg_button).encode('utf-8'))
                     self._SENT_SEEDED_GAME_START = True
 
                 elif self.config.game_id == 'seeded-web-trunk' and self._SENT_SEEDED_GAME_START and not self._SENT_SEEDED_GAME_START_CONFIRMATION:
                     print("SENDING MESSAGE TO CONFIRM THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
-                    confirm_seeded_game_msg_button = {"keycode":13,"msg":"key"}
+                    confirm_seeded_game_msg_button = {"keycode": 13, "msg": "key"}
                     self.sendMessage(json.dumps(confirm_seeded_game_msg_button).encode('utf-8'))
                     self._SENT_SEEDED_GAME_START_CONFIRMATION = True
                 #### END SEEDED GAME MENU NAVIGATION ####
 
                 #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
                 elif self.config.game_id == 'tut-web-trunk' and self._IN_MENU == Menu.TUTORIAL_SELECTION_MENU:
-                    print("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE TUTORIAL MENU".format(config.WebserverConfig.tutorial_number))
-                    hotkey = MenuBackgroundKnowledge.tutorial_lesson_number_to_hotkey[config.WebserverConfig.tutorial_number]
+                    print("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE TUTORIAL MENU".format(
+                        config.WebserverConfig.tutorial_number))
+                    hotkey = MenuBackgroundKnowledge.tutorial_lesson_number_to_hotkey[
+                        config.WebserverConfig.tutorial_number]
                     tutorial_lesson_selection_message = {"keycode": hotkey, "msg": "key"}
                     self.sendMessage(json.dumps(tutorial_lesson_selection_message).encode('utf-8'))
+                    self._IN_MENU = Menu.NO_MENU
+                #### END TUTORIAL GAME MENU NAVIGATION ####
+
+                #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
+                elif self.config.game_id == 'sprint-web-trunk' and self._IN_MENU == Menu.SPRINT_MAP_SELECTION_MENU:
+                    print("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE SPRINT MENU".format(
+                        config.WebserverConfig.tutorial_number))
+                    hotkey = MenuBackgroundKnowledge.sprint_map_letter_to_hotkey[
+                        config.WebserverConfig.sprint_map_letter]
+                    sprint_map_selection_message = {"keycode": hotkey, "msg": "key"}
+                    self.sendMessage(json.dumps(sprint_map_selection_message).encode('utf-8'))
                     self._IN_MENU = Menu.NO_MENU
                 #### END TUTORIAL GAME MENU NAVIGATION ####
 
                 elif self._GAME_STARTED:
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
                         if self.character_config.species not in self.species_options.keys():
-                            print("ERROR species {} specified in config is not available. Available choices are: {}".format(self.character_config.species, self.species_options.keys()))
+                            print(
+                                "ERROR species {} specified in config is not available. Available choices are: {}".format(
+                                    self.character_config.species, self.species_options.keys()))
                         else:
                             species_selection_hotkey = self.species_options[self.character_config.species]
                             species_selection_msg = self.get_hotkey_json_as_msg(species_selection_hotkey)
@@ -178,19 +189,24 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_BACKGROUND and not self._SENT_BACKGROUND_SELECTION:
                         if self.character_config.background not in self.background_options.keys():
-                            print("ERROR background {} specified in config is not available. Available choices are: {}".format(self.character_config.background, self.background_options.keys()))
+                            print(
+                                "ERROR background {} specified in config is not available. Available choices are: {}".format(
+                                    self.character_config.background, self.background_options.keys()))
                         else:
                             background_selection_hotkey = self.background_options[self.character_config.background]
                             background_selection_msg = self.get_hotkey_json_as_msg(background_selection_hotkey)
                             print("SENDING BACKGROUND SELECTION MESSAGE OF: {}".format(background_selection_msg))
                             self._SENT_BACKGROUND_SELECTION = True
+                            self._CREATED_A_NEW_CHARACTER = True
                             # Right before we send the message, clear the menu - this only fails if the message being sent fails
                             self._IN_MENU = Menu.NO_MENU
                             self.sendMessage(json.dumps(background_selection_msg).encode('utf-8'))
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_WEAPON and not self._SENT_WEAPON_SELECTION:
                         if self.character_config.starting_weapon not in self.weapon_options.keys():
-                            print("ERROR weapon {} specified in config is not available. Available choices are: {}".format(self.character_config.starting_weapon, self.weapon_options.keys()))
+                            print(
+                                "ERROR weapon {} specified in config is not available. Available choices are: {}".format(
+                                    self.character_config.starting_weapon, self.weapon_options.keys()))
                         else:
                             weapon_selection_hotkey = self.weapon_options[self.character_config.starting_weapon]
                             weapon_selection_msg = self.get_hotkey_json_as_msg(weapon_selection_hotkey)
@@ -205,21 +221,62 @@ class DCSSProtocol(WebSocketClientProtocol):
                         enter_key_msg = {"text": "\r", "msg": "input"}
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
-                    if self._IN_MENU == Menu.NO_MENU and self._RECEIVED_MAP_DATA:
+                    if self._IN_MENU == Menu.NO_MENU and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
                         self.game_state.draw_cell_map()
                         if self.agent:
                             next_action = self.agent.get_action(self.game_state)
-
-                            if next_action:
-                                print("We are about to send action: {}".format(self.next_action_msg))
+                            # If you've gotten to the point of sending actions and a character was not created
+                            # then delete game if config has always_start_new_game set to True
+                            if config.WebserverConfig.always_start_new_game and not self._CREATED_A_NEW_CHARACTER:
+                                self._BEGIN_DELETING_GAME = True
+                            elif next_action:
+                                print("We are about to send action: {}".format(next_action))
                                 self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
                                 self.last_message_sent = next_action
+                                self.actions_sent += 1
                             else:
                                 raise Exception("next_action is {}".format(next_action))
 
                             print("We are now ready to send an action")
                         else:
                             print("Game Connection Does Not Have An Agent")
+
+                    # State machine to abandon character and delete the game
+                    if self._BEGIN_DELETING_GAME and not self._SENT_CTRL_Q_TO_DELETE_GAME:
+                        # send abandon character and quit game (mimics ctrl-q)
+                        abandon_message = {"msg": "key", "keycode": 17}
+                        print("SENDING CTRL-Q TO ABANDON CHARACTER")
+                        self.sendMessage(json.dumps(abandon_message).encode('utf-8'))
+                        self._SENT_CTRL_Q_TO_DELETE_GAME = True
+
+                    elif self._BEGIN_DELETING_GAME and self._SENT_CTRL_Q_TO_DELETE_GAME and not self._SENT_YES_TEXT_TO_DELETE_GAME:
+                        # send 'yes' confirmation string
+                        confirmation_message = {"text": "yes\r", "msg": "input"}
+                        print("SENDING YES CONFIRMATION TO ABANDON CHARACTER")
+                        self.sendMessage(json.dumps(confirmation_message).encode('utf-8'))
+                        self._SENT_YES_TEXT_TO_DELETE_GAME = True
+
+                    elif self._BEGIN_DELETING_GAME and self._SENT_YES_TEXT_TO_DELETE_GAME and not self._SENT_ENTER_1_TO_DELETE_GAME:
+                        # send first enter to clear the menu
+                        first_enter_msg = {"text": "\r", "msg": "input"}
+                        print("SENDING FIRST ENTER FOLLOWING TO ABANDON CHARACTER")
+                        self.sendMessage(json.dumps(first_enter_msg).encode('utf-8'))
+                        self._SENT_ENTER_1_TO_DELETE_GAME = True
+
+                    elif self._BEGIN_DELETING_GAME and self._SENT_ENTER_1_TO_DELETE_GAME and not self._SENT_ENTER_2_TO_DELETE_GAME:
+                        # send first enter to clear the menu
+                        second_enter_msg = {"text": "\r", "msg": "input"}
+                        print("SENDING SECOND ENTER FOLLOWING TO ABANDON CHARACTER")
+                        self.sendMessage(json.dumps(second_enter_msg).encode('utf-8'))
+                        self._SENT_ENTER_2_TO_DELETE_GAME = True
+
+                    elif self._BEGIN_DELETING_GAME and self._SENT_ENTER_2_TO_DELETE_GAME and not self._SENT_ENTER_3_TO_DELETE_GAME:
+                        # send first enter to clear the menu
+                        third_enter_msg = {"text": "\r", "msg": "input"}
+                        print("SENDING THIRD ENTER FOLLOWING TO ABANDON CHARACTER")
+                        self.sendMessage(json.dumps(third_enter_msg).encode('utf-8'))
+                        self._SENT_ENTER_3_TO_DELETE_GAME = True
+                        self.reset_before_next_game()
 
             await asyncio.sleep(config.WebserverConfig.delay)
 
@@ -242,7 +299,8 @@ class DCSSProtocol(WebSocketClientProtocol):
         try:
             message_as_json = json.loads(message_as_str)
         except:
-            print("Failure to parse message_as_json\n****** you may have spectated too soon, best thing to do is just to restart the agent ******")
+            print(
+                "Failure to parse message_as_json\n****** you may have spectated too soon, best thing to do is just to restart the agent ******")
             time.sleep(20)
 
         self.game_state.update(message_as_json)
@@ -251,10 +309,10 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def reset_before_next_game(self):
         print("CALLING RESET BEFORE THE NEXT GAME")
-        # we return to the lobby after finishing a game, so reset up old state variables
+        # we return to the lobby after finishing a game, so reset up old states variables
         self._GAME_MODE_SELECTED = False
         self._LOBBY_IS_CLEAR = False
-        self._IN_LOBBY = False
+        #self._IN_LOBBY = False
 
         self._IN_GAME_SEED_MENU = False
         self._SENT_GAME_SEED = False
@@ -273,10 +331,17 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         self._PLAYER_DIED = False
 
-        # keep the old gamestate for data purposes
+        self._BEGIN_DELETING_GAME = False
+        self._SENT_CTRL_Q_TO_DELETE_GAME = False
+        self._SENT_YES_TEXT_TO_DELETE_GAME = False
+        self._SENT_ENTER_1_TO_DELETE_GAME = False
+        self._SENT_ENTER_2_TO_DELETE_GAME = False
+        self._SENT_ENTER_3_TO_DELETE_GAME = False
+
+        # keep the old states for data purposes
         self.previous_game_states.append(copy.deepcopy(self.game_state))
 
-        # reset the game state!
+        # reset the game states!
         self.game_state = GameState()
 
         # keep the old agent for data purposes
@@ -331,7 +396,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._IN_LOBBY = False
 
         if self.check_for_death_message(json_msg):
-            # Reset the agent and other state variables because we return back to the lobby
+            # Reset the agent and other states variables because we return back to the lobby
             # in between games
             self.reset_before_next_game()
 
@@ -339,6 +404,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("Just appended a new death message; death messages so far:")
             for death_msg in self.death_summaries:
                 print("{}".format(death_msg))
+
+        if self.check_for_action_limit_reached():
+            print("ACTION LIMIT REACHED! setting _BEGIN_DELETING_GAME = True")
+            self._BEGIN_DELETING_GAME = True
 
         if not self._RECEIVED_MAP_DATA and self.check_received_map_data(json_msg):
             print("setting _RECEIVED_MAP_DATA = TRUE")
@@ -363,6 +432,9 @@ class DCSSProtocol(WebSocketClientProtocol):
             if self.check_if_player_died(json_msg):
                 self._PLAYER_DIED = True
 
+        if self.check_for_sprint_map_menu(json_msg):
+            self._IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU
+            print("setting _IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU")
 
     def check_for_in_lobby(self, json_msg):
         for v in nested_lookup('msg', json_msg):
@@ -401,6 +473,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                 inventory_tag_found = True
 
         return input_mode_found and inventory_tag_found
+
+    def check_for_sprint_map_menu(self, json_msg):
+        for v in nested_lookup('title', json_msg):
+            if 'You have a choice of maps' in v:
+                return True
+        return False
 
     def check_for_game_seed_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):
@@ -486,7 +564,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             species_name_to_hotkeys = {}
             for buttons_list in nested_lookup('buttons', json_msg):
                 for species_option in buttons_list:
-                    #print("species_option: {}".format(species_option))
+                    # print("species_option: {}".format(species_option))
                     hotkey = species_option["hotkey"]
                     species_name = None
                     if 'labels' in species_option.keys():
@@ -497,7 +575,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         print("WARNING - Could not find label for species option json: {}".format(species_option))
 
                     if species_name:
-                        #print("Just found species {} with hotkey {}".format(species_name, hotkey))
+                        # print("Just found species {} with hotkey {}".format(species_name, hotkey))
                         species_name_to_hotkeys[species_name] = int(hotkey)
             return species_name_to_hotkeys
 
@@ -517,7 +595,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             background_name_to_hotkeys = {}
             for buttons_list in nested_lookup('buttons', json_msg):
                 for background_option in buttons_list:
-                    #print("background_option: {}".format(background_option))
+                    # print("background_option: {}".format(background_option))
                     hotkey = background_option["hotkey"]
                     if hotkey != 9:
                         # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
@@ -527,10 +605,11 @@ class DCSSProtocol(WebSocketClientProtocol):
                         elif 'label' in background_option.keys():
                             background_name = background_option["label"].split('-')[-1].strip()
                         else:
-                            print("WARNING - Could not find label for background option json: {}".format(background_option))
+                            print("WARNING - Could not find label for background option json: {}".format(
+                                background_option))
 
                         if background_name:
-                            #print("Just found background {} with hotkey {}".format(background_name, hotkey))
+                            # print("Just found background {} with hotkey {}".format(background_name, hotkey))
                             background_name_to_hotkeys[background_name] = int(hotkey)
             return background_name_to_hotkeys
 
@@ -550,7 +629,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             weapon_name_to_hotkeys = {}
             for buttons_list in nested_lookup('buttons', json_msg):
                 for weapon_option in buttons_list:
-                    #print("weapon_option: {}".format(weapon_option))
+                    # print("weapon_option: {}".format(weapon_option))
                     hotkey = weapon_option["hotkey"]
                     if hotkey != 9:
                         # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
@@ -564,24 +643,33 @@ class DCSSProtocol(WebSocketClientProtocol):
                             print("WARNING - Could not find label for weapon option json: {}".format(weapon_option))
 
                         if weapon_name:
-                            #print("Just found weapon {} with hotkey {}".format(weapon_name, hotkey))
+                            # print("Just found weapon {} with hotkey {}".format(weapon_name, hotkey))
                             weapon_name_to_hotkeys[weapon_name] = int(hotkey)
             return weapon_name_to_hotkeys
 
+    def check_for_action_limit_reached(self):
+        action_limit = config.WebserverConfig.max_actions
+        if action_limit >= 0:
+            return self.actions_sent >= action_limit
+        return False
+
     def get_hotkey_json_as_msg(self, hotkey):
-        return {"keycode": hotkey, "msg":"key"}
+        return {"keycode": hotkey, "msg": "key"}
 
     def get_gamestate(self):
         return self.game_state
 
     def load_ai_agent(self):
-        module = importlib.import_module('agent')
-        self.agent = getattr(module, config.AIConfig.ai_python_class)()
+        for sub in Agent.__subclasses__():
+            if config.AIConfig.ai_python_class == sub.__name__:
+                print("Loading {} agent...".format(sub.__name__))
+                self.agent = sub()
+
+        if not self.agent:
+            raise Exception("Error loading agent {} from config\nPossible Solutions:\n\t(1) Make sure the agent is in the dcss.agent folder and make sure the file autobahn_game_connection.py includes an import statement to that file.".format(config.AIConfig.ai_python_class))
 
     def onClose(self, wasClean, code, reason):
-        print("WebSocket connection closed: {0}".format(reason))
-
-
+        print("WebSocket connection onClose() called")
 
     #
     # def __init__(self, config=config.DefaultConfig()):
@@ -600,7 +688,7 @@ class DCSSProtocol(WebSocketClientProtocol):
     #     self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
     #     self.messages_received = []
     #
-    #     # state variables for handling login information and other information
+    #     # states variables for handling login information and other information
     #     self._READY_TO_CONNECT = True
     #     self._CONNECTED = False
     #     self._READY_TO_LOGIN = False

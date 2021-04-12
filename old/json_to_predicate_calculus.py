@@ -1,4 +1,4 @@
-# This file takes json messages of the state and translates them into Answer Set Programming style reltional facts.
+# This file takes json messages of the states and translates them into Answer Set Programming style reltional facts.
 
 import re
 

@@ -11,7 +11,7 @@ import datetime
 
 # custom
 import actions
-import gamestate
+import states
 
 import simple_planning_agent
 import relational_learning_agent

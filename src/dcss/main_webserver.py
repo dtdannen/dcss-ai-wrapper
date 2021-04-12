@@ -7,15 +7,10 @@ Make sure to run crawl before running this demo, see:
 
 """
 
-from autobahn_game_connection import DCSSProtocol
-from agent import SimpleRandomAgent, TestAllCommandsAgent, FastDownwardPlanningAgent
-from actions import Command, Action
-import config
+from connection.autobahn_game_connection import DCSSProtocol
+from connection import config
 import asyncio
 import logging
-import time
-import threading
-from gamestate import Monster
 from autobahn.asyncio.websocket import WebSocketClientFactory
 
 logging.basicConfig(level=logging.WARNING)
@@ -24,10 +19,11 @@ logging.basicConfig(level=logging.WARNING)
 def main():
     factory = WebSocketClientFactory(config.WebserverConfig.server_uri)
     factory.protocol = DCSSProtocol
+    #channel_id = DCSSProtocol.get_channel_id()
 
     loop = asyncio.get_event_loop()
     coro = loop.create_connection(factory, config.WebserverConfig.server_ip, config.WebserverConfig.server_port)
-    loop.run_until_complete(coro)
+    client = loop.run_until_complete(coro)
     loop.run_forever()
 
 

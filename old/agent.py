@@ -42,7 +42,7 @@ class CrawlAIAgent:
 
     def add_server_message(self,json_msg:{}):
         raise NotImplementedError("An agent must implement add_server_message which takes the most recent server"
-                                  " message. This message is mostly used to ensure the agent has a current state of"
+                                  " message. This message is mostly used to ensure the agent has a current states of"
                                   " the game")
 
     def ready_to_delete_game(self):
