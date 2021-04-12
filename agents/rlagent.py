@@ -3,7 +3,7 @@ import os
 import random
 import numpy as np
 from collections import defaultdict
-from actions import  Command
+from dcss.actions.command import  Command
 # Hyperparameters
 alpha = 0.1
 gamma = 0.6

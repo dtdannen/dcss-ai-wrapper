@@ -7,14 +7,14 @@ class Command(Enum):
     '''
 
     #  Movement
-    MOVE_OR_ATTACK_SW = 1
-    MOVE_OR_ATTACK_S = 2
-    MOVE_OR_ATTACK_SE = 3
-    MOVE_OR_ATTACK_W = 4
-    MOVE_OR_ATTACK_E = 5
-    MOVE_OR_ATTACK_NW = 6
-    MOVE_OR_ATTACK_N = 7
-    MOVE_OR_ATTACK_NE = 8
+    MOVE_OR_ATTACK_SW = 0
+    MOVE_OR_ATTACK_S = 1
+    MOVE_OR_ATTACK_SE = 2
+    MOVE_OR_ATTACK_W = 3
+    MOVE_OR_ATTACK_E = 4
+    MOVE_OR_ATTACK_NW = 5
+    MOVE_OR_ATTACK_N = 6
+    MOVE_OR_ATTACK_NE = 7
 
     #  Rest
     REST_AND_LONG_WAIT = 9
@@ -121,4 +121,4 @@ class Command(Enum):
     SHOW_PREVIOUS_GAME_MESSAGES = 89
     RESPOND_YES_TO_PROMPT = 90
     RESPOND_NO_TO_PROMPT = 91
-    ENTER_KEY = 92
+    ENTER_KEY = 8

@@ -48,4 +48,4 @@ class CharacterCreationConfig:
 
 class AIConfig:
     # any class that is in agent.py and is a subclass of Agent may be set as the ai_python_class
-    ai_python_class = 'SimpleRandomAgent'
+    ai_python_class = 'SimpleRLAgent'

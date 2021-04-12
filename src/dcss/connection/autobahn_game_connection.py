@@ -661,6 +661,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def load_ai_agent(self):
         for sub in Agent.__subclasses__():
+            print("Looking at sub: {}".format(sub.__name__))
             if config.AIConfig.ai_python_class == sub.__name__:
                 print("Loading {} agent...".format(sub.__name__))
                 self.agent = sub()
