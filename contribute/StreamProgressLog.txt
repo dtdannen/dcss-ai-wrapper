@@ -89,6 +89,10 @@ Tonight's stream on April 6th, 2021:
 3. Dealing with Menus
 
 Future issues to solve:
+* add a feature where you can save every state written file used in planning, and number them based on turn or gametime
+* on a new game, make sure to remove the old plan and gamestate from the last round
+* fix autobahn so tutorials dont send 3 enters after pressing ctrl-q
+* investigate why starting a new game doesn't work in tutorial 1
 * picking up a scroll doesn't remove it from the gamestate
 * Sketch out a complete draft of PDDL
 * Issue with monsters.... plants are considered monsters when they shouldnt be...

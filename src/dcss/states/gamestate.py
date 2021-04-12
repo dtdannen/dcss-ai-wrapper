@@ -466,7 +466,7 @@ class GameState:
         return self.game_time
 
     def get_all_pddl_facts(self):
-        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap(current_place_only=False)
+        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap(radius=30)
         fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
         return fact_strs
 

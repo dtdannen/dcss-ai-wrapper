@@ -23,7 +23,7 @@
 
 
 (define (domain dcss)
-(:requirements :strips :negative-preconditions :existential-preconditions :adl :derived-predicates)
+(:requirements :strips :negative-preconditions :existential-preconditions)
 (:types monster
         cell
         place ; examples: zot_4, dungeon_12, vaults_2
@@ -87,13 +87,14 @@
     (deeper ?place_above ?place_below - place)
     (connected ?currentplace ?nextlowestplace - place)
     (hasstairsdown ?cell - cell)
+    (hasstairsup ?cell - cell)
     ; items
     (haspotion ?cell - cell)
     (hasscroll ?cell - cell)
     (hasweapon ?cell - cell)
     (hasarmour ?cell - cell)
     (hasfooditem ?cell - cell)
-    (hasitem ?cell - cell)
+    (hasitem ?cell - cell ?item - item)
 
     ; hunger
     (fainting)
@@ -113,6 +114,7 @@
     (invhasweapon ?weapon - weapon)
     (invhasweapon ?weapon - weapon)
     (invhasfooditem ?food - fooditem)
+    (invhasitem ?item - item)
 
     ; what is equipped on the player
     (equippedarmour ?armour - armour)
@@ -853,4 +855,6 @@
     (and
         (player_worshipping ?god)
     )
+)
+
 )

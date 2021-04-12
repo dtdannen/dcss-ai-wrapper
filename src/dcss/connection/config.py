@@ -18,7 +18,7 @@ class WebserverConfig:
     #   'seeded-web-trunk' - play a seeded version of the game
     #   'tut-web-trunk'    - play a tutorial
     #   'sprint-web-trunk'    - play a tutorial
-    game_id = 'dcss-web-trunk'
+    game_id = 'tut-web-trunk'
 
     seed = 4675233756386659716
 
@@ -37,7 +37,7 @@ class WebserverConfig:
 
     # If this is true, and there is an existing game for the agent, delete the game and
     # start a new game
-    always_start_new_game = False
+    always_start_new_game = True
 
 
 class CharacterCreationConfig:
