@@ -1,3 +1,6 @@
+data/*.csv
+visualization/graphs/*
+downward/
 crawl/
 
 # Byte-compiled / optimized / DLL files
