@@ -12,7 +12,7 @@ dcss-ai-wrapper's documentation
    usage/installation
    usage/quickstart
    usage/agents
-   api/gamestate
+   api/modules
 
 
 Indices and tables

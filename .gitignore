@@ -8,8 +8,6 @@ models/tests/
 models/fdtempfiles/dcss_plan.sas
 models/fdtempfiles/state.pddl
 
-# API docs should be auto generated using sphinx-autodoc tool
-docs/api/
 data/*.csv
 visualization/graphs/*
 downward/
