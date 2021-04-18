@@ -1,4 +1,4 @@
-__all__ = ['agent',
+__all__ = ['base.py',
            'fastdownwardplanningagent',
            'humaninterfaceagent',
            'simplerlagent',

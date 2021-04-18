@@ -1,4 +1,4 @@
-from states import GameState
+from state import GameState
 from actions import Action
 
 import socket

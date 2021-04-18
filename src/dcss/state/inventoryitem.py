@@ -1,7 +1,7 @@
 import re
 import string
 
-from states.itemproperty import ItemProperty
+from state.itemproperty import ItemProperty
 
 
 class InventoryItem:

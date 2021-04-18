@@ -4,11 +4,11 @@ except:
     pass
 
 from dcss.actions.command import Command
-from dcss.agent.agent import Agent
-from states.gamestate import GameState
+from dcss.agent.base import BaseAgent
+from state.game import GameState
 
 
-class HumanInterfaceAgentDataTracking(Agent):
+class HumanInterfaceBaseAgentDataTracking(BaseAgent):
 
     def __init__(self):
         super().__init__()

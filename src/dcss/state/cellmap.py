@@ -1,4 +1,4 @@
-from states.cell import Cell
+from state.cell import Cell
 
 
 class CellMap:

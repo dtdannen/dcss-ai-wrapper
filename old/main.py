@@ -15,7 +15,7 @@ import pprint
 
 # custom
 import actions
-import states
+import state
 
 #import simple_planning_agent
 #import relational_learning_agent
@@ -229,7 +229,7 @@ class WebTilesConnection():
             # ask for next action from agent
             next_agent_action = self.ai.next_action()
 
-            # before we actually take the chosen action, update our context counts from previous states
+            # before we actually take the chosen action, update our context counts from previous state
             self.ai.update_context_counts()
 
             # execute action by sending it to the server

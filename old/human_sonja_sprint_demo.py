@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 import warnings
 import os
 import random
-from states import GameState
+from state import GameState
 import logging
 import time
 
@@ -145,7 +145,7 @@ if os.path.exists(crawl_socketpath) and not os.path.exists(socketpath):
 
     read_msgs()
 
-    # This will get all the states from the game at once
+    # This will get all the state from the game at once
     # Parsing error with json library
     # msg = json_encode({
     #         "msg": "spectator_joined"

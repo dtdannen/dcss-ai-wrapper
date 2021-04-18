@@ -3,23 +3,23 @@ import os
 import time
 
 import actions
-from states.cell import Cell
-from states.cellmap import CellMap
-from states.cellrawstrdatum import CellRawStrDatum
-from states.inventoryitem import InventoryItem
+from state.cell import Cell
+from state.cellmap import CellMap
+from state.cellrawstrdatum import CellRawStrDatum
+from state.inventoryitem import InventoryItem
 
 
 class GameState:
-    """This file stores the states class that is used to keep track of
-    the current states of the dcss game"""
+    """This file stores the state class that is used to keep track of
+    the current state of the dcss game"""
 
     ID = 0
 
     def __init__(self):
-        # states is just a dictionary of key value pairs
+        # state is just a dictionary of key value pairs
         self.state = {}
 
-        # only states information we care about
+        # only state information we care about
         self.state_keys = ['hp', 'hp_max', 'depth', 'light', 'god', 'mp', 'species', 'dex', 'inv', 'cells', 'species']
 
         self.letter_to_number_lookup = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
@@ -51,7 +51,7 @@ class GameState:
         self.messages = {}  # key is turn, value is list of messages received on this turn in order,
         # where first is oldest message
 
-        # initialize values of states variables
+        # initialize values of state variables
         for k in self.state_keys:
             self.state[k] = None
 
@@ -127,8 +127,8 @@ class GameState:
             msg_from_server (dict): message from the server
         """
         try:
-            # print(str(self.states))
-            logging.info("states.update() is now processing: {}".format(str(msg_from_server)))
+            # print(str(self.state))
+            logging.info("state.update() is now processing: {}".format(str(msg_from_server)))
             self._process_raw_state(msg_from_server)
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))
@@ -465,8 +465,13 @@ class GameState:
     def get_current_game_time(self):
         return self.game_time
 
-    def get_all_pddl_facts(self):
-        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap(radius=30)
+    def player_radius_pddl_facts(self, radius):
+        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap(radius=radius)
+        fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
+        return fact_strs
+
+    def all_pddl_facts(self):
+        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap(radius=-1)
         fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
         return fact_strs
 
@@ -664,12 +669,12 @@ class GameState:
         A radius of 2 would be 16+8+1 = 25 tiles (all tiles <= distance of 2 from player)
         etc...
 
-        Returns a factored states representation of the tiles around the player:
+        Returns a factored state representation of the tiles around the player:
         Example w/ radius of 1
         - 9 tiles including the player's current position and all adjacent tiles in every cardinal direction
         - tiles are ordered in a clockwise orientation, starting with N, then NE, then E, etc
         - inner layers come before outer layers
-        - each tile is represented as a factored states:
+        - each tile is represented as a factored state:
           <objType,monsterLetter,hasCorpse,hereBefore>
              * objType = 0 is empty, 1 is wall, 2 is monster
              * monsterLetter = 27 if noMonster, 0-26 representing the alpha index of the first letter of mon name
@@ -678,7 +683,7 @@ class GameState:
 
 
         :param radius: Int
-        :return: a factored states representation of the tiles around the player
+        :return: a factored state representation of the tiles around the player
         '''
 
         tiles = []
@@ -766,9 +771,9 @@ class GameState:
                     print(' ' * offset + str(key) + "=" + str(curr_state[key]))
 
     def printstate(self):
-        # print("self.states="+str(self.states))
+        # print("self.state="+str(self.state))
         # print('-'*20+" GameState "+'-'*20)
-        # self._pretty_print(self.states)
+        # self._pretty_print(self.state)
         pass
 
     def get_map_obj(self):

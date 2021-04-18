@@ -1,8 +1,8 @@
 from dcss.actions.command import Command
-from dcss.agent.agent import Agent
+from dcss.agent.base import BaseAgent
 
 
-class TestAllCommandsAgent(Agent):
+class TestAllCommandsBaseAgent(BaseAgent):
     """
     Agent that serves to test all commands are working. Cycles through commands in actions.Command enum.
     """

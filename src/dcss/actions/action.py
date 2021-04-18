@@ -142,3 +142,18 @@ class Action:
         #    print("\t{}:{}".format(c,m))
 
         return Action.command_to_msg[command]
+
+    @staticmethod
+    def get_all_commands():
+        return list(Action.command_to_msg.keys())
+
+    @staticmethod
+    def get_all_move_commands():
+        return [Command.MOVE_OR_ATTACK_N,
+                Command.MOVE_OR_ATTACK_S,
+                Command.MOVE_OR_ATTACK_E,
+                Command.MOVE_OR_ATTACK_W,
+                Command.MOVE_OR_ATTACK_NW,
+                Command.MOVE_OR_ATTACK_SW,
+                Command.MOVE_OR_ATTACK_SE,
+                Command.MOVE_OR_ATTACK_NE]

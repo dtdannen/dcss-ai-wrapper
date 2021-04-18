@@ -1,4 +1,4 @@
-from states.monster import Monster
+from state.monster import Monster
 
 
 class Cell:

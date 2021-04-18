@@ -3,14 +3,14 @@ import platform
 import random
 import subprocess
 
-from dcss.agent.agent import Agent
+from dcss.agent.base import BaseAgent
 from dcss.actions.command import Command
-from dcss.states.gamestate import GameState
+from dcss.state.game import GameState
 import time
 from datetime import datetime
 
 
-class FastDownwardPlanningAgentTut1(Agent):
+class FastDownwardPlanningAgentTut1(BaseAgent):
     """
     Agent that uses fast downward to solve planning problems to explore a floor.
     """
@@ -56,12 +56,12 @@ class FastDownwardPlanningAgentTut1(Agent):
         return goal_str
 
     def get_plan_from_fast_downward(self, goals):
-        # step 1: write states output so fastdownward can read it in
+        # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:
-            print("WARNING current game states is null when trying to call fast downward planner")
+            print("WARNING current game state is null when trying to call fast downward planner")
             return []
 
         # step 2: run fastdownward

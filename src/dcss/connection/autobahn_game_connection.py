@@ -1,8 +1,8 @@
 import json
 import time
 
-from actions.action import Action
-from connection import config
+from dcss.actions.action import Action
+from dcss.connection import config
 import zlib
 import copy
 
@@ -12,15 +12,15 @@ from nested_lookup import nested_lookup
 import asyncio
 import importlib
 from autobahn.asyncio.websocket import WebSocketClientProtocol
-from states.gamestate import GameState
-from states.menu import Menu
+from state.game import GameState
+from state.menu import Menu
 
-from dcss.agent.agent import Agent
-from dcss.agent.fastdownwardplanningagent import FastDownwardPlanningAgent
-from dcss.agent.humaninterfaceagent import HumanInterfaceAgentDataTracking
+from dcss.agent.base import BaseAgent
+from dcss.agent.fastdownwardplanningagent import FastDownwardPlanningBaseAgent
+from dcss.agent.humaninterfaceagent import HumanInterfaceBaseAgentDataTracking
 from dcss.agent.simplerlagent import SimpleRLAgent
-from dcss.agent.SimpleRandomAgent import SimpleRandomAgent
-from dcss.agent.testallcommandsagent import TestAllCommandsAgent
+from dcss.agent.SimpleRandomAgent import SimpleRandomBaseAgent
+from dcss.agent.testallcommandsagent import TestAllCommandsBaseAgent
 from dcss.agent.fastdownwardtutorial1 import FastDownwardPlanningAgentTut1
 
 
@@ -30,7 +30,6 @@ class DCSSProtocol(WebSocketClientProtocol):
         super().__init__()
         self.game_state = GameState()
         self.config = config.WebserverConfig
-        self.character_config = config.CharacterCreationConfig
         self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
 
         # States of the connection which determines which messages are relevant to send when
@@ -82,8 +81,9 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         self.death_summaries = []
 
+        # agent_class should be set via the constructor: WebSockGame(agent_class=<your_agent_class_here>)
+        self.agent_class = None
         self.agent = None
-        self.load_ai_agent()
 
         self.previous_agents = []
         self.previous_game_states = []
@@ -176,12 +176,12 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                 elif self._GAME_STARTED:
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
-                        if self.character_config.species not in self.species_options.keys():
+                        if self.config.species not in self.species_options.keys():
                             print(
                                 "ERROR species {} specified in config is not available. Available choices are: {}".format(
-                                    self.character_config.species, self.species_options.keys()))
+                                    self.config.species, self.species_options.keys()))
                         else:
-                            species_selection_hotkey = self.species_options[self.character_config.species]
+                            species_selection_hotkey = self.species_options[self.config.species]
                             species_selection_msg = self.get_hotkey_json_as_msg(species_selection_hotkey)
                             print("SENDING SPECIES SELECTION MESSAGE OF: {}".format(species_selection_msg))
                             self._SENT_SPECIES_SELECTION = True
@@ -190,12 +190,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self.sendMessage(json.dumps(species_selection_msg).encode('utf-8'))
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_BACKGROUND and not self._SENT_BACKGROUND_SELECTION:
-                        if self.character_config.background not in self.background_options.keys():
+                        if self.config.background not in self.background_options.keys():
                             print(
                                 "ERROR background {} specified in config is not available. Available choices are: {}".format(
-                                    self.character_config.background, self.background_options.keys()))
+                                    self.config.background, self.background_options.keys()))
                         else:
-                            background_selection_hotkey = self.background_options[self.character_config.background]
+                            background_selection_hotkey = self.background_options[self.config.background]
                             background_selection_msg = self.get_hotkey_json_as_msg(background_selection_hotkey)
                             print("SENDING BACKGROUND SELECTION MESSAGE OF: {}".format(background_selection_msg))
                             self._SENT_BACKGROUND_SELECTION = True
@@ -205,12 +205,12 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self.sendMessage(json.dumps(background_selection_msg).encode('utf-8'))
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_WEAPON and not self._SENT_WEAPON_SELECTION:
-                        if self.character_config.starting_weapon not in self.weapon_options.keys():
+                        if self.config.starting_weapon not in self.weapon_options.keys():
                             print(
                                 "ERROR weapon {} specified in config is not available. Available choices are: {}".format(
-                                    self.character_config.starting_weapon, self.weapon_options.keys()))
+                                    self.config.starting_weapon, self.weapon_options.keys()))
                         else:
-                            weapon_selection_hotkey = self.weapon_options[self.character_config.starting_weapon]
+                            weapon_selection_hotkey = self.weapon_options[self.config.starting_weapon]
                             weapon_selection_msg = self.get_hotkey_json_as_msg(weapon_selection_hotkey)
                             print("SENDING WEAPON SELECTION MESSAGE OF: {}".format(weapon_selection_msg))
                             self._SENT_WEAPON_SELECTION = True
@@ -225,6 +225,8 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                     if self._IN_MENU == Menu.NO_MENU and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
                         self.game_state.draw_cell_map()
+                        # the following executes the next action if we are using an instance of Agent to control
+                        # sending actions
                         if self.agent:
                             next_action = self.agent.get_action(self.game_state)
                             # If you've gotten to the point of sending actions and a character was not created
@@ -238,8 +240,6 @@ class DCSSProtocol(WebSocketClientProtocol):
                                 self.actions_sent += 1
                             else:
                                 raise Exception("next_action is {}".format(next_action))
-
-                            print("We are now ready to send an action")
                         else:
                             print("Game Connection Does Not Have An Agent")
 
@@ -311,7 +311,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def reset_before_next_game(self):
         print("CALLING RESET BEFORE THE NEXT GAME")
-        # we return to the lobby after finishing a game, so reset up old states variables
+        # we return to the lobby after finishing a game, so reset up old state variables
         self._GAME_MODE_SELECTED = False
         self._LOBBY_IS_CLEAR = False
         #self._IN_LOBBY = False
@@ -340,10 +340,10 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._SENT_ENTER_2_TO_DELETE_GAME = False
         self._SENT_ENTER_3_TO_DELETE_GAME = False
 
-        # keep the old states for data purposes
+        # keep the old state for data purposes
         self.previous_game_states.append(copy.deepcopy(self.game_state))
 
-        # reset the game states!
+        # reset the game state!
         self.game_state = GameState()
 
         # keep the old agent for data purposes
@@ -351,7 +351,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         print("THERE ARE NOW {} PREVIOUS AGENTS".format(len(self.previous_agents)))
 
         # reset the agent!
-        self.load_ai_agent()  # loads the ai agent specific in the AIConfig in config.py
+        self.agent = self.agent_class()
 
     def perform_state_checks(self, json_msg):
         if self.check_for_ping(json_msg):
@@ -398,7 +398,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._IN_LOBBY = False
 
         if self.check_for_death_message(json_msg):
-            # Reset the agent and other states variables because we return back to the lobby
+            # Reset the agent and other state variables because we return back to the lobby
             # in between games
             self.reset_before_next_game()
 
@@ -669,170 +669,13 @@ class DCSSProtocol(WebSocketClientProtocol):
     def check_agent_wants_to_start_next_game(self):
         return self.agent and self.agent.requesting_start_new_game()
 
-    def load_ai_agent(self):
-        for sub in Agent.__subclasses__():
-            if config.AIConfig.ai_python_class == sub.__name__:
-                print("Loading {} agent...".format(sub.__name__))
-                self.agent = sub()
+    def set_ai_class(self, agent_class):
+        self.agent_class = agent_class
 
-        if not self.agent:
-            raise Exception("Error loading agent {} from config\nPossible Solutions:\n\t(1) Make sure the agent is in the dcss.agent folder and make sure the file autobahn_game_connection.py includes an import statement to that file.".format(config.AIConfig.ai_python_class))
+    def load_ai_class(self):
+        if not self.agent_class:
+            raise Exception("Calling load_ai_class but there is no self.agent_class")
+        self.agent = self.agent_class()
 
     def onClose(self, wasClean, code, reason):
         print("WebSocket connection onClose() called")
-
-    #
-    # def __init__(self, config=config.DefaultConfig()):
-    #
-    #     self.config = config
-    #     self.crawl_socket = None
-    #     self.game_state = GameState()
-    #     self.msg_buffer = None
-    #     self.recent_msg_data_raw = None
-    #     self.recent_msg_data_decoded = None
-    #
-    #     self.num_times_to_try_pressing_enter_read_msg = 5
-    #     self.num_times_pressed_enter_read_msg = 0
-    #
-    #     self.websocket = None
-    #     self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
-    #     self.messages_received = []
-    #
-    #     # states variables for handling login information and other information
-    #     self._READY_TO_CONNECT = True
-    #     self._CONNECTED = False
-    #     self._READY_TO_LOGIN = False
-    #     self._LOGGED_IN = False
-    #     self._NEEDS_PONG = False
-    #     self._READY_TO_SELECT_GAME_MODE = False
-    #     self._GAME_MODE_SELECTED = False
-    #     self._READY_TO_SEND_ACTION = False
-    #
-    #     self._STATE_CHANGED = False
-    #
-    # @staticmethod
-    # def json_encode(value):
-    #     return json.dumps(value).replace("</", "<\\/")
-    #
-    # def get_gamestate(self):
-    #     return self.game_state
-    #
-    # async def connect_webserver(self):
-    #     assert isinstance(self.config, config.WebserverConfig)
-    #
-    #     # connect
-    #     logging.info("Connecting to URI " + str(self.config.server_uri) + " ...")
-    #     # print("AWAITING ON WEBSOCKET_3 CONNECT")
-    #     self.websocket = await websockets.connect(self.config.server_uri)
-    #     # print("POST-AWAITING ON WEBSOCKET_3 CONNECT")
-    #     logging.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
-    #
-    # async def login_webserver(self):
-    #     assert isinstance(self.config, config.WebserverConfig)
-    #
-    #     # login
-    #     logging.info("Sending login message...")
-    #     login_msg = {'msg': 'login',
-    #                  'username': self.config.agent_name,
-    #                  'password': self.config.agent_password}
-    #
-    #     await self.send_and_receive_ws(json.dumps(login_msg))
-    #     logging.info("Sent login message")
-    #
-    # async def load_game_on_webserver(self):
-    #     assert isinstance(self.config, config.WebserverConfig)
-    #
-    #     play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
-    #     await self.send_and_receive_ws(play_game_msg)
-    #
-    # async def send_and_receive_ws(self, message):
-    #     # send data to server
-    #     #print("AWAITING ON WEBSOCKET_1 SEND - sending message: "+str(message))
-    #     await self.websocket.send(json.dumps(message))
-    #     # print("POST-AWAITING ON WEBSOCKET_1 SEND")
-    #     # wait for server to get back
-    #
-    #     await self.get_all_server_messages()
-    #
-    # async def send_and_receive_command_ws(self, command):
-    #     # send data to server
-    #     #print("AWAITING ON WEBSOCKET_1 SEND - sending command: "+str(command))
-    #     await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
-    #     # print("POST-AWAITING ON WEBSOCKET_1 SEND")
-    #     # wait for server to get back
-    #
-    #     await self.get_all_server_messages()
-    #
-    # async def get_all_server_messages(self):
-    #     i = 0
-    #     SERVER_READY_FOR_INPUT = False
-    #     request_pong = False
-    #     while not SERVER_READY_FOR_INPUT:
-    #         try:
-    #             future = self.websocket.recv()
-    #             # print("** AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
-    #             data_recv = await asyncio.wait_for(future, timeout=0.5)
-    #             # print("data_recv_raw is {}".format(data_recv))
-    #             # print("** POST-AWAITING ON WEBSOCKET RECV in loop, i=" + str(i))
-    #
-    #             data_recv += bytes([0, 0, 255, 255])
-    #             json_message = self.decomp.decompress(data_recv)
-    #             # print("Just received json_message:\n{}".format(json_message))
-    #
-    #             json_message = json_message.decode("utf-8")
-    #
-    #             def pretty_print_json(j, spaces="  "):
-    #                 for k, v in j.items():
-    #                     if isinstance(v, dict):
-    #                         print("{}{}:".format(spaces, k))
-    #                         return pretty_print_json(v, spaces + "  ")
-    #                     if isinstance(v, list):
-    #                         print("{}{}:".format(spaces, k))
-    #                         for item in v:
-    #                             return pretty_print_json(item, spaces + "  ")
-    #                     else:
-    #                         print("{}{}:{}".format(spaces, k, v))
-    #                         return
-    #
-    #             msg_from_server = json.loads(json_message)
-    #
-    #             # pretty_print_json(msg_from_server)
-    #             self.game_state.update(msg_from_server)
-    #
-    #             # if 'msgs' in msg_from_server:
-    #             #     for msg in msg_from_server['msgs']:
-    #             #         if 'msg' in msg:
-    #             #             if msg['msg'] == "ping":
-    #             #                 request_pong = True
-    #             #
-    #             # # json_messages_from_server_file.write(pprint.pformat(msg_from_server,indent=2)+'\n')
-    #             # # json_messages_from_server_file.flush()
-    #             #
-    #             # logging.debug("i=" + str(i) + "Received Message:\n" + str(msg_from_server))
-    #             #
-    #             # if self.ai:
-    #             #     self.ai.add_server_message(msg_from_server)
-    #             #
-    #             # # {'msgs': [{'mode': 1, 'msg': 'input_mode'}]}
-    #             # # if 'msgs' in msg_from_server.keys():
-    #             # #     for msg in msg_from_server['msgs']:
-    #             # #         if 'msg' in msg.keys() and 'mode' in msg.keys():
-    #             # #             if msg['msg'] == 'input_mode' and msg['mode'] == 1:
-    #             # #                 SERVER_READY_FOR_INPUT = True
-    #             # #                 print("Server is now ready for input!")
-    #
-    #         except ValueError as e:
-    #             logging.warning("i=" + str(i) + "Ignoring unparseable JSON (error: %s): %s.", e.args[0], json_message)
-    #         except asyncio.CancelledError:
-    #             logging.info('Received message to cancel - ignoring so recv can finish up')
-    #             self.begin_shutdown = True
-    #         except asyncio.TimeoutError:
-    #             # server is now ready for input
-    #             print("Got an asyncio Timeout Error")
-    #             SERVER_READY_FOR_INPUT = True
-    #         except Exception as e:
-    #             logging.warning("Caught exception {} in get_all_server_messages()".format(e))
-    #         i += 1
-    #
-    #     if request_pong:
-    #         await self.websocket.send(json.dumps({"msg": "pong"}))

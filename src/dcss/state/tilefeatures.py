@@ -2,10 +2,10 @@ class TileFeatures:
     '''
     Contains feature data used per tile
 
-    Returns a factored states representation of the tiles around the player:
+    Returns a factored state representation of the tiles around the player:
         Example w/ radius of 1
         - 9 tiles including the player's current position and all adjacent tiles in every cardinal direction
-        - each tile is represented as a factored states:
+        - each tile is represented as a factored state:
           <objType,monsterLetter,hasCorpse,hereBefore>
              * objType = 0 is empty, 1 is wall, 2 is monster
              * monsterLetter = 0-25 representing the alpha index of the first letter of mon name (0=a, etc)
