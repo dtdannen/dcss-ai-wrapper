@@ -31,6 +31,10 @@
         ability
         spell
         god
+        status
+        mutation
+        terrain
+        danger_rating
 
         non_target_based_spell - spell
         target_based_spell - spell
@@ -59,29 +63,35 @@
     (northwestof ?cell1 ?cell2 - cell)
     (southeastof ?cell1 ?cell2 - cell)
     (southwestof ?cell1 ?cell2 - cell)
-    ; wall
-    (wall ?cell - cell)
-    ; closed door
+
+    (opendoor ?cell - cell)
     (closeddoor ?cell - cell)
-    ; statue is basically like a wall
+
     (statue ?cell - cell)
-    ; lava is like a wall in that it should be avoided
-    (lava ?cell - cell)
-    ; plant is like a wall in that it should be avoided
-    (plant ?cell - cell)
-    ; tree is like a wall in that it should be avoided
-    (tree ?cell - cell)
+
+    (hasterrain ?cell - cell ?terrain - terrain)
+
     ;altars enable worshipping a god
     (altarat ?cell - cell ?god - god)
     ; player god
     (player_worshipping ?god - god)
+
     ; player loc
     (playerat ?cell - cell)
+
     ; player health
     (playerlessthanfullhealth)
     (playerfullhealth)
-    ; has monster if there is a monster at that cell
+
+    ; monster related predicates - only one monster per cell
     (hasmonster ?cell - cell)
+    (monster_danger_rating ?cell - cell ?danger - danger_rating)
+    (monster_full_health ?cell - cell)
+    (monster_near_full_health ?cell - cell)
+    (monster_near_half_health ?cell - cell)
+    (monster_low_health ?cell - cell)
+    (monster_status_effect ?cell - cell ?status - status)
+
     ; levels
     (playerplace ?place - place)
     (deeper ?place_above ?place_below - place)
@@ -95,17 +105,6 @@
     (hasarmour ?cell - cell)
     (hasfooditem ?cell - cell)
     (hasitem ?cell - cell ?item - item)
-
-    ; hunger
-    (fainting)
-    (starving)
-    (near_starving)
-    (very_hungry)
-    (hungry)
-    (satiated)
-    (full)
-    (very_full)
-    (engorged)
 
     ; inventory
     (invhaspotion ?potion - potion)

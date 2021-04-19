@@ -47,3 +47,5 @@ class SimpleRandomBaseAgent(BaseAgent):
                            Command.MOVE_OR_ATTACK_SW,
                            Command.MOVE_OR_ATTACK_SE]
         return random.choice(simple_commands)
+
+

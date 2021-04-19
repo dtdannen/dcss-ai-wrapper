@@ -24,7 +24,7 @@ class MyAgent(BaseAgent):
 if __name__ == "__main__":
     my_config = WebserverConfig
 
-    # play Tutorial #1
+    # set game mode to Tutorial #1
     my_config.game_id = 'tut-web-trunk'
     my_config.tutorial_number = 1
 

@@ -82,13 +82,14 @@ Stream on March 25th, 2021:
         * BUT on a separate note, monsters are no longer lingering after they died
 
 
-Tonight's stream on April 6th, 2021:
+Stream on April 6th, 2021:
 0. Intro
 1. Human pass through agent
 2. Unknown vs. known items
 3. Dealing with Menus
 
 Future issues to solve:
+*
 * add a feature where you can save every state written file used in planning, and number them based on turn or gametime
 * on a new game, make sure to remove the old plan and gamestate from the last round
 * fix autobahn so tutorials dont send 3 enters after pressing ctrl-q
