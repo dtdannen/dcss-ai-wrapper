@@ -31,6 +31,7 @@
         ability
         spell
         god
+        qualitative_quantity
         status
         mutation
         terrain
@@ -75,21 +76,18 @@
     (altarat ?cell - cell ?god - god)
     ; player god
     (player_worshipping ?god - god)
+    (player_piety ?amount - qualitative_quantity)
 
     ; player loc
     (playerat ?cell - cell)
 
     ; player health
-    (playerlessthanfullhealth)
-    (playerfullhealth)
+    (playerhealth ?amount - qualitative_quantity)
 
     ; monster related predicates - only one monster per cell
     (hasmonster ?cell - cell)
     (monster_danger_rating ?cell - cell ?danger - danger_rating)
-    (monster_full_health ?cell - cell)
-    (monster_near_full_health ?cell - cell)
-    (monster_near_half_health ?cell - cell)
-    (monster_low_health ?cell - cell)
+    (monster_health ?cell - cell ?amount - qualitative_quantity)
     (monster_status_effect ?cell - cell ?status - status)
 
     ; levels
@@ -98,6 +96,7 @@
     (connected ?currentplace ?nextlowestplace - place)
     (hasstairsdown ?cell - cell)
     (hasstairsup ?cell - cell)
+
     ; items
     (haspotion ?cell - cell)
     (hasscroll ?cell - cell)
@@ -111,8 +110,6 @@
     (invhasscroll ?scroll - scroll)
     (invhasarmour ?armour - armour)
     (invhasweapon ?weapon - weapon)
-    (invhasweapon ?weapon - weapon)
-    (invhasfooditem ?food - fooditem)
     (invhasitem ?item - item)
 
     ; what is equipped on the player
@@ -136,9 +133,12 @@
 
     ; spells
     (player_memorised_spell ?spell - spell)
+    (spell_chance_of_failure ?spell - spell ?amount - qualitative_quantity)
+    (spell_available_to_memorise ?spell - spell)
 
     ;abilities
     (player_has_ability ?ability - ability)
+    (ability_chance_of_failure ?ability - ability ?amount - qualitative_quantity)
 )
 
 (:action move_or_attack_n

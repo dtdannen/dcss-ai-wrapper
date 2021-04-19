@@ -1,6 +1,15 @@
 ;;; This file contains all of the general pddl facts
 ;;; that do not differ between game states
 
+;;; replacement for lack of integers for FastDownward
+(qualitative_quantity none)
+(qualitative_quantity low)
+(qualitative_quantity medium_low)
+(qualitative_quantity medium)
+(qualitative_quantity medium_high)
+(qualitative_quantity high)
+(qualitative_quantity maxed)
+
 ;;; terrain types
 (terrain shallow_water)
 (terrain deep_water)
