@@ -130,6 +130,7 @@
     (training_off ?skill - skill)
     (training_low ?skill - skill)
     (training_high ?skill - skill)
+    (player_skill_level ?skill - skill ?amount - qualitative_quantity)
 
     ; spells
     (player_memorised_spell ?spell - spell)

@@ -27,6 +27,7 @@
 (terrain trees)
 
 ;;; monster danger rating
+(danger_rating very_easy)
 (danger_rating easy)
 (danger_rating dangerous)
 (danger_rating very_dangerous)

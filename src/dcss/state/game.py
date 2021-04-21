@@ -114,7 +114,7 @@ class GameState:
         self.noise_level = None
         self.adjusted_noise_level = None
 
-        self.general_knowledge_pddl_filename = "models/general_dcss_knowledge.pddl"
+        self.general_knowledge_pddl_filename = "../../models/general_dcss_knowledge_facts.pddl"
 
         self.id = GameState.ID
         GameState.ID += 1
