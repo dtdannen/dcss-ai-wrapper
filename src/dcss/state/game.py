@@ -114,7 +114,8 @@ class GameState:
         self.noise_level = None
         self.adjusted_noise_level = None
 
-        self.general_knowledge_pddl_filename = "../../models/general_dcss_knowledge_facts.pddl"
+        self.general_knowledge_pddl_facts_filename = "../../models/general_dcss_knowledge_facts.pddl"
+        self.general_knowledge_pddl_objects_filename = "../../models/general_dcss_knowledge_objects.pddl"
 
         self.id = GameState.ID
         GameState.ID += 1
@@ -478,22 +479,38 @@ class GameState:
     def write_pddl_current_state_to_file(self, filename, goals):
         """Filename is assumed to be a relevant filename from the folder that the main script is running"""
 
-        pddl_str = "(define (problem dcss-test-prob)\n(:domain dcss)\n(:objects \n"
+        pddl_str = "(define (problem dcss-test-prob)\n(:domain dcss)\n"
 
         cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap()
 
         object_strs = cell_map_object_strs
         fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
 
+        pddl_str += "(:objects \n"
+        pddl_str += "  ;; dynamically generated objects\n"
         for obj in object_strs:
             pddl_str += "  {}\n".format(obj)
+
+        pddl_str += "  ;; background objects\n"
+
+        # read in common knowledge objects and write to file
+        print("Current directory is {}".format(os.getcwd()))
+        with open(self.general_knowledge_pddl_objects_filename, 'r') as f2:
+            for line in f2.readlines():
+                if not line.startswith(';'):
+                    pddl_str += "  " + line.strip() + '\n'
+
+        pddl_str += ")\n ;; ^ closes the '(:objects' clause\n"
+
+        for fact in fact_strs:
+            pddl_str += "  {}\n".format(fact)
         pddl_str += ")\n"
 
         pddl_str += "(:init \n"
 
-        # read in common knowledge facts and put them first
+        # read in common knowledge facts and write to file
         print("Current directory is {}".format(os.getcwd()))
-        with open(self.general_knowledge_pddl_filename, 'r') as f2:
+        with open(self.general_knowledge_pddl_facts_filename, 'r') as f2:
             for line in f2.readlines():
                 if not line.startswith(';'):
                     pddl_str += line.strip() + '\n'
