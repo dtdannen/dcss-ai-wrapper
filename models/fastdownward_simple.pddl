@@ -36,6 +36,8 @@
         mutation
         terrain
         danger_rating
+        item
+        rune
 
         non_target_based_spell - spell
         target_based_spell - spell
@@ -104,6 +106,14 @@
     (hasarmour ?cell - cell)
     (hasfooditem ?cell - cell)
     (hasitem ?cell - cell ?item - item)
+
+    ; special items
+    (hasorbofzot ?cell - cell)
+    (hasrune ?rune - rune ?cell - cell)
+
+    ; special items that do not take up inventory space
+    (playerhasorbofzot)
+    (playerhasrune ?rune - rune)
 
     ; inventory
     (invhaspotion ?potion - potion)
