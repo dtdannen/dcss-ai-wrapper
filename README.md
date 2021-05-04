@@ -116,45 +116,41 @@ Now you're all set to go with the SimpleRandomAgent being able to play the game!
 
 # Quickest way to use API 
 
-Example usage to create your own agent
+Example usage to create your own agent and run it:
 
 ```python
-    from dcss.agent.base import BaseAgent
-    from dcss.state.game import GameState
-    from dcss.actions.action import Action
-    import random
+from dcss.agent.base import BaseAgent
+from dcss.state.game import GameState
+from dcss.actions.action import Action
+from dcss.websockgame import WebSockGame
+from dcss.connection.config import WebserverConfig
 
-    class MyAgent(BaseAgent):
+import random
 
-        def __init__(self):
-            super().__init__()
-            self.gamestate = None
+class MyAgent(BaseAgent):
 
-        def get_action(self, gamestate: GameState):
-            self.gamestate = gamestate
-            # get all possible actions
-            actions = Action.get_all_move_commands()
-            # call your planner or policy instead of random: 
-            return random.choice(actions)
-```
+    def __init__(self):
+        super().__init__()
+        self.gamestate = None
 
-Example usage to run the agent:
+    def get_action(self, gamestate: GameState):
+        self.gamestate = gamestate
+        # get all possible actions
+        actions = Action.get_all_move_commands()
+        # call your planner or policy instead of random: 
+        return random.choice(actions)
 
-```python
-    from dcss.websockgame import WebSockGame
-    from dcss.connection.config import WebserverConfig
+def main():
+    my_config = WebserverConfig
 
-    def main():
-        my_config = WebserverConfig
+    # set game mode to Tutorial #1
+    my_config.game_id = 'tut-web-trunk'
+    my_config.tutorial_number = 1
 
-        # set game mode to Tutorial #1
-        my_config.game_id = 'tut-web-trunk'
-        my_config.tutorial_number = 1
-
-        # create game
-        game = WebSockGame(config=my_config,
-                          agent_class=MyAgent)
-        game.run()
+    # create game
+    game = WebSockGame(config=my_config,
+                      agent_class=MyAgent)
+    game.run()
 ```
 
 Recommended next step: install FastDownward planner to run the FastDownwardPlanningAgent. 
@@ -172,6 +168,16 @@ Recommended next step: install FastDownward planner to run the FastDownwardPlann
 3. Run main_webserver.py and it should work. There's a chance that the fastdownward planner will fail to find a plan because of a missing feature of our api. Since the dungeon is procedurally generated, try a few times before troubleshooting fastdownward. If you do need to troubleshoot, start by displaying fastdownward's output. This can be done by removing the `stdout=subprocess.DEVNULL` option when calling FastDownward via subprocess in the FastDownwardPlanningAgent class.
 
 # Building the documentation
+
+Make sure the library is installed or autodoc may complain:
+
+    python
+    >>> import dcss
+
+If you get a module not found error, install locally, for example:
+
+    cd dcss-ai-wrapper/
+    python -m pip install -e .
 
 Build the api documentation by:
 

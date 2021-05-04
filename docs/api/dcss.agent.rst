@@ -12,10 +12,10 @@ dcss.agent.SimpleRandomAgent module
    :undoc-members:
    :show-inheritance:
 
-dcss.agent.agent module
------------------------
+dcss.agent.base module
+----------------------
 
-.. automodule:: dcss.agent.agent
+.. automodule:: dcss.agent.base
    :members:
    :undoc-members:
    :show-inheritance:

@@ -134,6 +134,200 @@ class GameState:
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))
 
+    def get_player_stats_vector(self):
+        """ See Table 1
+            returns a vector of size 170
+        """
+        #TODO write code
+        pass
+
+    def get_player_inventory_vector(self):
+        """ Player has 52 inventory slots corresponding to each lowercase and
+            uppercase letter of the English alphabet.
+
+            Each item is represented by a vector of size 7:
+                Vector Index    Description of Data    Data Type if available
+                    0                 Item type
+                    1                 quantity            Int
+                    2                 Item Bonus          Int
+                    3                 Is Equipped         Boolean
+                    4                 First property
+                    5                 Second property
+                    6                 Third property
+            returns a vector of size 364
+        """
+        # TODO write code
+        pass
+
+    def get_player_spells_vector(self):
+        """ Player has a maximum of 21 spell slots for spells to be learned.
+
+            Each of these 21 spells slots is represented by a vector of 3 values:
+                Vector Index    Description of Data    Data Type if available
+                    0                 Spell ID.           Int repr. spell ID
+                    1                 Failure Likelihood  0-100 Percentage
+                    2                 Magic Point Cost    Int
+                    3                 Noise Produced      Int
+
+            Additionally, there are 118 spells that can be learned if the player
+            has found a book item with a given spell, therefore we need
+            an additional 118 slots in this vector representing whether
+            each spell is available to be learned.
+
+            Returns a vector of size 21*4 + 118.
+        """
+        # TODO write code
+        pass
+
+    def get_player_abilities_vector(self):
+        """ There are 94 possible abilities a player may acquire. For each
+            of these abilities, they are represented by the following vector:
+
+                Vector Index    Description of Data    Data Type if available
+                    0                 Ability is known    Boolean
+                    1                 Failure Likelihood  0-100 Percentage
+                    2                 Magic Point Cost    Int
+                    3                 Piety Point Cost    Int
+
+            Returns a vector of size 94*4.
+        """
+        # TODO write code
+        pass
+
+    def get_player_skills_vector(self):
+        """ Player has 31 skills that increase over time if the player
+            is actively 'training' those skills.
+
+            Each skill is represented by a vector of size 2:
+                Vector Index    Description of Data       Data Type if available
+                    0                 Current value          Float
+                    1                 Training Percentage    Float
+
+            returns a vector of size 62
+        """
+        # TODO write code
+        pass
+
+    def get_egocentric_LOS_map_data_vector(self, radius=7):
+        """ Returns a vector containing data on the tiles
+            in a ((radius*2)+1)^2 square centered on the player.
+
+            A tile can have 0 or 1 monsters. Monsters do not have IDs therefore they are referred to
+            by the tile they are occupying.
+
+            Each tile is represented by a vector of size 34:
+
+                Vector Index      Description of Data       Data Type if available
+                    0                 Monster Type               Int representing type ID
+                    1                 Monster is unique          Boolean
+                    2                 Monster danger rating      Int
+                    3                 Monster current health     Int
+                    4                 Monster max health         Int
+                    5                 Monster AC                 Int
+                    6                 Monster EV                 Int
+                    7                 Monster MR                 Int
+                    8                 Monster Speed              Int
+                    9                 Monster Status Effect 1    Int representing type ID
+                    10                Monster Status Effect 2    Int representing type ID
+                    11                Monster Status Effect 3    Int representing type ID
+                    12                Monster Status Effect 4    Int representing type ID
+                    13                Monster Status Effect 5    Int representing type ID
+                    14                Monster Has Spell 1        Int representing type ID
+                    15                Monster Has Spell 2        Int representing type ID
+                    16                Monster Has Spell 3        Int representing type ID
+                    17                Monster Has Spell 4        Int representing type ID
+                    18                Monster Has Spell 5        Int representing type ID
+                    19                Monster Has Spell 6        Int representing type ID
+                    20                Terrain Type               Int representing type ID
+                    21                Has Item Potion            Int representing type ID
+                    22                Has Item Scroll            Int representing type ID
+                    23                Has Item Armour            Int representing type ID
+                    24                Has Item Weapon            Int representing type ID
+                    25                Has Item Missile           Int representing type ID
+                    26                Has Door               0 for None, 1 for closed, 2 for open
+                    27                Has Trap                   Int representing type ID
+                    28                Has Gold                   Boolean
+                    29                Has Smoke /Fog             Boolean
+                    30                Has Wall                   Int representing type ID
+                    31                Has Stairway / Shaft       Int representing type ID
+                    32                Has Rune                   Int representing type ID
+                    33                Has Orb of Zot             Boolean
+
+            Returns a vector of size 34 * ((radius*2)+1)^2
+        """
+        # TODO write code
+        pass
+
+    def get_egocentric_level_map_data_vector(self):
+        """ Returns a vector containing data on the tiles
+            on the player's current level.
+
+            Uses the same tile representation of vectors of size 34 from get_egocentric_LOS_map_data()
+
+            Returns a vector with no upperbound if traveling through levels such as Abyss or Labyrinth.
+            More realistically returns a vector ranging from a minimum size of 7,650 (225 LOS tiles * 34)
+            up to possible sizes of 68,000+ (2000 tiles * 34).
+        """
+        # TODO write code
+        pass
+
+    def get_all_map_data_vector(self):
+        """ Returns a vector containing data on the tiles the player has encountered so far in the game.
+
+            Uses the same tile representation of vectors of size 34 from get_egocentric_LOS_map_data()
+
+            Returns a vector with no upperbound if traveling through levels such as Abyss or Labyrinth.
+            More realistically returns a vector ranging from a minimum size of 7,650 (225 LOS tiles * 34)
+            up to possible sizes of 3,400,000+ (100,000 tiles * 34).
+        """
+        # TODO write code
+        pass
+
+    def get_player_stats_pddl(self):
+        """ Returns a list of PDDL facts representing player stats
+        """
+        # TODO write code
+        pass
+
+    def get_player_inventory_pddl(self):
+        """ Returns a list of PDDL facts representing the player's inventory
+        """
+        # TODO write code
+        pass
+
+    def get_player_skills_pddl(self):
+        """ Returns a list of PDDL facts representing the player's skills
+        """
+        # TODO write code
+        pass
+
+    def get_egocentric_LOS_map_data_pddl(self, radius=7):
+        """ Returns a list of PDDL facts representing the tiles around the player for the given radius.
+            Information about tiles outside of this radius is not returned.
+        """
+        # TODO write code
+        pass
+
+    def get_egocentric_level_map_data_pddl(self):
+        """ Returns a list of PDDL facts representing the tiles in player's current level.
+            Information about tiles outside of the current level is not returned.
+        """
+        # TODO write code
+        pass
+
+    def get_all_map_data_pddl(self):
+        """ Returns a list of PDDL facts for every tile encountered by the player thus far.
+        """
+        # TODO write code
+        pass
+
+    def get_background_pddl(self):
+        """ Returns a static list of pddl facts, including all type instances
+            and dungeon level connections.
+        """
+        # TODO write code
+        pass
+
     def record_movement(self, dir):
         """
         TODO: Write documentation

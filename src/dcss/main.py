@@ -2,10 +2,10 @@
 Make sure to run crawl before running this demo, see:
     start_crawl_terminal_sprint.sh
 """
-from actions.action import Action
-from actions.command import Command
-from connection.game_connection import GameConnection
-from agent import SimpleRandomAgent
+from dcss.actions.action import Action
+from dcss.actions.command import Command
+from dcss.connection.game_connection import GameConnection
+from dcss.agent import SimpleRandomAgent
 
 
 
