@@ -114,6 +114,49 @@ Wait for the agent to get past the character creation menus (there's a strange b
 
 Now you're all set to go with the SimpleRandomAgent being able to play the game! The rest of this README file contains additional details on using the DCSS AI Wrapper.
 
+# Quickest way to use API 
+
+Example usage to create your own agent
+
+```python
+    from dcss.agent.base import BaseAgent
+    from dcss.state.game import GameState
+    from dcss.actions.action import Action
+    import random
+
+    class MyAgent(BaseAgent):
+
+        def __init__(self):
+            super().__init__()
+            self.gamestate = None
+
+        def get_action(self, gamestate: GameState):
+            self.gamestate = gamestate
+            # get all possible actions
+            actions = Action.get_all_move_commands()
+            # call your planner or policy instead of random: 
+            return random.choice(actions)
+```
+
+Example usage to run the agent:
+
+```python
+    from dcss.websockgame import WebSockGame
+    from dcss.connection.config import WebserverConfig
+
+    def main():
+        my_config = WebserverConfig
+
+        # set game mode to Tutorial #1
+        my_config.game_id = 'tut-web-trunk'
+        my_config.tutorial_number = 1
+
+        # create game
+        game = WebSockGame(config=my_config,
+                          agent_class=MyAgent)
+        game.run()
+```
+
 Recommended next step: install FastDownward planner to run the FastDownwardPlanningAgent. 
 
 # Install and run the fastdownward planner 
