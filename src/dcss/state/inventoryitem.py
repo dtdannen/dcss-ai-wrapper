@@ -1,7 +1,7 @@
 import re
 import string
 
-from state.itemproperty import ItemProperty
+from dcss.state.itemproperty import ItemProperty
 
 
 class InventoryItem:

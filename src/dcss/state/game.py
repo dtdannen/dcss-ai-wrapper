@@ -3,10 +3,10 @@ import os
 import time
 
 import actions
-from state.cell import Cell
-from state.cellmap import CellMap
-from state.cellrawstrdatum import CellRawStrDatum
-from state.inventoryitem import InventoryItem
+from dcss.state.cell import Cell
+from dcss.state.cellmap import CellMap
+from dcss.state.cellrawstrdatum import CellRawStrDatum
+from dcss.state.inventoryitem import InventoryItem
 
 
 class GameState:

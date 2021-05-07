@@ -1,5 +1,5 @@
-from state import GameState
-from actions import Action
+from dcss.state.game import GameState
+from dcss.actions.action import Action
 
 import socket
 import json

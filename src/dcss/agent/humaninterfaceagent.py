@@ -5,7 +5,7 @@ except:
 
 from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
-from state.game import GameState
+from dcss.state.game import GameState
 
 
 class HumanInterfaceBaseAgentDataTracking(BaseAgent):

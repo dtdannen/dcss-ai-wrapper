@@ -1,4 +1,4 @@
-from state.cell import Cell
+from dcss.state.cell import Cell
 
 
 class CellMap:

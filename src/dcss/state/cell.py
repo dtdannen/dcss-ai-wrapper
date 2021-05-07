@@ -1,4 +1,4 @@
-from state.monster import Monster
+from dcss.state.monster import Monster
 
 
 class Cell:

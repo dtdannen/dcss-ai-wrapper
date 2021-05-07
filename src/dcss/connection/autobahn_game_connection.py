@@ -12,8 +12,8 @@ from nested_lookup import nested_lookup
 import asyncio
 import importlib
 from autobahn.asyncio.websocket import WebSocketClientProtocol
-from state.game import GameState
-from state.menu import Menu
+from dcss.state.game import GameState
+from dcss.state.menu import Menu
 
 from dcss.agent.base import BaseAgent
 from dcss.agent.fastdownwardplanningagent import FastDownwardPlanningBaseAgent

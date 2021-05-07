@@ -7,8 +7,8 @@ Make sure to run crawl before running this demo, see:
 
 """
 
-from connection.autobahn_game_connection import DCSSProtocol
-from connection import config
+from dcss.connection.autobahn_game_connection import DCSSProtocol
+from dcss.connection import config
 import asyncio
 import logging
 import random

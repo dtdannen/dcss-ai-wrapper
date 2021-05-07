@@ -1,5 +1,5 @@
-from connection.autobahn_game_connection import DCSSProtocol
-from connection import config
+from dcss.connection.autobahn_game_connection import DCSSProtocol
+from dcss.connection import config
 import asyncio
 from autobahn.asyncio.websocket import WebSocketClientFactory
 from dcss.connection.config import WebserverConfig
