@@ -1,4 +1,4 @@
-from ..state import State
+from dcss.connection.state import State
 
 
 class Initial(State):
@@ -6,6 +6,7 @@ class Initial(State):
         print("Waiting: Broadcasting cheese smell")
 
     def next(self, input):
-        if input == MouseAction.appears:
-            return MouseTrap.luring
-        return MouseTrap.waiting
+        #if input == MouseAction.appears:
+        #    return MouseTrap.luring
+        #return MouseTrap.waiting
+        pass

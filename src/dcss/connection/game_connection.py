@@ -16,7 +16,7 @@ import zlib
 
 class GameConnection:
 
-    def __init__(self, config=config.DefaultConfig()):
+    def __init__(self, config=config.WebserverConfig()):
         self.config = config
         self.crawl_socket = None
         self.game_state = GameState()

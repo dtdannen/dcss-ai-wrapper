@@ -1,4 +1,5 @@
 Support
+=======
 
 The easiest way to get help with the project is to ask a question in the Gitter community chat:
 

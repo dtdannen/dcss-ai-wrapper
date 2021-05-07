@@ -13,7 +13,7 @@ dcss-ai-wrapper's documentation
    usage/quickstart
    usage/agents
    api/modules
-
+   support
 
 Indices and tables
 ==================
@@ -21,3 +21,5 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+

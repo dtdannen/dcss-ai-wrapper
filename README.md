@@ -189,6 +189,22 @@ On windows, use the make.bat script to create the html files:
     
 Then open `docs/_build/html/index.html` in your browser to view the documentation.
 
+### Optional - Getting errors when building docs
+
+Try two things: (1) make clean, like:
+
+    .\docs\make.bat clean
+
+and also remove all files in the `docs/api/` folder before doing
+
+    sphinx-apidoc -f -o docs/api/ src/dcss/
+
+and then finally run make to generate the html
+
+    .\docs\make.bat html
+
+    
+
 # Installing DCSS from Source on Ubuntu
 
 ### Pre-requisites
