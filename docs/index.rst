@@ -9,9 +9,10 @@ dcss-ai-wrapper's documentation
 .. toctree::
    :maxdepth: 2
 
-   usage/installation
    usage/quickstart
+   usage/installation
    usage/agents
+   usage/state_representation
    api/modules
    support
 

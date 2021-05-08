@@ -44,6 +44,14 @@ dcss.agent.humaninterfaceagent module
    :undoc-members:
    :show-inheritance:
 
+dcss.agent.randomagent module
+-----------------------------
+
+.. automodule:: dcss.agent.randomagent
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 dcss.agent.simplerlagent module
 -------------------------------
 

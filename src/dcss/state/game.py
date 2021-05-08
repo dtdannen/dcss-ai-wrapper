@@ -497,17 +497,27 @@ class GameState:
             uppercase letter of the English alphabet.
 
             Each item is represented by a vector of size 7:
-                Vector Index    Description of Data    Data Type if available
-                    0                 Item type
-                    1                 quantity            Int
-                    2                 Item Bonus          Int
-                    3                 Is Equipped         Boolean
-                    4                 First property
-                    5                 Second property
-                    6                 Third property
+                +--------------+---------------------------------------+------------------------+
+                | Vector Index | Description of Data                   | Data Type if available |
+                +==============+=======================================+========================+
+                +--------------+---------------------------------------+------------------------+
+                | 0            | Item type                             |                        |
+                +--------------+---------------------------------------+------------------------+
+                | 1            | quantity                              |  Int                   |
+                +--------------+---------------------------------------+------------------------+
+                | 2            | Item Bonus                            |  Int                   |
+                +--------------+---------------------------------------+------------------------+
+                | 3            | Is Equipped                           |  Boolean               |
+                +--------------+---------------------------------------+------------------------+
+                | 4            | First property                        |                        |
+                +--------------+---------------------------------------+------------------------+
+                | 5            | Second property                       |                        |
+                +--------------+---------------------------------------+------------------------+
+                | 6            | Third property                        |                        |
+                +--------------+---------------------------------------+------------------------+
 
             Returns:
-                 a list of size 364
+                 a list of size 364 (52 inventory items each represented with 7 features shown above)
 
         """
         # TODO write code
