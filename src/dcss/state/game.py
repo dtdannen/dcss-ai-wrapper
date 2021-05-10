@@ -141,7 +141,7 @@ class GameState:
             The player stats vector consists of the following features and is returned as a python list.
 
             .. csv-table:: Player Stats Vector
-                :file: ../../../../../csv_tables/state_representations.csv
+                :file: ../../../csv_tables/state_representations.csv
                 :header-rows: 1
 
             Returns:
