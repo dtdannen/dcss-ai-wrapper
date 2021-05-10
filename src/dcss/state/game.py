@@ -137,7 +137,7 @@ class GameState:
             raise Exception("Something went wrong: " + str(e))
 
     def get_player_stats_vector(self):
-        r"""
+        """
             The player stats vector consists of the following features and is returned as a python list.
 
             .. csv-table:: Player Stats Vector

@@ -4,6 +4,12 @@ State Representations
 
 dcss-ai-wrapper offers multiple state representations to support multiple types of AI agents.
 
-.. autoapimodule:: GameState
-   :members:
+.. autoapiclass:: src.dcss.state.game.GameState
+    :noindex:
+    :members: get_player_stats_vector
+
+
+
+
+
 
