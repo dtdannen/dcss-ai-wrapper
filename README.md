@@ -179,6 +179,8 @@ If you get a module not found error, install locally, for example:
     cd dcss-ai-wrapper/
     python -m pip install -e .
 
+#### Option 1:
+
 Build the api documentation by:
 
     sphinx-apidoc -f -o docs/api/ src/dcss/
@@ -189,7 +191,7 @@ On windows, use the make.bat script to create the html files:
     
 Then open `docs/_build/html/index.html` in your browser to view the documentation.
 
-### Optional - Getting errors when building docs
+##### If getting errors when building docs
 
 Try two things: (1) make clean, like:
 
@@ -202,6 +204,13 @@ and also remove all files in the `docs/api/` folder before doing
 and then finally run make to generate the html
 
     .\docs\make.bat html
+
+
+#### Option 2:
+
+Use sphinx-build from the root project directory like:
+
+    sphinx-build  -v -b html docs/ docs/_build
 
     
 

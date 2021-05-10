@@ -1,3 +1,4 @@
+import dcss
 from dcss.connection.autobahn_game_connection import DCSSProtocol
 from dcss.connection import config
 import asyncio
@@ -13,7 +14,7 @@ class WebSockGame:
         self.config = config
 
     def _load_ai(self):
-        if not self.client:  # type: DCSSProtocol
+        if not self.client:  # the type of self.client should be dcss.connection.autobahn_game_connection.DCSSProtocol
             raise Exception("Client is NONE in WebSockGame")
         self.client.set_ai_class(self.agent_class)
         self.client.load_ai_class()
