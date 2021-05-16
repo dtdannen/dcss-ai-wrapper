@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-import actions
+from dcss.actions.action import Action
 from dcss.state.cell import Cell
 from dcss.state.cellmap import CellMap
 from dcss.state.cellrawstrdatum import CellRawStrDatum
@@ -96,7 +96,7 @@ class GameState:
         self.player_real_hp_max = None
         self.player_current_mp = None
         self.player_mp_max = None
-        self.player_dd_real_mp_max = None
+        self.player_real_mp_max = None
 
         self.player_strength = None
         self.player_strength_max = None
@@ -136,7 +136,7 @@ class GameState:
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))
 
-    def get_player_stats_vector(self):
+    def get_player_stats_vector(self, verbose=False):
         """
             The following player stats are returned by this function:
 
@@ -163,13 +163,19 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 9            | Str                                   | Int                    |
                 +--------------+---------------------------------------+------------------------+
-                | 10           | Int                                   | Int                    |
+                | 10           | Str max                               | Int                    |
                 +--------------+---------------------------------------+------------------------+
-                | 11           | Dex                                   | Int                    |
+                | 11           | Int                                   | Int                    |
                 +--------------+---------------------------------------+------------------------+
-                | 12           | XL                                    | Int                    |
+                | 12           | Int max                               | Int                    |
                 +--------------+---------------------------------------+------------------------+
-                | 13           | Experience until next level           | 0-100 percentage       |
+                | 13           | Dex                                   | Int                    |
+                +--------------+---------------------------------------+------------------------+
+                | 14           | Dex max                               | Int                    |
+                +--------------+---------------------------------------+------------------------+
+                | 15           | XL                                    | Int                    |
+                +--------------+---------------------------------------+------------------------+
+                | 16           | Experience until next level           | 0-100 percentage       |
                 +--------------+---------------------------------------+------------------------+
                 | 14           | God                                   | Int                    |
                 +--------------+---------------------------------------+------------------------+
@@ -488,8 +494,214 @@ class GameState:
                 A list of features representing the player's stats
 
         """
-        #TODO write code
-        pass
+
+        player_stats_labels = [
+            "health",
+            "health_max",
+            "health_max_real",
+            "mana_points",
+            "mana_points_max",
+            "mana_points_real",
+            "AC",
+            "EV",
+            "SH",
+            "Str",
+            "Int",
+            "Dex",
+            "XL",
+            "Experience until next level",
+            "God",
+            "Piety Level",
+            "Spell slots left",
+            "gold",
+            "rFire",
+            "rCold",
+            "rNeg",
+            "rPois",
+            "rElec",
+            "rCorr",
+            "MR",
+            "Stealth",
+            "HPRegen per turn",
+            "MPRegen per turn",
+            "See invisible",
+            "Gourmand",
+            "Faith",
+            "Spirit",
+            "Reflect",
+            "Harm",
+            "game turns",
+            "game time",
+            "attack speed",
+            "movement speed",
+            "Agile status effect",
+            "Antimagic status effect",
+            "Augmentation status effect",
+            "Bad Forms status effect",
+            "Berserk status effect",
+            "Black Mark status effect",
+            "Blind status effect",
+            "Brilliant status effect",
+            "Charm status effect",
+            "Confusing Touch status effect",
+            "Confusion status effect",
+            "Constriction status effect",
+            "Cooldowns status effect",
+            "Corona status effect",
+            "Corrosion status effect",
+            "Darkness status effect",
+            "Dazed status effect",
+            "Death Channel status effect",
+            "Death's Door status effect",
+            "Deflect Missiles status effect",
+            "Disjunction status effect",
+            "Divine Protection status effect",
+            "Divine Shield status effect",
+            "Doom Howl status effect",
+            "Drain status effect",
+            "Engorged status effect",
+            "Engulf status effect",
+            "Fast + Slow status effect",
+            "Fear status effect",
+            "Finesse status effect",
+            "Fire Vulnerable status effect",
+            "Flayed status effect",
+            "Flight status effect",
+            "Frozen status effect",
+            "Haste status effect",
+            "Heavenly Storm status effect",
+            "Held status effect",
+            "Heroism status effect",
+            "Horrified status effect",
+            "Inner Flame status effect",
+            "Invisibility status effect",
+            "Lava status effect",
+            "Leda's Liquefaction status effect",
+            "Leda's Liquefaction status effect",
+            "Magic Contamination status effect",
+            "Mark status effect",
+            "Mesmerised status effect",
+            "Might status effect",
+            "Mirror Damage status effect",
+            "No Potions status effect",
+            "No Scrolls status effect",
+            "Olgreb's Toxic Radiance status effect",
+            "Orb status effect",
+            "Ozocubu's Armour status effect",
+            "Paralysis status effect",
+            "Petrifying / Petrified status effect",
+            "Poison status effect",
+            "Powered by Death status effect",
+            "Quad Damage status effect",
+            "Recall status effect",
+            "Regenerating status effect",
+            "Repel Missiles status effect",
+            "Resistance status effect",
+            "Ring of Flames status effect",
+            "Sapped Magic status effect",
+            "Scrying status effect",
+            "Searing Ray status effect",
+            "Serpent's Lash status effect",
+            "Shroud of Golubria status effect",
+            "Sickness status effect",
+            "Silence status effect",
+            "Silence status effect",
+            "Sleep status effect",
+            "Slimify status effect",
+            "Slow status effect",
+            "Sluggish status effect",
+            "Starving status effect",
+            "Stat Zero status effect",
+            "Sticky Flame status effect",
+            "Still Winds status effect",
+            "Swiftness status effect",
+            "Teleport Prevention status effect",
+            "Teleport status effect",
+            "Tornado status effect",
+            "Transmutations status effect",
+            "Umbra status effect",
+            "Vitalisation status effect",
+            "Vulnerable status effect",
+            "Water status effect",
+            "Weak status effect",
+            "Acute Vision mutation",
+            "Antennae mutation",
+            "Beak mutation",
+            "Big Wings mutation",
+            "Blink mutation",
+            "Camouflage mutation",
+            "Clarity mutation",
+            "Claws mutation",
+            "Cold Resistance mutation",
+            "Electricity Resistance mutation",
+            "Evolution mutation",
+            "Fangs mutation",
+            "Fire Resistance mutation",
+            "High MP mutation",
+            "Hooves mutation",
+            "Horns mutation",
+            "Icy Blue Scales mutation",
+            "Improved Attributes mutation",
+            "Iridescent Scales mutation",
+            "Large Bone Plates mutation",
+            "Magic Resistance mutation",
+            "Molten Scales mutation",
+            "Mutation Resistance mutation",
+            "Passive Mapping mutation",
+            "Poison Breath mutation",
+            "Poison Resistance mutation",
+            "Regeneration mutation",
+            "Repulsion Field mutation",
+            "Robust mutation",
+            "Rugged Brown Scales mutation",
+            "Shaggy Fur mutation",
+            "Slimy Green Scales mutation",
+            "Stinger mutation",
+            "Strong Legs mutation",
+            "Talons mutation",
+            "Tentacle Spike mutation",
+            "Thin Metallic Scales mutation",
+            "Thin Skeletal Structure mutation",
+            "Tough Skin mutation",
+            "Wild Magic mutation",
+            "Yellow Scales mutation",
+            "Player Place(Dungeon, Vaults, etc.)",
+        ]
+
+        player_stats = [
+            self.player_current_hp,
+            self.player_hp_max,
+            self.player_real_hp_max,
+            self.player_current_mp,
+            self.player_mp_max,
+            self.player_real_mp_max,
+            self.player_ac,
+            self.player_ev,
+            self.player_sh,
+            self.player_strength,
+            self.player_int,
+            self.player_int_max,
+            self.player_dex,
+            self.player_dex_max,
+            self.player_level,
+
+            # TODO - get player experience percentage remaining to next level
+            None,
+
+            self.player_god,
+            self.player_piety_rank,
+
+            # TODO - get player spell slots remaining
+            None,
+        ]
+
+        if verbose:
+            print("Player stats vector:\n====================")
+            for i in range(len(player_stats_labels)):
+                if i < len(player_stats):
+                    print("  {}={}".format(player_stats_labels[i], player_stats[i]))
+
+        return player_stats
 
     def get_player_inventory_vector(self):
         """
@@ -724,25 +936,6 @@ class GameState:
         # TODO write code
         pass
 
-    def record_movement(self, dir):
-        """
-        TODO: Write documentation
-        """
-        self.last_recorded_movement = dir
-        print('last recorded movement is ' + str(self.last_recorded_movement))
-        if dir in actions.key_actions.keys():
-            if dir == 'move_N':
-                self.shift_agent_y(-1)
-            elif dir == 'move_S':
-                self.shift_agent_y(1)
-            elif dir == 'move_E':
-                self.shift_agent_x(1)
-            elif dir == 'move_W':
-                self.shift_agent_x(-1)
-            else:
-                pass  # do nothing if the agent didn't move
-        pass  # do nothing if the agent didn't move
-
     def shift_agent_x(self, change):
         """
         Performs an addition
@@ -944,7 +1137,7 @@ class GameState:
 
             # Todo - I don't know what this represents
             elif k == 'dd_real_mp_max':
-                self.player_dd_real_mp_max = data[k]
+                self.player_real_mp_max = data[k]
 
             # Todo - I don't know what values mean what
             # Todo - my best guess is 0 means player will die from poison and 1 means player will live

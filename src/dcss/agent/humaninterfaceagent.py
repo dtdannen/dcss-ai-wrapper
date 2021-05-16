@@ -7,6 +7,9 @@ from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
 from dcss.state.game import GameState
 
+from dcss.websockgame import WebSockGame
+from dcss.connection.config import WebserverConfig
+
 
 class HumanInterfaceBaseAgentDataTracking(BaseAgent):
 
@@ -27,9 +30,9 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         self.number_of_items_data = {}  # key is game turn, val is number of items seen in the game so far
         self.number_of_cells_data = {}  # key is game turn, val is number of cells seen in the game so far
 
-    def get_action(self, gamestate):
+    def get_action(self, gamestate: GameState):
         gameturn = gamestate.get_current_game_turn()
-        num_facts = len(gamestate.get_all_pddl_facts())
+        num_facts = len(gamestate.get_player_stats_vector())
         self.gameturns.append(gameturn)
         self.print_all_items_near_player(gamestate)
         self.num_game_facts.append(num_facts)
@@ -85,3 +88,14 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         }
 
         return keypress_to_command[keypress]
+
+
+if __name__ == "__main__":
+    my_config = WebserverConfig
+
+    # set game mode to Tutorial #1
+    my_config.game_id = 'dcss-web-trunk'
+
+    # create game
+    game = WebSockGame(config=my_config, agent_class=HumanInterfaceBaseAgentDataTracking)
+    game.run()

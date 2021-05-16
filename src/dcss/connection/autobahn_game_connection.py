@@ -15,14 +15,6 @@ from autobahn.asyncio.websocket import WebSocketClientProtocol
 from dcss.state.game import GameState
 from dcss.state.menu import Menu
 
-from dcss.agent.base import BaseAgent
-from dcss.agent.fastdownwardplanningagent import FastDownwardPlanningBaseAgent
-from dcss.agent.humaninterfaceagent import HumanInterfaceBaseAgentDataTracking
-from dcss.agent.simplerlagent import SimpleRLAgent
-from dcss.agent.SimpleRandomAgent import SimpleRandomBaseAgent
-from dcss.agent.testallcommandsagent import TestAllCommandsBaseAgent
-from dcss.agent.fastdownwardtutorial1 import FastDownwardPlanningAgentTut1
-
 
 class DCSSProtocol(WebSocketClientProtocol):
 
