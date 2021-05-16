@@ -15,6 +15,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
 
     def __init__(self):
         super().__init__()
+        self.gamestate = None
         #plt.axis([-50, 50, 0, 10000])
         #plt.ion()
         #plt.show()
@@ -31,10 +32,12 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         self.number_of_cells_data = {}  # key is game turn, val is number of cells seen in the game so far
 
     def get_action(self, gamestate: GameState):
+        self.gamestate = gamestate
+        self.print_player_stats_vector(verbose=True)
         gameturn = gamestate.get_current_game_turn()
-        num_facts = len(gamestate.get_player_stats_vector())
+        num_facts = len(gamestate.all_pddl_facts())
         self.gameturns.append(gameturn)
-        self.print_all_items_near_player(gamestate)
+        #self.print_all_items_near_player(gamestate)
         self.num_game_facts.append(num_facts)
         #print("about to plot {}, {}".format(gameturn, num_facts))
         #plt.plot(self.gameturns, self.num_game_facts)
@@ -61,6 +64,12 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             for pddl_fact in cell.get_pddl_facts():
                 print("{}".format(pddl_fact))
 
+    def print_player_stats_vector(self, verbose=False):
+        """
+            Print the player stats vector
+        """
+        print(self.gamestate.get_player_stats_vector(verbose=verbose))
+
     def get_command_from_human_keypress(self, keypress):
         """
         Return the command that matches the keypress from the user
@@ -84,6 +93,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             'g': Command.PICKUP_ITEM,
             ',': Command.PICKUP_ITEM,
             '.': Command.WAIT_1_TURN,
+            '%':Command.CHARACTER_OVERVIEW,
 
         }
 
@@ -95,6 +105,7 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
+    my_config.always_start_new_game = True
 
     # create game
     game = WebSockGame(config=my_config, agent_class=HumanInterfaceBaseAgentDataTracking)
