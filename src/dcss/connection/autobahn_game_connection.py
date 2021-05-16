@@ -6,7 +6,7 @@ from dcss.connection import config
 import zlib
 import copy
 
-from connection.menuknowledge import MenuBackgroundKnowledge
+from dcss.connection.menuknowledge import MenuBackgroundKnowledge
 from nested_lookup import nested_lookup
 
 import asyncio
