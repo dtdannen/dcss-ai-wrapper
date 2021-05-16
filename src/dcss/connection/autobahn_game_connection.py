@@ -22,6 +22,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         super().__init__()
         self.game_state = GameState()
         self.config = config.WebserverConfig
+        print("Loaded default config: config.WebserverConfig")
         self.decomp = zlib.decompressobj(-zlib.MAX_WBITS)
 
         # States of the connection which determines which messages are relevant to send when
@@ -90,7 +91,6 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         # start sending messages every second ..
         while True:
-
             if self._CONNECTED and self._NEEDS_PONG:
                 print("SENDING PONG MESSAGE")
                 pong_msg = {"msg": "pong"}

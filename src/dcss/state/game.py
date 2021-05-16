@@ -688,15 +688,13 @@ class GameState:
             self.player_dex,
             self.player_dex_max,
             self.player_level,
-
-            # TODO - get player experience percentage remaining to next level
-            None,
-
+            self.player_progress,
             self.player_god,
             self.player_piety_rank,
 
             # TODO - get player spell slots remaining
             None,
+            self.player_gold,
         ]
 
         if verbose:
@@ -991,6 +989,9 @@ class GameState:
                     else:
                         self.more_prompt = False
 
+                if k == 'text':
+                    self.process_menu_text(s[k])
+
                 if k == 'messages':
                     self.process_messages(s[k])
 
@@ -1015,6 +1016,15 @@ class GameState:
                     pass
         else:
             pass
+
+    def process_menu_text(self, html_str):
+        if 'rFire' in html_str:
+            # parse out rFire
+            # TODO use regular expressions, looking for the sequence starting with ">", containing "rFire" and going until the next "<"
+            # TODO and then we'll need to do the same thing for rCold, rPois, rElec, etc.
+            pass
+
+
 
     def _process_items_agent_location(self, message):
         items = message.split(';')
@@ -1139,7 +1149,6 @@ class GameState:
             elif k == 'mp_max':
                 self.player_mp_max = data[k]
 
-            # Todo - I don't know what this represents
             elif k == 'dd_real_mp_max':
                 self.player_real_mp_max = data[k]
 
@@ -1178,7 +1187,7 @@ class GameState:
             elif k == 'xl':
                 self.player_level = data[k]
 
-            # Todo - I don't know what progress means
+            # progress is experience to next level
             elif k == 'progress':
                 self.player_progress = data[k]
 
