@@ -19,6 +19,11 @@ class WebSockGame:
         self.client.set_ai_class(self.agent_class)
         self.client.load_ai_class()
 
+    def _load_config(self):
+        if not self.client:  # the type of self.client should be dcss.connection.autobahn_game_connection.DCSSProtocol
+            raise Exception("Client is NONE in WebSockGame")
+        self.client.config = self.config
+
     def _setup(self):
         factory = WebSocketClientFactory(self.config.server_uri)
         factory.protocol = DCSSProtocol
@@ -30,6 +35,7 @@ class WebSockGame:
     def run(self):
         self._setup()
         self._load_ai()
+        self._load_config()
 
         loop = asyncio.get_event_loop()
         loop.run_forever()
