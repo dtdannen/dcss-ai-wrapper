@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import re
 
 from dcss.actions.action import Action
 from dcss.state.cell import Cell
@@ -1018,6 +1019,25 @@ class GameState:
             pass
 
     def process_menu_text(self, html_str):
+        regex = re.compile('>(rFire|rCold|rNeg|rCorr|rElec|rPois|Faith|Spirit|Reflect|Harm|Rampage|MR|Stlth)\\s*[.+ ]+\\s*<')
+        matches = regex.finditer(html_str)
+
+        for m in matches:
+            value = m.group().count("+")
+            if 'rFire' in m.group():
+                self.player_rFire = value
+            elif 'rCold' in m.group():
+                self.player_rCold = value
+            elif 'rNeg' in m.group():
+                self.player_rCold = value
+            elif 'rCold' in m.group():
+                self.player_rCold = value
+            elif 'rCold' in m.group():
+                self.player_rCold = value
+            elif 'rCold' in m.group():
+                self.player_rCold = value
+
+
         if 'rFire' in html_str:
             # parse out rFire
             # TODO use regular expressions, looking for the sequence starting with ">", containing "rFire" and going until the next "<"
