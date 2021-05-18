@@ -114,6 +114,22 @@ class GameState:
         self.player_progress = None
         self.player_gold = 0
 
+        self.player_rFire = -1
+        self.player_rCold = -1
+        self.player_rCorr = -1
+        self.player_rNeg = -1
+        self.player_rElec = -1
+        self.player_rPois = -1
+        self.player_faith_status = False
+        self.player_reflect_status = False
+        self.player_spirit_status = False
+        self.player_harm_status = False
+        self.player_rampage_status = False
+        self.player_stealth = -1
+        self.player_willpower = -1
+        self.player_hp_regen = 0.00
+        self.player_mp_regen = 0.00
+
         self.noise_level = None
         self.adjusted_noise_level = None
 
@@ -207,8 +223,6 @@ class GameState:
                 | 27           | MPRegen per turn                      | Float                  |
                 +--------------+---------------------------------------+------------------------+
                 | 28           | See invisible                         | Boolean                |
-                +--------------+---------------------------------------+------------------------+
-                | 29           | Gourmand                              | Boolean                |
                 +--------------+---------------------------------------+------------------------+
                 | 30           | Faith                                 | Boolean                |
                 +--------------+---------------------------------------+------------------------+
@@ -529,7 +543,6 @@ class GameState:
             "HPRegen per turn",
             "MPRegen per turn",
             "See invisible",
-            "Gourmand",
             "Faith",
             "Spirit",
             "Reflect",
@@ -696,6 +709,14 @@ class GameState:
             # TODO - get player spell slots remaining
             None,
             self.player_gold,
+            self.player_rFire,
+            self.player_rCold,
+            self.player_rNeg,
+            self.player_rPois,
+            self.player_rElec,
+            self.player_rCorr,
+            self.player_willpower,
+            self.player_stealth,
         ]
 
         if verbose:
@@ -1029,21 +1050,43 @@ class GameState:
             elif 'rCold' in m.group():
                 self.player_rCold = value
             elif 'rNeg' in m.group():
-                self.player_rCold = value
-            elif 'rCold' in m.group():
-                self.player_rCold = value
-            elif 'rCold' in m.group():
-                self.player_rCold = value
-            elif 'rCold' in m.group():
-                self.player_rCold = value
+                self.player_rNeg = value
+            elif 'rCorr' in m.group():
+                self.player_rCorr = value
+            elif 'rElec' in m.group():
+                self.player_rElec = value
+            elif 'rPois' in m.group():
+                self.player_rPois = value
+            elif 'Faith' in m.group():
+                self.player_faith_status = value > 0
+            elif 'Spirit' in m.group():
+                self.player_spirit_status = value > 0
+            elif 'Reflect' in m.group():
+                self.player_reflect_status = value > 0
+            elif 'Harm' in m.group():
+                self.player_harm_status = value > 0
+            elif 'Rampage' in m.group():
+                self.player_rampage_status = value > 0
+            elif 'MR' in m.group():
+                self.player_willpower = value
+            elif 'Stlth' in m.group():
+                self.player_stealth = value
+            else:
+                raise Exception("Error - regex matched but no known values for {}".format(m.group()))
 
+        # also get spell slots and hp & mp regen
+        regex = re.compile('(HPRegen|MPRegen)\\s*[.0-9]+/turn')
+        matches = regex.finditer(html_str)
 
-        if 'rFire' in html_str:
-            # parse out rFire
-            # TODO use regular expressions, looking for the sequence starting with ">", containing "rFire" and going until the next "<"
-            # TODO and then we'll need to do the same thing for rCold, rPois, rElec, etc.
-            pass
-
+        for m in matches:
+            value = m.group().replace("/turn", "").split(' ')[-1]
+            value_as_double = float(value)
+            if 'HPRegen' in m.group():
+                self.player_hp_regen = value_as_double
+            elif 'HPRegen' in m.group():
+                self.player_mp_regen = value_as_double
+            else:
+                raise Exception("Error - regex matched but no known values for {}".format(m.group()))
 
 
     def _process_items_agent_location(self, message):
