@@ -717,6 +717,30 @@ class GameState:
             self.player_rCorr,
             self.player_willpower,
             self.player_stealth,
+            self.player_hp_regen,
+            self.player_mp_regen,
+
+            # TODO - get see invisible status working
+            None,
+
+            self.player_faith_status,
+            self.player_spirit_status,
+            self.player_reflect_status,
+            self.player_harm_status,
+            self.game_turn,
+            self.game_time,
+
+            # TODO - get attack speed working (game key '@')
+            None,
+
+            # TODO - get movement speed working (game key '@')
+            None,
+
+            # TODO - get status effects working (game key 'A')
+
+            # TODO - get mutation effects working (game key 'A')
+
+            self.player_place,
         ]
 
         if verbose:
