@@ -1061,8 +1061,15 @@ class GameState:
             pass
 
     def process_menu_text(self, html_str):
-        regex_resistances = re.compile('>(rFire|rCold|rNeg|rCorr|rElec|rPois|Faith|Spirit|Reflect|Harm|Rampage|MR|Stlth)\\s*[.+ ]+\\s*<')
-        matches = regex_resistances.finditer(html_str)
+        self._process_resistances(html_str)
+        self._process_see_invis(html_str)
+        self._process_hp_mp_regen(html_str)
+        self._process_spell_slots(html_str)
+
+    def _process_resistances(self, html_str):
+        regex = re.compile(
+            '>(rFire|rCold|rNeg|rCorr|rElec|rPois|Faith|Spirit|Reflect|Harm|Rampage|MR|Stlth)\\s*[.+ ]+\\s*<')
+        matches = regex.finditer(html_str)
 
         for m in matches:
             value = m.group().count("+")
@@ -1095,8 +1102,9 @@ class GameState:
             else:
                 raise Exception("Error - regex matched but no known values for {}".format(m.group()))
 
-        regex_see_invis = re.compile('SeeInvis\\s*[.+ ]+\\s*-')
-        match = regex_see_invis.search(html_str)
+    def _process_see_invis(self, html_str):
+        regex = re.compile('SeeInvis\\s*[.+ ]+\\s*-')
+        match = regex.search(html_str)
         if match:
             value = match.group().count("+")
             if value == 1:
@@ -1106,6 +1114,7 @@ class GameState:
             else:
                 raise Exception("Error - regex matched but strange value for see invisible: {}".format(value))
 
+    def _process_hp_mp_regen(self, html_str):
         # get hp & mp regen
         regex_hp_mp_regen = re.compile('(HPRegen|MPRegen)\\s*[.0-9]+/turn')
         matches = regex_hp_mp_regen.finditer(html_str)
@@ -1115,14 +1124,15 @@ class GameState:
             value_as_double = float(value)
             if 'HPRegen' in m.group():
                 self.player_hp_regen = value_as_double
-            elif 'HPRegen' in m.group():
+            elif 'MPRegen' in m.group():
                 self.player_mp_regen = value_as_double
             else:
                 raise Exception("Error - regex matched but no known values for {}".format(m.group()))
 
+    def _process_spell_slots(self, html_str):
         # get spell slots
-        regex_spell_slots = re.compile('>\\s*[0-9]+/[0-9]+\\s*levels')
-        match = regex_hp_mp_regen.search(html_str)
+        regex = re.compile('>\\s*[0-9]+/[0-9]+\\s*levels')
+        match = regex.search(html_str)
         if match:
             values = list(match.group().replace("levels", "").replace(">", "").strip().split('/'))
             values_as_ints = [int(x) for x in values]

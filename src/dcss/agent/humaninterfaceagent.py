@@ -93,8 +93,9 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             'g': Command.PICKUP_ITEM,
             ',': Command.PICKUP_ITEM,
             '.': Command.WAIT_1_TURN,
-            '%':Command.CHARACTER_OVERVIEW,
-
+            '%': Command.CHARACTER_OVERVIEW,
+            '@': Command.DISPLAY_CHARACTER_STATUS,
+            'A': Command.SHOW_ABILITIES_AND_MUTATIONS,
         }
 
         return keypress_to_command[keypress]
