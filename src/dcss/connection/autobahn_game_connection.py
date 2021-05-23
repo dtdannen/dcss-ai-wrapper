@@ -72,6 +72,9 @@ class DCSSProtocol(WebSocketClientProtocol):
         self.background_options = {}
         self.weapon_options = {}
 
+        self.inventory_menu_options = {}
+        self.ability_menu_options = {}
+
         self.death_summaries = []
 
         # agent_class should be set via the constructor: WebSockGame(agent_class=<your_agent_class_here>)
@@ -386,10 +389,12 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         if self.check_for_inventory_menu(json_msg):
             self._IN_MENU = Menu.CHARACTER_INVENTORY_MENU
+            self.inventory_menu_options = self.get_inventory_menu_options(json_msg)
             print("setting _IN_MENU = Menu.CHARACTER_INVENTORY_MENU")
 
         if self.check_for_ability_menu(json_msg):
             self._IN_MENU = Menu.ABILITY_MENU
+            self.ability_menu_options = self.get_ability_menu_options(json_msg)
             print("setting _IN_MENU = Menu.ABILITY_MENU")
 
         if self.check_for_game_started(json_msg):
@@ -480,6 +485,33 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         return input_mode_found and inventory_tag_found
 
+    def get_inventory_menu_options(self, json_msg):
+        # get inventory menu items and keypresses
+        #TODO: get something like the following to work
+
+        # background_name_to_hotkeys = {}
+        # for buttons_list in nested_lookup('buttons', json_msg):
+        #     for background_option in buttons_list:
+        #         # print("background_option: {}".format(background_option))
+        #         hotkey = background_option["hotkey"]
+        #         if hotkey != 9:
+        #             # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
+        #             background_name = None
+        #             if 'labels' in background_option.keys():
+        #                 background_name = background_option["labels"][0].split('-')[-1].strip()
+        #             elif 'label' in background_option.keys():
+        #                 background_name = background_option["label"].split('-')[-1].strip()
+        #             else:
+        #                 print("WARNING - Could not find label for background option json: {}".format(
+        #                     background_option))
+        #
+        #             if background_name:
+        #                 # print("Just found background {} with hotkey {}".format(background_name, hotkey))
+        #                 background_name_to_hotkeys[background_name] = int(hotkey)
+        #     return background_name_to_hotkeys
+        pass
+
+
     def check_for_ability_menu(self, json_msg):
         input_mode_found = False
         for v in nested_lookup('msg', json_msg):
@@ -492,6 +524,33 @@ class DCSSProtocol(WebSocketClientProtocol):
                 ability_tag_found = True
 
         return input_mode_found and ability_tag_found
+
+    def get_ability_menu_options(self, json_msg):
+        # get inventory menu items and keypresses
+        # TODO: get something like the following to work
+
+        # background_name_to_hotkeys = {}
+        # for buttons_list in nested_lookup('buttons', json_msg):
+        #     for background_option in buttons_list:
+        #         # print("background_option: {}".format(background_option))
+        #         hotkey = background_option["hotkey"]
+        #         if hotkey != 9:
+        #             # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
+        #             background_name = None
+        #             if 'labels' in background_option.keys():
+        #                 background_name = background_option["labels"][0].split('-')[-1].strip()
+        #             elif 'label' in background_option.keys():
+        #                 background_name = background_option["label"].split('-')[-1].strip()
+        #             else:
+        #                 print("WARNING - Could not find label for background option json: {}".format(
+        #                     background_option))
+        #
+        #             if background_name:
+        #                 # print("Just found background {} with hotkey {}".format(background_name, hotkey))
+        #                 background_name_to_hotkeys[background_name] = int(hotkey)
+        #     return background_name_to_hotkeys
+        pass
+
 
     def check_for_sprint_map_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):
