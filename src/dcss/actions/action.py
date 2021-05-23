@@ -1,4 +1,6 @@
 from dcss.actions.command import Command
+from dcss.actions.menuchoice import MenuChoice
+import string
 
 
 class Action:
@@ -131,8 +133,19 @@ class Action:
         Command.ENTER_KEY: {'text': '\r', 'msg': 'input'},
     }
 
+    letters = list(string.ascii_lowercase+string.ascii_uppercase)
+
     @staticmethod
-    def get_execution_repr(command: Command):
+    def get_execution_repr(command_or_menu_choice):
+        if isinstance(command_or_menu_choice, Command):
+            return Action.get_execution_repr_command(command_or_menu_choice)
+        elif isinstance(command_or_menu_choice, MenuChoice):
+            return Action.get_execution_repr_menuchoice(command_or_menu_choice)
+        else:
+            raise Exception("{} is not a Command or MenuChoice enum".format(command_or_menu_choice))
+
+    @staticmethod
+    def get_execution_repr_command(command: Command):
         """
         Given a command, return the data that can be sent directly to the game to execute the command.
         :return: a message data structure that can be sent directly to the game to execute the command.
@@ -142,6 +155,17 @@ class Action:
         #    print("\t{}:{}".format(c,m))
 
         return Action.command_to_msg[command]
+
+    @staticmethod
+    def get_execution_repr_menuchoice(choice: MenuChoice):
+        """
+        Given a menuchoice, return the data that can be sent directly to the game to execute the menu selection.
+        :return: a message data structure that can be sent directly to the game to select the desired menu option.
+        """
+        menu_choice_value = choice.value
+        menu_choice_letter = Action.letters[menu_choice_value]
+        json_repr = {"text":"{}".format(menu_choice_letter), "msg":"input"}
+        return json_repr
 
     @staticmethod
     def get_all_commands():
@@ -157,3 +181,4 @@ class Action:
                 Command.MOVE_OR_ATTACK_SW,
                 Command.MOVE_OR_ATTACK_SE,
                 Command.MOVE_OR_ATTACK_NE]
+

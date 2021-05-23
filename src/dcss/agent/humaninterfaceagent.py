@@ -6,6 +6,9 @@ except:
 from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
 from dcss.state.game import GameState
+from dcss.actions.action import Action
+from dcss.actions.menuchoice import MenuChoice
+from dcss.state.menu import Menu
 
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
@@ -48,12 +51,15 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         #next_action = readchar.readchar()
 
         # windows solution
-        next_action = None
-        while not next_action:
-            try:
-                next_action = msvcrt.getch().decode()
-            except:
-                print("Sorry, couldn't decode that keypress, try again?")
+        #next_action = None
+        print("Waiting for your next keypress, human")
+        next_action = msvcrt.getch().decode()
+        #next_action = input("Waiting for your next keypress, human")
+        # while not next_action:
+        #     try:
+        #         next_action = msvcrt.getch().decode()
+        #     except:
+        #         print("Sorry, couldn't decode that keypress, try again?")
         next_action_command = self.get_command_from_human_keypress(next_action)
         print("Got next_action {} and command is {}".format(next_action, next_action_command))
         return next_action_command
@@ -74,7 +80,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         """
         Return the command that matches the keypress from the user
         """
-        keypress_to_command = {
+        keypress_to_command_no_menu = {
             '1': Command.MOVE_OR_ATTACK_SW,
             '2': Command.MOVE_OR_ATTACK_S,
             '3': Command.MOVE_OR_ATTACK_SE,
@@ -97,9 +103,17 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             '@': Command.DISPLAY_CHARACTER_STATUS,
             'A': Command.SHOW_ABILITIES_AND_MUTATIONS,
             '\x1b': Command.EXIT_MENU,
+            'a': Command.USE_SPECIAL_ABILITY,
         }
 
-        return keypress_to_command[keypress]
+        if self.gamestate.get_current_menu() is Menu.NO_MENU:
+            return keypress_to_command_no_menu[keypress]
+        elif keypress in Action.letters:
+            letter_i = Action.letters.index(keypress)
+            menuchoice = MenuChoice(letter_i)
+            return menuchoice
+        else:
+            return Command.EXIT_MENU
 
 
 if __name__ == "__main__":
@@ -107,8 +121,8 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.always_start_new_game = True
-    my_config.auto_start_new_game = True
+    #my_config.always_start_new_game = True
+    #my_config.auto_start_new_game = True
 
     # create game
     game = WebSockGame(config=my_config, agent_class=HumanInterfaceBaseAgentDataTracking)

@@ -9,6 +9,7 @@ from dcss.state.cellmap import CellMap
 from dcss.state.cellrawstrdatum import CellRawStrDatum
 from dcss.state.inventoryitem import InventoryItem
 from dcss.state.player import MovementSpeed, AttackSpeed
+from dcss.state.menu import Menu
 
 
 class GameState:
@@ -145,6 +146,8 @@ class GameState:
         self.id = GameState.ID
         GameState.ID += 1
 
+        self._in_menu = Menu.NO_MENU
+
     def update(self, msg_from_server):
         """
         Updates the game state object with a message from the webserver.
@@ -158,6 +161,12 @@ class GameState:
             self._process_raw_state(msg_from_server)
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))
+
+    def set_current_menu(self, menu: Menu):
+        self._in_menu = menu
+
+    def get_current_menu(self):
+        return self._in_menu
 
     def get_player_stats_vector(self, verbose=False):
         """
@@ -1050,6 +1059,9 @@ class GameState:
                 if k == 'msg' and s[k] == 'player':
                     self.process_player(s)
 
+                if k == 'mutations':
+                    self._process_mutations(s[k])
+
                 if k in self.state_keys:
                     self.state[k] = s[k]
                     # print("Just stored {} with data {}".format(k,s[k]))
@@ -1142,6 +1154,9 @@ class GameState:
 
             self.player_spell_slots_left = values_as_ints[1] - values_as_ints[0]
 
+    def _process_mutations(self, json):
+        print("About to process mutations given {}".format(json))
+        pass
 
     def _process_items_agent_location(self, message):
         items = message.split(';')

@@ -36,7 +36,7 @@ class WebserverConfig:
     sprint_map_letter = 'a'
 
     # start a new game after the last game ended
-    auto_start_new_game = True
+    auto_start_new_game = False
 
     # maximum number of actions to execute
     # -1 means infinite number of actions (i.e. don't stop agent after executing certain number of actions
@@ -44,7 +44,7 @@ class WebserverConfig:
 
     # If this is true, and there is an existing game for the agent, delete the game and
     # start a new game
-    always_start_new_game = True
+    always_start_new_game = False
 
     # any class that is in agent.py and is a subclass of Agent may be set as the ai_python_class
     ai_python_class = 'FastDownwardPlanningAgentTut1'

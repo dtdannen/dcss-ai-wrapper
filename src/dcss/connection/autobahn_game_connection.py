@@ -215,7 +215,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         enter_key_msg = {"text": "\r", "msg": "input"}
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
-                    if self._IN_MENU == Menu.NO_MENU and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
+                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
                         self.game_state.draw_cell_map()
                         # the following executes the next action if we are using an instance of Agent to control
                         # sending actions
@@ -272,6 +272,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_3_TO_DELETE_GAME = True
                         self.reset_before_next_game()
 
+            print("About to sleep for delay {}".format(config.WebserverConfig.delay))
             await asyncio.sleep(config.WebserverConfig.delay)
 
     def onMessage(self, payload, isBinary):
@@ -300,6 +301,9 @@ class DCSSProtocol(WebSocketClientProtocol):
         self.game_state.update(message_as_json)
 
         self.perform_state_checks(message_as_json)
+
+        # this must come AFTER perform_state_checks()
+        self.game_state.set_current_menu(self._IN_MENU)
 
     def reset_before_next_game(self):
         print("CALLING RESET BEFORE THE NEXT GAME")
@@ -384,6 +388,10 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._IN_MENU = Menu.CHARACTER_INVENTORY_MENU
             print("setting _IN_MENU = Menu.CHARACTER_INVENTORY_MENU")
 
+        if self.check_for_ability_menu(json_msg):
+            self._IN_MENU = Menu.ABILITY_MENU
+            print("setting _IN_MENU = Menu.ABILITY_MENU")
+
         if self.check_for_game_started(json_msg):
             print("setting _GAME_STARTED = TRUE")
             self._GAME_STARTED = True
@@ -460,6 +468,20 @@ class DCSSProtocol(WebSocketClientProtocol):
         return input_mode_found and mode_is_5
 
     def check_for_inventory_menu(self, json_msg):
+        input_mode_found = False
+        for v in nested_lookup('msg', json_msg):
+            if v == 'input_mode':
+                input_mode_found = True
+
+        inventory_tag_found = False
+        for v in nested_lookup('tag', json_msg):
+            if v == 'inventory':
+                inventory_tag_found = True
+
+        return input_mode_found and inventory_tag_found
+
+    def check_for_ability_menu(self, json_msg):
+        # TODO - left off here
         input_mode_found = False
         for v in nested_lookup('msg', json_msg):
             if v == 'input_mode':
