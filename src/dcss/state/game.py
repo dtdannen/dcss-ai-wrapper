@@ -8,6 +8,7 @@ from dcss.state.cell import Cell
 from dcss.state.cellmap import CellMap
 from dcss.state.cellrawstrdatum import CellRawStrDatum
 from dcss.state.inventoryitem import InventoryItem
+from dcss.state.player import MovementSpeed, AttackSpeed
 
 
 class GameState:
@@ -131,6 +132,9 @@ class GameState:
         self.player_mp_regen = 0.00
         self.player_spell_slots_left = -1
         self.player_see_invis = None
+
+        self.player_attack_speed = AttackSpeed.UNKNOWN
+        self.player_movement_speed = MovementSpeed.UNKNOWN
 
         self.noise_level = None
         self.adjusted_noise_level = None
@@ -726,9 +730,8 @@ class GameState:
             self.player_harm_status,
             self.game_turn,
             self.game_time,
-
-            # TODO - get attack speed working (game key '@')
-            None,
+            self.player_movement_speed.value,
+            self.player_attack_speed.value,
 
             # TODO - get movement speed working (game key '@')
             None,
@@ -1200,7 +1203,20 @@ class GameState:
             if 'Unknown command.' in message_only:
                 print("Error with last command - game did not recognize it... ")
 
+            if 'Your movement speed is ' in message_only:
+                move_speed_str = message_only[len('Your movement speed is ') + message_only.index('Your movement speed is '): message_only.index('.')]
+                self.player_movement_speed = MovementSpeed[move_speed_str.upper().replace(' ',"_")]
+
+            if 'Your attack speed is ' in message_only:
+                attack_speed_str = message_only[len('Your attack speed is ') + message_only.index(
+                    'Your attack speed is '): message_only.rindex('.')]
+                self.player_attack_speed = AttackSpeed[attack_speed_str.upper().replace(' ',"_")]
+
+
             # print("Just added message for turn {}: {}".format(turn, message_only))
+
+    def process_attack_move_speeds(self, s):
+        regex = re.compile('')
 
     def process_player(self, data):
         # print("In process_player() with data:\n{}".format(data))

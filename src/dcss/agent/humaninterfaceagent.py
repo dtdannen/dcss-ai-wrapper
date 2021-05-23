@@ -96,6 +96,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             '%': Command.CHARACTER_OVERVIEW,
             '@': Command.DISPLAY_CHARACTER_STATUS,
             'A': Command.SHOW_ABILITIES_AND_MUTATIONS,
+            '\x1b': Command.EXIT_MENU,
         }
 
         return keypress_to_command[keypress]
