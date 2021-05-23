@@ -481,18 +481,17 @@ class DCSSProtocol(WebSocketClientProtocol):
         return input_mode_found and inventory_tag_found
 
     def check_for_ability_menu(self, json_msg):
-        # TODO - left off here
         input_mode_found = False
         for v in nested_lookup('msg', json_msg):
             if v == 'input_mode':
                 input_mode_found = True
 
-        inventory_tag_found = False
+        ability_tag_found = False
         for v in nested_lookup('tag', json_msg):
-            if v == 'inventory':
-                inventory_tag_found = True
+            if v == 'ability':
+                ability_tag_found = True
 
-        return input_mode_found and inventory_tag_found
+        return input_mode_found and ability_tag_found
 
     def check_for_sprint_map_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):
