@@ -129,6 +129,7 @@ class GameState:
         self.player_willpower = -1
         self.player_hp_regen = 0.00
         self.player_mp_regen = 0.00
+        self.player_spell_slots_left = -1
 
         self.noise_level = None
         self.adjusted_noise_level = None
@@ -705,9 +706,7 @@ class GameState:
             self.player_progress,
             self.player_god,
             self.player_piety_rank,
-
-            # TODO - get player spell slots remaining
-            None,
+            self.player_spell_slots_left,
             self.player_gold,
             self.player_rFire,
             self.player_rCold,
@@ -1064,8 +1063,8 @@ class GameState:
             pass
 
     def process_menu_text(self, html_str):
-        regex = re.compile('>(rFire|rCold|rNeg|rCorr|rElec|rPois|Faith|Spirit|Reflect|Harm|Rampage|MR|Stlth)\\s*[.+ ]+\\s*<')
-        matches = regex.finditer(html_str)
+        regex_resistances = re.compile('>(rFire|rCold|rNeg|rCorr|rElec|rPois|Faith|Spirit|Reflect|Harm|Rampage|MR|Stlth)\\s*[.+ ]+\\s*<')
+        matches = regex_resistances.finditer(html_str)
 
         for m in matches:
             value = m.group().count("+")
@@ -1098,9 +1097,9 @@ class GameState:
             else:
                 raise Exception("Error - regex matched but no known values for {}".format(m.group()))
 
-        # also get spell slots and hp & mp regen
-        regex = re.compile('(HPRegen|MPRegen)\\s*[.0-9]+/turn')
-        matches = regex.finditer(html_str)
+        # get hp & mp regen
+        regex_hp_mp_regen = re.compile('(HPRegen|MPRegen)\\s*[.0-9]+/turn')
+        matches = regex_hp_mp_regen.finditer(html_str)
 
         for m in matches:
             value = m.group().replace("/turn", "").split(' ')[-1]
@@ -1111,6 +1110,15 @@ class GameState:
                 self.player_mp_regen = value_as_double
             else:
                 raise Exception("Error - regex matched but no known values for {}".format(m.group()))
+
+        # get spell slots
+        regex_spell_slots = re.compile('>\\s*[0-9]+/[0-9]+\\s*levels')
+        match = regex_hp_mp_regen.search(html_str)
+        if match:
+            values = list(match.group().replace("levels", "").replace(">", "").strip().split('/'))
+            values_as_ints = [int(x) for x in values]
+
+            self.player_spell_slots_left = values_as_ints[1] - values_as_ints[0]
 
 
     def _process_items_agent_location(self, message):

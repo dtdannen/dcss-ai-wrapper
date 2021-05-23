@@ -212,7 +212,14 @@ Use sphinx-build from the root project directory like:
 
     sphinx-build  -v -b html docs/ docs/_build
 
+
+If getting the following error:
+
+    sphinx.errors.ExtensionError: Could not import extension autoapi.extension (exception: No module named 'autoapi')
     
+then you may need to install autoapi like:
+
+    pip install sphinx-autoapi
 
 # Installing DCSS from Source on Ubuntu
 
