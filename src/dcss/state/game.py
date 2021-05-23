@@ -130,6 +130,7 @@ class GameState:
         self.player_hp_regen = 0.00
         self.player_mp_regen = 0.00
         self.player_spell_slots_left = -1
+        self.player_see_invis = None
 
         self.noise_level = None
         self.adjusted_noise_level = None
@@ -718,10 +719,7 @@ class GameState:
             self.player_stealth,
             self.player_hp_regen,
             self.player_mp_regen,
-
-            # TODO - get see invisible status working
-            None,
-
+            self.player_see_invis,
             self.player_faith_status,
             self.player_spirit_status,
             self.player_reflect_status,
@@ -1096,6 +1094,17 @@ class GameState:
                 self.player_stealth = value
             else:
                 raise Exception("Error - regex matched but no known values for {}".format(m.group()))
+
+        regex_see_invis = re.compile('SeeInvis\\s*[.+ ]+\\s*-')
+        match = regex_see_invis.search(html_str)
+        if match:
+            value = match.group().count("+")
+            if value == 1:
+                self.player_see_invis = True
+            elif value == 0:
+                self.player_see_invis = False
+            else:
+                raise Exception("Error - regex matched but strange value for see invisible: {}".format(value))
 
         # get hp & mp regen
         regex_hp_mp_regen = re.compile('(HPRegen|MPRegen)\\s*[.0-9]+/turn')
