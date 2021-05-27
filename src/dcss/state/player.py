@@ -22,3 +22,4 @@ class AttackSpeed(Enum):
     QUITE_SLOW = 8
     VERY_SLOW = 9
     EXTREMELY_SLOW = 10
+

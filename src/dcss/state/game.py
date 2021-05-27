@@ -742,9 +742,6 @@ class GameState:
             self.player_movement_speed.value,
             self.player_attack_speed.value,
 
-            # TODO - get movement speed working (game key '@')
-            None,
-
             # TODO - get status effects working (game key 'A')
 
             # TODO - get mutation effects working (game key 'A')
