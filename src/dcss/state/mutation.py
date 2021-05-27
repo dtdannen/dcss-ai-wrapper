@@ -4,7 +4,7 @@ from enum import Enum
 class Mutation(Enum):
 
     """
-    Represents a mutation in the game, and assists parsing what mutations the player has from websocket data.
+    Represents a mutation in the game.
     """
 
     ACUTE_VISION_MUTATION = 1
@@ -50,8 +50,55 @@ class Mutation(Enum):
     YELLOW_SCALES_MUTATION = 41
 
 
+class MutationMapping:
 
+    """
+    Assists parsing what mutations the player has from websocket data
+    """
 
+    mutation_menu_messages_lookup = {
+        "": Mutation.ACUTE_VISION_MUTATION,
+        "": Mutation.ANTENNAE_MUTATION,
+        "": Mutation.BEAK_MUTATION,
+        "": Mutation.BIG_WINGS_MUTATION,
+        "": Mutation.BLINK_MUTATION,
+        "": Mutation.CAMOUFLAGE_MUTATION,
+        "": Mutation.CLARITY_MUTATION,
+        "": Mutation.CLAWS_MUTATION,
+        "": Mutation.COLD_RESISTANCE_MUTATION,
+        "": Mutation.ELECTRICITY_RESISTANCE_MUTATION,
+        "": Mutation.EVOLUTION_MUTATION,
+        "": Mutation.FANGS_MUTATION,
+        "": Mutation.FIRE_RESISTANCE_MUTATION,
+        "": Mutation.HIGH_MP_MUTATION,
+        "": Mutation.HOOVES_MUTATION,
+        "": Mutation.HORNS_MUTATION,
+        "You are partially covered in icy blue scales": Mutation.ICY_BLUE_SCALES_MUTATION,
+        "": Mutation.IMPROVED_ATTRIBUTES_MUTATION,
+        "": Mutation.IRIDESCENT_SCALES_MUTATION,
+        "": Mutation.LARGE_BONE_PLATES_MUTATION,
+        "": Mutation.MAGIC_RESISTANCE_MUTATION,
+        "": Mutation.MOLTEN_SCALES_MUTATION,
+        "": Mutation.MUTATION_RESISTANCE_MUTATION,
+        "": Mutation.PASSIVE_MAPPING_MUTATION,
+        "": Mutation.POISON_BREATH_MUTATION,
+        "": Mutation.POISON_RESISTANCE_MUTATION,
+        "": Mutation.REGENERATION_MUTATION,
+        "": Mutation.REPULSION_FIELD_MUTATION,
+        "": Mutation.ROBUST_MUTATION,
+        "": Mutation.RUGGED_BROWN_SCALES_MUTATION,
+        "": Mutation.SHAGGY_FUR_MUTATION,
+        "": Mutation.SLIMY_GREEN_SCALES_MUTATION,
+        "": Mutation.STINGER_MUTATION,
+        "": Mutation.STRONG_LEGS_MUTATION,
+        "": Mutation.TALONS_MUTATION,
+        "": Mutation.TENTACLE_SPIKE_MUTATION,
+        "": Mutation.THIN_METALLIC_SCALES_MUTATION,
+        "": Mutation.THIN_SKELETAL_STRUCTURE_MUTATION,
+        "": Mutation.TOUGH_SKIN_MUTATION,
+        "": Mutation.WILD_MAGIC_MUTATION,
+        "": Mutation.YELLOW_SCALES_MUTATION,
+    }
 
 
 
