@@ -113,6 +113,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             menuchoice = MenuChoice(letter_i)
             return menuchoice
         else:
+            print("Got keypress {} and current Menu is {}".format(keypress, self.gamestate.get_current_menu()))
             return Command.EXIT_MENU
 
 

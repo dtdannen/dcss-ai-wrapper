@@ -72,7 +72,7 @@ class MutationMapping:
         "": Mutation.FIRE_RESISTANCE_MUTATION,
         "": Mutation.HIGH_MP_MUTATION,
         "": Mutation.HOOVES_MUTATION,
-        "": Mutation.HORNS_MUTATION,
+        "You have a pair of horns on your head": Mutation.HORNS_MUTATION,
         "You are partially covered in icy blue scales": Mutation.ICY_BLUE_SCALES_MUTATION,
         "": Mutation.IMPROVED_ATTRIBUTES_MUTATION,
         "": Mutation.IRIDESCENT_SCALES_MUTATION,
