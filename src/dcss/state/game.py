@@ -10,7 +10,7 @@ from dcss.state.cellrawstrdatum import CellRawStrDatum
 from dcss.state.inventoryitem import InventoryItem
 from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
-from dcss.state.mutation import MutationMapping
+from dcss.state.mutation import MutationMapping, Mutation
 
 
 class GameState:
@@ -750,8 +750,64 @@ class GameState:
 
             # TODO - get status effects working (game key 'A')
 
-            # TODO - get mutation effects working (game key 'A')
-
+            Mutation.ACUTE_VISION_MUTATION in self.player_mutations,
+            Mutation.ANTENNAE_MUTATION in self.player_mutations,
+            Mutation.BEAK_MUTATION in self.player_mutations,
+            Mutation.BIG_WINGS_MUTATION in self.player_mutations,
+            Mutation.BLINK_MUTATION in self.player_mutations,
+            Mutation.CAMOUFLAGE_MUTATION in self.player_mutations,
+            Mutation.CLARITY_MUTATION in self.player_mutations,
+            Mutation.CLAWS_MUTATION in self.player_mutations,
+            Mutation.COLD_RESISTANCE_MUTATION in self.player_mutations,
+            Mutation.ELECTRICITY_RESISTANCE_MUTATION in self.player_mutations,
+            Mutation.EVOLUTION_MUTATION in self.player_mutations,
+            Mutation.FANGS_MUTATION in self.player_mutations,
+            Mutation.FIRE_RESISTANCE_MUTATION in self.player_mutations,
+            Mutation.HIGH_MP_MUTATION in self.player_mutations,
+            Mutation.HOOVES_MUTATION in self.player_mutations,
+            Mutation.HORNS_MUTATION in self.player_mutations,
+            Mutation.ICY_BLUE_SCALES_MUTATION in self.player_mutations,
+            Mutation.IMPROVED_ATTRIBUTES_MUTATION in self.player_mutations,
+            Mutation.IRIDESCENT_SCALES_MUTATION in self.player_mutations,
+            Mutation.LARGE_BONE_PLATES_MUTATION in self.player_mutations,
+            Mutation.MAGIC_RESISTANCE_MUTATION in self.player_mutations,
+            Mutation.MOLTEN_SCALES_MUTATION in self.player_mutations,
+            Mutation.MUTATION_RESISTANCE_MUTATION in self.player_mutations,
+            Mutation.PASSIVE_MAPPING_MUTATION in self.player_mutations,
+            Mutation.POISON_BREATH_MUTATION in self.player_mutations,
+            Mutation.POISON_RESISTANCE_MUTATION in self.player_mutations,
+            Mutation.REGENERATION_MUTATION in self.player_mutations,
+            Mutation.REPULSION_FIELD_MUTATION in self.player_mutations,
+            Mutation.ROBUST_MUTATION in self.player_mutations,
+            Mutation.RUGGED_BROWN_SCALES_MUTATION in self.player_mutations,
+            Mutation.SHAGGY_FUR_MUTATION in self.player_mutations,
+            Mutation.SLIMY_GREEN_SCALES_MUTATION in self.player_mutations,
+            Mutation.STINGER_MUTATION in self.player_mutations,
+            Mutation.STRONG_LEGS_MUTATION in self.player_mutations,
+            Mutation.TALONS_MUTATION in self.player_mutations,
+            Mutation.TENTACLE_SPIKE_MUTATION in self.player_mutations,
+            Mutation.THIN_METALLIC_SCALES_MUTATION in self.player_mutations,
+            Mutation.THIN_SKELETAL_STRUCTURE_MUTATION in self.player_mutations,
+            Mutation.TOUGH_SKIN_MUTATION in self.player_mutations,
+            Mutation.WILD_MAGIC_MUTATION in self.player_mutations,
+            Mutation.YELLOW_SCALES_MUTATION in self.player_mutations,
+            Mutation.OFFHAND_PUNCH_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.OFFHAND_PUNCH_W_CLAWS_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.OFFHAND_PUNCH_W__BLADE_HANDS_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.HEADBUTT_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.PECK_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.KICK_W_HOOVES_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.KICK_W_TALONS_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.TAIL_SLAP_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.TAIL_SLAP_W_STINGER_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.BITE_W_FANGS_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.BITE_W_ACIDIC_BITE_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.BITE_W_ANTI_MAGIC_BITE_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.PSEUDOPODS_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.TENTACLE_SPIKE_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.TENTACLE_SLAP_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.TENTACLES_SQUEEZE_AUX_ATK_MUTATION in self.player_mutations,
+            Mutation.CONSTRICTION_AUX_ATK_MUTATION in self.player_mutations,
             self.player_place,
         ]
 
