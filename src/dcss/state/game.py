@@ -10,6 +10,7 @@ from dcss.state.cellrawstrdatum import CellRawStrDatum
 from dcss.state.inventoryitem import InventoryItem
 from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
+from dcss.state.mutation import MutationMapping
 
 
 class GameState:
@@ -136,6 +137,11 @@ class GameState:
 
         self.player_attack_speed = AttackSpeed.UNKNOWN
         self.player_movement_speed = MovementSpeed.UNKNOWN
+
+        self.player_mutations = set()
+        self.player_status_effects = set()
+        self.player_abilities = set()
+        self.player_auxiliary_attacks = set()
 
         self.noise_level = None
         self.adjusted_noise_level = None
@@ -1151,9 +1157,31 @@ class GameState:
 
             self.player_spell_slots_left = values_as_ints[1] - values_as_ints[0]
 
-    def _process_mutations(self, json):
-        print("About to process mutations given {}".format(json))
-        pass
+    def _process_mutations(self, html_str):
+        # *** NOTE REGARDING PERFORMANCE
+        #     This function should only be called when the player opens the abilities and mutations menu
+        #     therefore if this function is a bit expensive, it's not too bad, because an agent shouldn't
+        #     be opening the menu more than once between taking actions.
+        # *** ENDNOTE
+        print("About to process mutations given {}".format(html_str))
+        regex = re.compile('>.*?<', re.DOTALL)
+        matches = regex.findall(html_str)
+        current_mutations = set()
+        # TODO - optimize this, probably a faster way to do it
+        for mut_description, mut in MutationMapping.mutation_menu_messages_lookup.items():
+            print("processing mut_description: {}".format(mut_description))
+            if len(mut_description) > 0:
+                for m in matches:
+                    print("  processing m: {}".format(m))
+                    if mut_description in m:  # this is probably slow, since doing string contains checking
+                        print("adding mut {}".format(mut.name))
+                        current_mutations.add(mut)
+                        #continue
+        print("Set of mutations is now:")
+        for m in current_mutations:
+            print("   {}".format(m.name))
+
+        self.player_mutations = current_mutations
 
     def _process_items_agent_location(self, message):
         items = message.split(';')
