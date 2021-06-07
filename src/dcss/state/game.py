@@ -11,7 +11,7 @@ from dcss.state.inventoryitem import InventoryItem
 from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
 from dcss.state.mutation import MutationMapping, Mutation
-from state.statuseffect import StatusEffect
+from dcss.state.statuseffect import StatusEffect
 
 
 class GameState:
@@ -644,7 +644,6 @@ class GameState:
             "Shroud of Golubria status effect",
             "Sickness status effect",
             "Silence status effect",
-            "Silence status effect",
             "Sleep status effect",
             "Slimify status effect",
             "Slow status effect",
@@ -704,6 +703,23 @@ class GameState:
             "Tough Skin mutation",
             "Wild Magic mutation",
             "Yellow Scales mutation",
+            "OFFHAND_PUNCH_AUX_ATK_MUTATION",
+            "OFFHAND_PUNCH_W_CLAWS_AUX_ATK_MUTATION",
+            "OFFHAND_PUNCH_W__BLADE_HANDS_AUX_ATK_MUTATION",
+            "HEADBUTT_AUX_ATK_MUTATION",
+            "PECK_AUX_ATK_MUTATION",
+            "KICK_W_HOOVES_AUX_ATK_MUTATION",
+            "KICK_W_TALONS_AUX_ATK_MUTATION",
+            "TAIL_SLAP_AUX_ATK_MUTATION",
+            "TAIL_SLAP_W_STINGER_AUX_ATK_MUTATION",
+            "BITE_W_FANGS_AUX_ATK_MUTATION",
+            "BITE_W_ACIDIC_BITE_AUX_ATK_MUTATION",
+            "BITE_W_ANTI_MAGIC_BITE_AUX_ATK_MUTATION",
+            "PSEUDOPODS_AUX_ATK_MUTATION",
+            "TENTACLE_SPIKE_AUX_ATK_MUTATION",
+            "TENTACLE_SLAP_AUX_ATK_MUTATION",
+            "TENTACLES_SQUEEZE_AUX_ATK_MUTATION",
+            "CONSTRICTION_AUX_ATK_MUTATION",
             "Player Place(Dungeon, Vaults, etc.)",
         ]
 
@@ -767,7 +783,7 @@ class GameState:
             StatusEffect.DARKNESS_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.DAZED_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.DEATH_CHANNEL_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DEATHS_DOOR_STATUS_EFFEC in self.player_status_effects,
+            StatusEffect.DEATHS_DOOR_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.DEFLECT_MISSILES_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.DISJUNCTION_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.DIVINE_PROTECTION_STATUS_EFFECT in self.player_status_effects,
@@ -791,7 +807,7 @@ class GameState:
             StatusEffect.INNER_FLAME_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.INVISIBILITY_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.LAVA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.LEDAS_LIQUEFACTION_STATUS_EFFEC in self.player_status_effects,
+            StatusEffect.LEDAS_LIQUEFACTION_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.MAGIC_CONTAMINATION_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.MARK_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.MESMERISED_STATUS_EFFECT in self.player_status_effects,
@@ -799,9 +815,9 @@ class GameState:
             StatusEffect.MIRROR_DAMAGE_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.NO_POTIONS_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.NO_SCROLLS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.OLGREBS_TOXIC_RADIANCE_STATUS_EFFEC in self.player_status_effects,
+            StatusEffect.OLGREBS_TOXIC_RADIANCE_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.ORB_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.OZOCUBUS_ARMOUR_STATUS_EFFEC in self.player_status_effects,
+            StatusEffect.OZOCUBUS_ARMOUR_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.PARALYSIS_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.PETRIFYING_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.PETRIFIED_STATUS_EFFECT in self.player_status_effects,
@@ -816,7 +832,7 @@ class GameState:
             StatusEffect.SAPPED_MAGIC_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.SCRYING_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.SEARING_RAY_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SERPENTS_LASH_STATUS_EFFEC in self.player_status_effects,
+            StatusEffect.SERPENTS_LASH_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.SHROUD_OF_GOLUBRIA_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.SICKNESS_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.SILENCE_STATUS_EFFECT in self.player_status_effects,
