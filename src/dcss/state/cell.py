@@ -233,7 +233,7 @@ class Cell:
         self.has_misc_items = False
 
     def get_pddl_name(self):
-        return "cellx{}y{}".format(self.x, self.y)
+        return "cellx{}y{}".format(self.x, self.y).replace('-','_')
 
     def get_cell_vector(self):
         """Do something similar to get_item_vector"""

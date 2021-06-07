@@ -54,6 +54,9 @@
         scroll - consumeitem
         weapon - equipitem
         armour - equipitem
+
+        status_effect
+        target_ability_text_message
 )
 
 (:predicates

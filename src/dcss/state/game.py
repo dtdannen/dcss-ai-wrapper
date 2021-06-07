@@ -1571,6 +1571,8 @@ class GameState:
                     else:
                         print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))
+                        time.sleep(100)
+                        raise Exception("Please update knowledge to support this status effect")
 
         self.player_status_effects = current_status_effects
 
@@ -1643,11 +1645,10 @@ class GameState:
 
         pddl_str += ")\n ;; ^ closes the '(:objects' clause\n"
 
+        pddl_str += "(:init \n"
+
         for fact in fact_strs:
             pddl_str += "  {}\n".format(fact)
-        pddl_str += ")\n"
-
-        pddl_str += "(:init \n"
 
         # read in common knowledge facts and write to file
         print("Current directory is {}".format(os.getcwd()))
@@ -1669,6 +1670,7 @@ class GameState:
         print("filename is {}".format(filename))
         with open(filename.format(), 'w') as f:
             f.write(pddl_str)
+        print("wrote to file {}".format(filename))
 
         return True
 
