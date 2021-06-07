@@ -147,8 +147,8 @@ class GameState:
         self.noise_level = None
         self.adjusted_noise_level = None
 
-        self.general_knowledge_pddl_facts_filename = "../../models/general_dcss_knowledge_facts.pddl"
-        self.general_knowledge_pddl_objects_filename = "../../models/general_dcss_knowledge_objects.pddl"
+        self.general_knowledge_pddl_facts_filename = "models/general_dcss_knowledge_facts.pddl"
+        self.general_knowledge_pddl_objects_filename = "models/general_dcss_knowledge_objects.pddl"
 
         self.id = GameState.ID
         GameState.ID += 1
@@ -1337,7 +1337,7 @@ class GameState:
                     if mut_description in m:  # this is probably slow, since doing string contains checking
                         print("adding mut {}".format(mut.name))
                         current_mutations.add(mut)
-                        #continue
+                        # continue
         print("Set of mutations is now:")
         for m in current_mutations:
             print("   {}".format(m.name))
@@ -1405,14 +1405,14 @@ class GameState:
                 print("Error with last command - game did not recognize it... ")
 
             if 'Your movement speed is ' in message_only:
-                move_speed_str = message_only[len('Your movement speed is ') + message_only.index('Your movement speed is '): message_only.index('.')]
-                self.player_movement_speed = MovementSpeed[move_speed_str.upper().replace(' ',"_")]
+                move_speed_str = message_only[len('Your movement speed is ') + message_only.index(
+                    'Your movement speed is '): message_only.index('.')]
+                self.player_movement_speed = MovementSpeed[move_speed_str.upper().replace(' ', "_")]
 
             if 'Your attack speed is ' in message_only:
                 attack_speed_str = message_only[len('Your attack speed is ') + message_only.index(
                     'Your attack speed is '): message_only.rindex('.')]
-                self.player_attack_speed = AttackSpeed[attack_speed_str.upper().replace(' ',"_")]
-
+                self.player_attack_speed = AttackSpeed[attack_speed_str.upper().replace(' ', "_")]
 
             # print("Just added message for turn {}: {}".format(turn, message_only))
 
@@ -1540,10 +1540,11 @@ class GameState:
             # Todo - Status is a list, I'm not sure what possible values could be
             # I'm guessing probably strings of some form
             elif k == 'status':
-                if len(data[k]) > 1:
-                    print("Status is {}".format(data[k]))
-                    time.sleep(5)
-                self.player_status = data[k]
+                self.process_player_status(data[k])
+                # if len(data[k]) > 1:
+                #    print("Status is {}".format(data[k]))
+                #    time.sleep(5)
+                # self.player_status = data[k]
 
             elif k == 'unarmed_attack':
                 self.player_unarmed_attack = data[k]
@@ -1556,9 +1557,22 @@ class GameState:
             else:
                 print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
                 print("****DATA HAS DATA:")
-                for k,v in data.items():
-                    print("   {}:{}".format(k,v))
+                for k, v in data.items():
+                    print("   {}:{}".format(k, v))
                 time.sleep(20)
+
+    def process_player_status(self, status_list):
+        current_status_effects = set()
+        for status in status_list:
+            for k, v in status.items():
+                if k == 'light':
+                    if v == "Pois":
+                        current_status_effects.add(StatusEffect.POISON_STATUS_EFFECT)
+                    else:
+                        print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
+                        print("light: {}".format(v))
+
+        self.player_status_effects = current_status_effects
 
     def get_pddl_current_state_player(self):
         player_object_strs = []
@@ -1652,6 +1666,7 @@ class GameState:
         pddl_str += ")\n"
         pddl_str += ")\n\n)"
 
+        print("filename is {}".format(filename))
         with open(filename.format(), 'w') as f:
             f.write(pddl_str)
 
@@ -1719,7 +1734,7 @@ class GameState:
 
         for equip_slot, equip_item in data.items():
             # TODO parse what the player has equipped
-            #print("equip slot {} has value {}".format(equip_slot, equip_item))
+            # print("equip slot {} has value {}".format(equip_slot, equip_item))
             pass
 
         # Todo - if an item is equipped, find the item in the inventory, and update the is_equipped flag

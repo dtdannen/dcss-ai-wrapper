@@ -3,9 +3,15 @@ import platform
 import random
 import subprocess
 
+from dcss.websockgame import WebSockGame
+from dcss.connection.config import WebserverConfig
+
 from dcss.agent.base import BaseAgent
 from dcss.actions.command import Command
 from dcss.state.game import GameState
+
+import logging
+logging.basicConfig(level=logging.WARNING)
 
 
 class FastDownwardPlanningBaseAgent(BaseAgent):
@@ -130,6 +136,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
+            print("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:
@@ -293,3 +300,16 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         print("warning - no plan, taking random action!")
         next_action = self.get_random_simple_action()
         return next_action
+
+
+if __name__ == "__main__":
+    my_config = WebserverConfig
+
+    # set game mode to Tutorial #1
+    my_config.game_id = 'dcss-web-trunk'
+    #my_config.always_start_new_game = True
+    #my_config.auto_start_new_game = True
+
+    # create game
+    game = WebSockGame(config=my_config, agent_class=FastDownwardPlanningBaseAgent)
+    game.run()

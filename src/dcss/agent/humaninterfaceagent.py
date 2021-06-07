@@ -13,6 +13,9 @@ from dcss.state.menu import Menu
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
 
+import logging
+logging.basicConfig(level=logging.WARNING)
+
 
 class HumanInterfaceBaseAgentDataTracking(BaseAgent):
 
@@ -104,6 +107,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             'A': Command.SHOW_ABILITIES_AND_MUTATIONS,
             '\x1b': Command.EXIT_MENU,
             'a': Command.USE_SPECIAL_ABILITY,
+            'q': Command.QUAFF,
         }
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
