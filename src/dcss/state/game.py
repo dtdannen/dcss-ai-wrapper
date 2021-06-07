@@ -262,6 +262,8 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 37           | movement speed                        | Int                    |
                 +--------------+---------------------------------------+------------------------+
+                | 169          | Player Place (Dungeon, Vaults, etc.)  | Boolean                |
+                +--------------+---------------------------------------+------------------------+
                 | 38           | Agile status effect                   | Boolean                |
                 +--------------+---------------------------------------+------------------------+
                 | 39           | Antimagic status effect               | Boolean                |
@@ -524,8 +526,6 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 168          | Yellow Scales mutation                | Boolean                |
                 +--------------+---------------------------------------+------------------------+
-                | 169          | Player Place (Dungeon, Vaults, etc.)  | Boolean                |
-                +--------------+---------------------------------------+------------------------+
 
             Returns:
                 A list of features representing the player's stats
@@ -573,6 +573,7 @@ class GameState:
             "game time",
             "attack speed",
             "movement speed",
+            "Player Place(Dungeon, Vaults, etc.)",
             "Agile status effect",
             "Antimagic status effect",
             "Augmentation status effect",
@@ -720,7 +721,6 @@ class GameState:
             "TENTACLE_SLAP_AUX_ATK_MUTATION",
             "TENTACLES_SQUEEZE_AUX_ATK_MUTATION",
             "CONSTRICTION_AUX_ATK_MUTATION",
-            "Player Place(Dungeon, Vaults, etc.)",
         ]
 
         player_stats = [
@@ -764,6 +764,7 @@ class GameState:
             self.game_time,
             self.player_movement_speed.value,
             self.player_attack_speed.value,
+            self.player_place,
 
             StatusEffect.AGILE_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.ANTIMAGIC_STATUS_EFFECT in self.player_status_effects,
@@ -913,7 +914,6 @@ class GameState:
             Mutation.TENTACLE_SLAP_AUX_ATK_MUTATION in self.player_mutations,
             Mutation.TENTACLES_SQUEEZE_AUX_ATK_MUTATION in self.player_mutations,
             Mutation.CONSTRICTION_AUX_ATK_MUTATION in self.player_mutations,
-            self.player_place,
         ]
 
         if verbose:
