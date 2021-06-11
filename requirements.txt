@@ -7,7 +7,7 @@ nested-lookup==0.2.22
 pycparser==2.20
 six==1.15.0
 txaio==21.2.1
-websockets==8.1
+websockets==9.1
 numpy
 matplotlib
 readchar
