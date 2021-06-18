@@ -1589,10 +1589,19 @@ class GameState:
         Return player health information and other stats
         """
         player_pddl_strs = []
-        if self.player_current_hp < self.player_hp_max:
-            player_pddl_strs.append("(playerlessthanfullhealth)")
+        if self.player_current_hp == 0:
+            player_pddl_strs.append("(playerhealth none)")
+        elif self.player_current_hp == self.player_hp_max:
+            player_pddl_strs.append("(playerhealth maxed)")
         else:
-            player_pddl_strs.append("(playerfullhealth)")
+            num_bins = 5  # low, medium_low, medium, medium_high, high --> see domain pddl file
+            bin_size = self.player_hp_max / num_bins
+            ascending_bin_labels = ['low', 'medium_low', 'medium', 'medium_high', 'high']
+            for i in range(1, len(ascending_bin_labels)+1):
+                if self.player_current_hp < i * bin_size:
+                    player_pddl_strs.append("(playerhealth {})".format(ascending_bin_labels[i-1]))
+                    print("Just wrote player_health to be {} becauase its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
+                    break
 
         return player_pddl_strs
 
@@ -1626,6 +1635,9 @@ class GameState:
 
         cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap()
 
+        # add type 'cell' to cell_map_object_strs
+        cell_map_object_strs = [cell_str + ' - cell' for cell_str in cell_map_object_strs]
+
         object_strs = cell_map_object_strs
         fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
 
@@ -1634,14 +1646,14 @@ class GameState:
         for obj in object_strs:
             pddl_str += "  {}\n".format(obj)
 
-        pddl_str += "  ;; background objects\n"
-
-        # read in common knowledge objects and write to file
-        print("Current directory is {}".format(os.getcwd()))
-        with open(self.general_knowledge_pddl_objects_filename, 'r') as f2:
-            for line in f2.readlines():
-                if not line.startswith(';'):
-                    pddl_str += "  " + line.strip() + '\n'
+        # pddl_str += "  ;; background objects\n"
+        #
+        # # read in common knowledge objects and write to file
+        # print("Current directory is {}".format(os.getcwd()))
+        # with open(self.general_knowledge_pddl_objects_filename, 'r') as f2:
+        #     for line in f2.readlines():
+        #         if not line.startswith(';'):
+        #             pddl_str += "  " + line.strip() + '\n'
 
         pddl_str += ")\n ;; ^ closes the '(:objects' clause\n"
 
@@ -1656,9 +1668,6 @@ class GameState:
             for line in f2.readlines():
                 if not line.startswith(';'):
                     pddl_str += line.strip() + '\n'
-
-        for fact in fact_strs:
-            pddl_str += "  {}\n".format(fact)
         pddl_str += ")\n"
 
         pddl_str += "(:goal \n  (and \n"

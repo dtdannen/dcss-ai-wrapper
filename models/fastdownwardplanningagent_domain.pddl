@@ -1,6 +1,8 @@
 (define (domain dcss)
 (:requirements :strips :negative-preconditions :existential-preconditions)
-(:types goblin kobold rat slug - monster)
+(:types
+
+)
 (:predicates
     ; N,S,E,W,NE,NW,SE,SW of a cell
     (northof ?cell1 ?cell2) ; ?cell2 is north of ?cell1

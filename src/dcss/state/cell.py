@@ -252,7 +252,7 @@ class Cell:
     def get_pddl_facts(self):
         pddl_facts = []
         if self.has_wall:
-            pddl_facts.append('(wall {})'.format(self.get_pddl_name()))
+            pddl_facts.append('(hasterrain {} stone_wall)'.format(self.get_pddl_name()))
         if self.has_closed_door:
             pddl_facts.append('(closeddoor {})'.format(self.get_pddl_name()))
         if self.has_open_door:
@@ -262,11 +262,11 @@ class Cell:
         if self.has_statue:
             pddl_facts.append('(statue {})'.format(self.get_pddl_name()))
         if self.has_lava:
-            pddl_facts.append('(lava {})'.format(self.get_pddl_name()))
+            pddl_facts.append('(hasterrain {} lava)'.format(self.get_pddl_name()))
         if self.has_plant:
-            pddl_facts.append('(plant {})'.format(self.get_pddl_name()))
+            pddl_facts.append('(hasterrain {} plant)'.format(self.get_pddl_name()))
         if self.has_tree:
-            pddl_facts.append('(tree {})'.format(self.get_pddl_name()))
+            pddl_facts.append('(hasterrain {} trees)'.format(self.get_pddl_name()))
         if self.has_stairs_down:
             pddl_facts.append('(hasstairsdown {})'.format(self.get_pddl_name()))
         if self.has_stairs_up:
