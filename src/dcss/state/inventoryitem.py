@@ -5,7 +5,9 @@ from dcss.state.itemproperty import ItemProperty
 
 
 class InventoryItem:
-    ITEM_VECTOR_LENGTH = 5
+    ITEM_VECTOR_LENGTH = 7
+
+    NULL_ITEM_VECTOR = [0, 0, 0, False, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY]
 
     def __init__(self, id_num, name, quantity, base_type=None):
         self.id_num = int(id_num)
@@ -91,6 +93,8 @@ class InventoryItem:
           2    Item Bonus ("+x" value)
           3    Item Equipped
           4    Property* (Fire resist, stealth, venom, etc)
+          5   Property* (Fire resist, stealth, venom, etc)
+          6   Property* (Fire resist, stealth, venom, etc)
         """
         item_vector = []
         item_vector.append(self.get_item_type())
@@ -98,6 +102,8 @@ class InventoryItem:
         item_vector.append(self.get_item_bonus())
         item_vector.append(self.is_item_equipped())
         item_vector.append(self.get_property_i(0))
+        item_vector.append(self.get_property_i(1))
+        item_vector.append(self.get_property_i(2))
 
         assert len(item_vector) == InventoryItem.ITEM_VECTOR_LENGTH
         # Note: If this assert fails, update

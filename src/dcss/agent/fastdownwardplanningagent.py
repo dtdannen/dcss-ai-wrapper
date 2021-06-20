@@ -254,7 +254,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         #    return self.get_full_health_goal(), "heal"
         # elif self.actions_taken_so_far % 10 == 0 and random.random() < 0.25:
         #     # TODO - choose a lower depth for current branch of the dungeon
-        #     lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
+        #     lower_splace_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
         #                                      self.current_game_state.player_depth)
         #     return "(playerplace {})".format(lower_place_str), "stairsdown"
         else:
@@ -310,6 +310,8 @@ if __name__ == "__main__":
     my_config.delay = 0.4
     my_config.always_start_new_game = True
     my_config.auto_start_new_game = True
+    my_config.species = 'Hill Orc'
+    my_config.background = 'Fire Elementalist'
 
     # create game
     game = WebSockGame(config=my_config, agent_class=FastDownwardPlanningBaseAgent)

@@ -77,7 +77,10 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         """
             Print the player stats vector
         """
-        print(self.gamestate.get_player_stats_vector(verbose=verbose))
+        player_stats_vector = self.gamestate.get_player_stats_vector(verbose=verbose)
+        print(player_stats_vector)
+        print("Player stats vector has length {}".format(len(player_stats_vector)))
+
 
     def get_command_from_human_keypress(self, keypress):
         """
@@ -108,6 +111,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             '\x1b': Command.EXIT_MENU,
             'a': Command.USE_SPECIAL_ABILITY,
             'q': Command.QUAFF,
+            'I': Command.LIST_ALL_SPELLS,
         }
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
@@ -128,6 +132,8 @@ if __name__ == "__main__":
     my_config.game_id = 'dcss-web-trunk'
     #my_config.always_start_new_game = True
     #my_config.auto_start_new_game = True
+    my_config.species = 'Hill Orc'
+    my_config.background = 'Fire Elementalist'
 
     # create game
     game = WebSockGame(config=my_config, agent_class=HumanInterfaceBaseAgentDataTracking)

@@ -218,7 +218,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         enter_key_msg = {"text": "\r", "msg": "input"}
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
-                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
+                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
                         self.game_state.draw_cell_map()
                         # the following executes the next action if we are using an instance of Agent to control
                         # sending actions
@@ -392,6 +392,11 @@ class DCSSProtocol(WebSocketClientProtocol):
             self.inventory_menu_options = self.get_inventory_menu_options(json_msg)
             print("setting _IN_MENU = Menu.CHARACTER_INVENTORY_MENU")
 
+        if self.check_for_all_spells_menu(json_msg):
+            self._IN_MENU = Menu.ALL_SPELLS_MENU
+            self.spell_menu_options = self.get_spell_menu_options(json_msg)
+            print("setting _IN_MENU = Menu.ALL_SPELLS_MENU")
+
         if self.check_for_ability_menu(json_msg):
             self._IN_MENU = Menu.ABILITY_MENU
             self.ability_menu_options = self.get_ability_menu_options(json_msg)
@@ -485,6 +490,19 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         return input_mode_found and inventory_tag_found
 
+    def check_for_all_spells_menu(self, json_msg):
+        is_menu = False
+        for v in nested_lookup('msg', json_msg):
+            if v == 'menu':
+                is_menu = True
+
+        spell_tag_found = False
+        for v in nested_lookup('tag', json_msg):
+            if v == 'spell':
+                spell_tag_found = True
+
+        return is_menu and spell_tag_found
+
     def get_inventory_menu_options(self, json_msg):
         # get inventory menu items and keypresses
         #TODO: get something like the following to work
@@ -511,6 +529,9 @@ class DCSSProtocol(WebSocketClientProtocol):
         #     return background_name_to_hotkeys
         pass
 
+    def get_spell_menu_options(self, json_msg):
+        # TODO: get something like the following to work
+        pass
 
     def check_for_ability_menu(self, json_msg):
         input_mode_found = False
