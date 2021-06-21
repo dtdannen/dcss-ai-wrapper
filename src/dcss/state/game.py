@@ -977,11 +977,15 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 0            |     Spell ID.                         |    Int repr. spell ID  |
                 +--------------+---------------------------------------+------------------------+
-                | 1            |     Failure Likelihood                |    Float (0-100%)      |
+                | 1            |     Spell Skill                       |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 2            |     Spell Slot Cost                   |    Int                 |
+                | 2            |     Spell Skill #2                    |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 3            |     Noise Produced                    |    Int                 |
+                | 3            |     Spell Skill #3                    |   Int repr. skill ID   |
+                +--------------+---------------------------------------+------------------------+
+                | 4            |     Failure Likelihood                |    Int 0-100           |
+                +--------------+---------------------------------------+------------------------+
+                | 5            |     Spell Level                       |    Int                 |
                 +--------------+---------------------------------------+------------------------+
 
             Additionally, there are 118 spells that can be learned if the player
@@ -990,7 +994,7 @@ class GameState:
             each spell is available to be learned.
 
             Returns:
-                 a list of size 21*4 + 118.
+                 a list of size 21*6 + 118.
         """
 
         spells_ordered = list(self.player_spells)
