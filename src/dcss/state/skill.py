@@ -7,6 +7,8 @@ class Skill(Enum):
     Represents a skill
     """
 
+    NULL_SKILL_SPECIAL_CASE = 0
+
     FIGHTING = 1
     LONG_BLADES = 2
     SHORT_BLADES = 3
@@ -71,11 +73,11 @@ class SkillMapping:
         "Necromancy": Skill.NECROMANCY,
         "Translocations": Skill.TRANSLOCATIONS,
         "Transmutation": Skill.TRANSMUTATION,
-        "Fire Magic": Skill.FIRE_MAGIC,
-        "Ice Magic": Skill.ICE_MAGIC,
-        "Air Magic": Skill.AIR_MAGIC,
-        "Earth Magic": Skill.EARTH_MAGIC,
-        "Poison Magic": Skill.POISON_MAGIC,
+        "Fire": Skill.FIRE_MAGIC,
+        "Ice": Skill.ICE_MAGIC,
+        "Air": Skill.AIR_MAGIC,
+        "Earth": Skill.EARTH_MAGIC,
+        "Poison": Skill.POISON_MAGIC,
         "Invocations": Skill.INVOCATIONS,
         "Evocations": Skill.EVOCATIONS,
         "Stealth": Skill.STEALTH}

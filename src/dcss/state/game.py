@@ -12,6 +12,8 @@ from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
 from dcss.state.mutation import MutationMapping, Mutation
 from dcss.state.statuseffect import StatusEffect
+from dcss.state.skill import SkillMapping
+from dcss.state.spell import Spell, SpellName, SpellNameMapping
 
 
 class GameState:
@@ -143,6 +145,8 @@ class GameState:
         self.player_status_effects = set()
         self.player_abilities = set()
         self.player_auxiliary_attacks = set()
+
+        self.player_spells = set()  # even though its a set, still have to ensure no duplicate spells with different failure rates
 
         self.noise_level = None
         self.adjusted_noise_level = None
@@ -988,8 +992,18 @@ class GameState:
             Returns:
                  a list of size 21*4 + 118.
         """
-        # TODO write code
-        pass
+
+        spells_ordered = list(self.player_spells)
+        sorted(spells_ordered, key=lambda s: s.spellname)
+
+        spell_vector = []
+        for spell in spells_ordered:
+            spell_vector += spell.get_spell_vector()
+
+        for i in range(len(spell_vector) + 1, 21):
+            spell_vector.append(Spell.NULL_SPELL_VECTOR)
+
+        return spell_vector
 
     def get_player_abilities_vector(self):
         """
@@ -1250,7 +1264,7 @@ class GameState:
         self._process_see_invis(html_str)
         self._process_hp_mp_regen(html_str)
         self._process_spell_slots(html_str)
-        self._process_all_spells(html_str)
+        self._process_single_spell(html_str)
 
     def _process_resistances(self, html_str):
         regex = re.compile(
@@ -1357,51 +1371,48 @@ class GameState:
         for i in items:
             print("   {}".format(i))
 
-    def _process_all_spells(self, message):
+    def _process_single_spell(self, message):
         print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
-        all_spell_names = ["Absolute Zero", "Agony", "Airstrike", "Alistair's Intoxication", "Animate Dead", "Animate Skeleton", "Apportation", "Aura of Abjuration", "Beastly Appendage", "Blade Hands", "Blink", "Bolt of Magma", "Borgnjor's Revivification", "Borgnjor's Vile Clutch", "Call Canine Familiar", "Call Imp", "Cause Fear", "Chain Lightning", "Confusing Touch", "Conjure Ball Lightning", "Conjure Flame", "Controlled Blink", "Corona", "Corpse Rot", "Dazzling Flash", "Death Channel", "Death's Door", "Discord", "Disjunction", "Dispel Undead", "Dispersal", "Dragon Form", "Dragon's Call", "Ensorcelled Hibernation", "Eringya's Noxious Bog", "Excruciating Wounds", "Fire Storm", "Fireball", "Foxfire", "Freeze", "Freezing Cloud", "Frozen Ramparts", "Fulminant Prism", "Gell's Gravitas", "Hailstorm", "Haunt", "Hydra Form", "Ice Form", "Ignite Poison", "Ignition", "Infestation", "Infusion", "Inner Flame", "Invisibility", "Iron Shot", "Irradiate", "Iskenderun's Battlesphere", "Iskenderun's Mystic Blast", "Leda's Liquefaction", "Lee's Rapid Deconstruction", "Lehudib's Crystal Spear", "Lesser Beckoning", "Lightning Bolt", "Magic Dart", "Malign Gateway", "Mephitic Cloud", "Metabolic Englaciation", "Monstrous Menagerie", "Necromutation", "Olgreb's Toxic Radiance", "Orb of Destruction", "Ozocubu's Armour", "Ozocubu's Refrigeration", "Pain", "Passage of Golubria", "Passwall", "Petrify", "Poisonous Vapours", "Portal Projectile", "Recall", "Ring of Flames", "Sandblast", "Searing Ray", "Shadow Creatures", "Shatter", "Shock", "Shroud of Golubria", "Silence", "Simulacrum", "Slow", "Song of Slaying", "Spectral Weapon", "Spellforged Servitor", "Spider Form", "Starburst", "Static Discharge", "Statue Form", "Sticks to Snakes", "Sticky Flame", "Sting", "Stone Arrow", "Sublimation of Blood", "Summon Demon", "Summon Forest", "Summon Greater Demon", "Summon Guardian Golem", "Summon Horrible Things", "Summon Hydra", "Summon Ice Beast", "Summon Lightning Spire", "Summon Mana Viper", "Summon Small Mammal", "Swiftness", "Teleport Other", "Tornado", "Tukima's Dance", "Vampiric Draining", "Yara's Violent Unravelling"]
 
-        regex = re.compile(
-            '>\\s*(Absolute Zero|Agony|Airstrike|Alistair\'s Intoxication|Animate Dead|Animate Skeleton|Apportation|Aura of Abjuration|Beastly Appendage|Blade Hands|Blink|Bolt of Magma|Borgnjor\'s Revivification|Borgnjor\'s Vile Clutch|Call Canine Familiar|Call Imp|Cause Fear|Chain Lightning|Confusing Touch|Conjure Ball Lightning|Conjure Flame|Controlled Blink|Corona|Corpse Rot|Dazzling Flash|Death Channel|Death\'s Door|Discord|Disjunction|Dispel Undead|Dispersal|Dragon Form|Dragon\'s Call|Ensorcelled Hibernation|Eringya\'s Noxious Bog|Excruciating Wounds|Fire Storm|Fireball|Foxfire|Freeze|Freezing Cloud|Frozen Ramparts|Fulminant Prism|Gell\'s Gravitas|Hailstorm|Haunt|Hydra Form|Ice Form|Ignite Poison|Ignition|Infestation|Infusion|Inner Flame|Invisibility|Iron Shot|Irradiate|Iskenderun\'s Battlesphere|Iskenderun\'s Mystic Blast|Leda\'s Liquefaction|Lee\'s Rapid Deconstruction|Lehudib\'s Crystal Spear|Lesser Beckoning|Lightning Bolt|Magic Dart|Malign Gateway|Mephitic Cloud|Metabolic Englaciation|Monstrous Menagerie|Necromutation|Olgreb\'s Toxic Radiance|Orb of Destruction|Ozocubu\'s Armour|Ozocubu\'s Refrigeration|Pain|Passage of Golubria|Passwall|Petrify|Poisonous Vapours|Portal Projectile|Recall|Ring of Flames|Sandblast|Searing Ray|Shadow Creatures|Shatter|Shock|Shroud of Golubria|Silence|Simulacrum|Slow|Song of Slaying|Spectral Weapon|Spellforged Servitor|Spider Form|Starburst|Static Discharge|Statue Form|Sticks to Snakes|Sticky Flame|Sting|Stone Arrow|Sublimation of Blood|Summon Demon|Summon Forest|Summon Greater Demon|Summon Guardian Golem|Summon Horrible Things|Summon Hydra|Summon Ice Beast|Summon Lightning Spire|Summon Mana Viper|Summon Small Mammal|Swiftness|Teleport Other|Tornado|Tukima\'s Dance|Vampiric Draining|Yara\'s Violent Unravelling)\\s*(Conjuration|Hexes|Charms|Summonings|Necromancy|Translocations|Transmutation|Fire|Ice|Air|Earth|Poison|/)+\\s*<.*?>[0-9]+%<.*?>\\s*[0-9]+', re.DOTALL)
-        matches = regex.finditer(message)
+        # define the regex terms
+        spell_name_regex = re.compile(
+            '(Absolute Zero|Agony|Airstrike|Alistair\'s Intoxication|Animate Dead|Animate Skeleton|Apportation|Aura of Abjuration|Beastly Appendage|Blade Hands|Blink|Bolt of Magma|Borgnjor\'s Revivification|Borgnjor\'s Vile Clutch|Call Canine Familiar|Call Imp|Cause Fear|Chain Lightning|Confusing Touch|Conjure Ball Lightning|Conjure Flame|Controlled Blink|Corona|Corpse Rot|Dazzling Flash|Death Channel|Death\'s Door|Discord|Disjunction|Dispel Undead|Dispersal|Dragon Form|Dragon\'s Call|Ensorcelled Hibernation|Eringya\'s Noxious Bog|Excruciating Wounds|Fire Storm|Fireball|Foxfire|Freeze|Freezing Cloud|Frozen Ramparts|Fulminant Prism|Gell\'s Gravitas|Hailstorm|Haunt|Hydra Form|Ice Form|Ignite Poison|Ignition|Infestation|Infusion|Inner Flame|Invisibility|Iron Shot|Irradiate|Iskenderun\'s Battlesphere|Iskenderun\'s Mystic Blast|Leda\'s Liquefaction|Lee\'s Rapid Deconstruction|Lehudib\'s Crystal Spear|Lesser Beckoning|Lightning Bolt|Magic Dart|Malign Gateway|Mephitic Cloud|Metabolic Englaciation|Monstrous Menagerie|Necromutation|Olgreb\'s Toxic Radiance|Orb of Destruction|Ozocubu\'s Armour|Ozocubu\'s Refrigeration|Pain|Passage of Golubria|Passwall|Petrify|Poisonous Vapours|Portal Projectile|Recall|Ring of Flames|Sandblast|Searing Ray|Shadow Creatures|Shatter|Shock|Shroud of Golubria|Silence|Simulacrum|Slow|Song of Slaying|Spectral Weapon|Spellforged Servitor|Spider Form|Starburst|Static Discharge|Statue Form|Sticks to Snakes|Sticky Flame|Sting|Stone Arrow|Sublimation of Blood|Summon Demon|Summon Forest|Summon Greater Demon|Summon Guardian Golem|Summon Horrible Things|Summon Hydra|Summon Ice Beast|Summon Lightning Spire|Summon Mana Viper|Summon Small Mammal|Swiftness|Teleport Other|Tornado|Tukima\'s Dance|Vampiric Draining|Yara\'s Violent Unravelling)')
 
+        spell_skills_regex = re.compile(
+            '(Conjuration|Hexes|Charms|Summonings|Necromancy|Translocations|Transmutation|Fire|Ice|Air|Earth|Poison)')
+
+        spell_fail_rate_regex = re.compile('[0-9]+%')
+
+        spell_level_regex = re.compile('[0-9]$')
+
+        # get the name of the spell
+        spell_name = SpellNameMapping.spell_game_text_lookup[spell_name_regex.search(message).group()]
+
+        # get the skills
+        spell_skills = []
+        matches = spell_skills_regex.finditer(message)
         for m in matches:
-            print("processing match: {}".format(m.group()))
-            for spell_name in all_spell_names:
-                if spell_name in m.group():
-                    print("Found spell {} with total match string: {}".format(spell_name, m.group()))
-            # value = m.group().count("+")
-            # if 'rFire' in m.group():
-            #     self.player_rFire = value
-            # elif 'rCold' in m.group():
-            #     self.player_rCold = value
-            # elif 'rNeg' in m.group():
-            #     self.player_rNeg = value
-            # elif 'rCorr' in m.group():
-            #     self.player_rCorr = value
-            # elif 'rElec' in m.group():
-            #     self.player_rElec = value
-            # elif 'rPois' in m.group():
-            #     self.player_rPois = value
-            # elif 'Faith' in m.group():
-            #     self.player_faith_status = value > 0
-            # elif 'Spirit' in m.group():
-            #     self.player_spirit_status = value > 0
-            # elif 'Reflect' in m.group():
-            #     self.player_reflect_status = value > 0
-            # elif 'Harm' in m.group():
-            #     self.player_harm_status = value > 0
-            # elif 'Rampage' in m.group():
-            #     self.player_rampage_status = value > 0
-            # elif 'MR' in m.group():
-            #     self.player_willpower = value
-            # elif 'Stlth' in m.group():
-            #     self.player_stealth = value
-            # else:
-            #     raise Exception("Error - regex matched but no known values for {}".format(m.group()))
+            spell_skills.append(SkillMapping.skill_game_text_lookup[m.group()])
 
+        # get the fail rate
+        spell_fail_rate = int(spell_fail_rate_regex.search(message).group()[:-1]) # -1 trims off the % sign
 
-        pass
+        # get the spell level
+        spell_level = int(spell_level_regex.search(message).group())
+
+        spell_obj = Spell(spell_name, spell_skills, spell_fail_rate, spell_level)
+
+        existing_spells_with_same_name = []
+        for spell_i in self.player_spells:
+            if spell_i.spellname == spell_name:
+                existing_spells_with_same_name.append(spell_i)
+
+        # remove existing spells
+        for existing_spell in existing_spells_with_same_name:
+            self.player_spells.remove(existing_spell)
+
+        # add this spell
+        self.player_spells.add(spell_obj)
 
     def process_messages(self, data):
         # begin: this is just for html stripping
