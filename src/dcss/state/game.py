@@ -1250,6 +1250,9 @@ class GameState:
                 if k == 'mutations':
                     self._process_mutations(s[k])
 
+                if k == 'lines':
+                    self._process_skill_lines(s[k])
+
                 if k in self.state_keys:
                     self.state[k] = s[k]
                     # print("Just stored {} with data {}".format(k,s[k]))
@@ -1389,34 +1392,41 @@ class GameState:
 
         spell_level_regex = re.compile('[0-9]$')
 
-        # get the name of the spell
-        spell_name = SpellNameMapping.spell_game_text_lookup[spell_name_regex.search(message).group()]
+        try:
+            # get the name of the spell
+            spell_name = SpellNameMapping.spell_game_text_lookup[spell_name_regex.search(message).group()]
 
-        # get the skills
-        spell_skills = []
-        matches = spell_skills_regex.finditer(message)
-        for m in matches:
-            spell_skills.append(SkillMapping.skill_game_text_lookup[m.group()])
+            # get the skills
+            spell_skills = []
+            matches = spell_skills_regex.finditer(message)
+            for m in matches:
+                spell_skills.append(SkillMapping.skill_game_text_lookup[m.group()])
 
-        # get the fail rate
-        spell_fail_rate = int(spell_fail_rate_regex.search(message).group()[:-1]) # -1 trims off the % sign
+            # get the fail rate
+            spell_fail_rate = int(spell_fail_rate_regex.search(message).group()[:-1]) # -1 trims off the % sign
 
-        # get the spell level
-        spell_level = int(spell_level_regex.search(message).group())
+            # get the spell level
+            spell_level = int(spell_level_regex.search(message).group())
 
-        spell_obj = Spell(spell_name, spell_skills, spell_fail_rate, spell_level)
+            spell_obj = Spell(spell_name, spell_skills, spell_fail_rate, spell_level)
 
-        existing_spells_with_same_name = []
-        for spell_i in self.player_spells:
-            if spell_i.spellname == spell_name:
-                existing_spells_with_same_name.append(spell_i)
+            existing_spells_with_same_name = []
+            for spell_i in self.player_spells:
+                if spell_i.spellname == spell_name:
+                    existing_spells_with_same_name.append(spell_i)
 
-        # remove existing spells
-        for existing_spell in existing_spells_with_same_name:
-            self.player_spells.remove(existing_spell)
+            # remove existing spells
+            for existing_spell in existing_spells_with_same_name:
+                self.player_spells.remove(existing_spell)
 
-        # add this spell
-        self.player_spells.add(spell_obj)
+            # add this spell
+            self.player_spells.add(spell_obj)
+            print("Added player spell {} ".format(spell_obj))
+
+        except:
+            print("Ignoring spell processing for messzage: {}".format(message))
+            pass
+
 
     def process_messages(self, data):
         # begin: this is just for html stripping
@@ -2047,3 +2057,8 @@ class GameState:
                 for spot in row:
                     print(str(spot), end='')
                 print('')
+
+    def _process_skill_lines(self, skill_lines):
+        # TODO
+        pass
+

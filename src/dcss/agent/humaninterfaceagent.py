@@ -112,6 +112,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             'a': Command.USE_SPECIAL_ABILITY,
             'q': Command.QUAFF,
             'I': Command.LIST_ALL_SPELLS,
+            'm': Command.SHOW_SKILL_SCREEN,
         }
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:

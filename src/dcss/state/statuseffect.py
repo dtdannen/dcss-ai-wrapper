@@ -4,7 +4,7 @@ from enum import Enum
 class StatusEffect(Enum):
 
     """
-    Represents a status effect
+    Represents a status effect, including abilities
     """
 
     AGILE_STATUS_EFFECT = 1

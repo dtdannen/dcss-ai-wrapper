@@ -4,8 +4,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="dcss-ai-wrapper-dtdannen", # Replace with your own username
-    version="0.0.2",
+    name="dcss-ai-wrapper", # Replace with your own username
+    version="0.0.8",
     author="Dustin Dannenhauer",
     author_email="dannenhauerdustin@gmail.com",
     description="API for Dungeon Crawl Stone Soup for Artificial Intelligence research.",

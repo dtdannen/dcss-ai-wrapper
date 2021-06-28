@@ -12,4 +12,5 @@ class Menu(Enum):
     SPRINT_MAP_SELECTION_MENU = 8
     ABILITY_MENU = 9
     ALL_SPELLS_MENU = 10
+    SKILL_MENU = 11
 

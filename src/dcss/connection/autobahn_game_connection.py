@@ -397,6 +397,11 @@ class DCSSProtocol(WebSocketClientProtocol):
             self.spell_menu_options = self.get_spell_menu_options(json_msg)
             print("setting _IN_MENU = Menu.ALL_SPELLS_MENU")
 
+        if self.check_for_skills_menu(json_msg):
+            self._IN_MENU = Menu.SKILL_MENU
+            self.skill_menu_options = self.get_skill_menu_options(json_msg)
+            print("setting _IN_MENU = Menu.SKILL_MENU")
+
         if self.check_for_ability_menu(json_msg):
             self._IN_MENU = Menu.ABILITY_MENU
             self.ability_menu_options = self.get_ability_menu_options(json_msg)
@@ -503,6 +508,19 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         return is_menu and spell_tag_found
 
+    def check_for_skills_menu(self, json_msg):
+        is_menu = False
+        for v in nested_lookup('msg', json_msg):
+            if v == 'menu':
+                is_menu = True
+
+        skills_tag_found = False
+        for v in nested_lookup('tag', json_msg):
+            if v == 'skills':
+                skills_tag_found = True
+
+        return is_menu and skills_tag_found
+
     def get_inventory_menu_options(self, json_msg):
         # get inventory menu items and keypresses
         #TODO: get something like the following to work
@@ -530,6 +548,10 @@ class DCSSProtocol(WebSocketClientProtocol):
         pass
 
     def get_spell_menu_options(self, json_msg):
+        # TODO: mimic other similar functions, like background or species options
+        pass
+
+    def get_skill_menu_options(self, json_msg):
         # TODO: get something like the following to work
         pass
 
