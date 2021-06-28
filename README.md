@@ -28,8 +28,7 @@ Checkout the YouTube channel for live coding streams and tutorial videos (more c
 
 # Quickstart
 
-Clone this repository
-
+Clone the repository
 
     git clone https://github.com/dtdannen/dcss-ai-wrapper.git    
 
