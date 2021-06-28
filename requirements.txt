@@ -12,4 +12,5 @@ numpy
 matplotlib
 readchar
 sphinx-rtd-theme
+autoapi
 
