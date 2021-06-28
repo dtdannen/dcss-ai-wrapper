@@ -22,7 +22,7 @@ import sphinx_rtd_theme
 project = 'dcss-ai-wrapper'
 copyright = '2021, Dustin Dannenhauer'
 author = 'Dustin Dannenhauer'
-release = '0.05'
+release = '0.0.8'
 
 
 # -- General configuration ---------------------------------------------------
