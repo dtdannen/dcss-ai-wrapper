@@ -1030,7 +1030,9 @@ class GameState:
             Returns:
                  a list of size 94*4.
         """
-        # TODO write code
+
+
+
         pass
 
     def get_player_skills_vector(self):
@@ -1646,6 +1648,10 @@ class GameState:
                 if k == 'light':
                     if v == "Pois":
                         current_status_effects.add(StatusEffect.POISON_STATUS_EFFECT)
+                    elif v == "Alive":
+                        current_status_effects.add(StatusEffect.ALIVE_STATUS_EFFECT)
+                    elif v == "Bloodless":
+                        current_status_effects.add(StatusEffect.BLOODLESS_STATUS_EFFECT)
                     else:
                         print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))

@@ -1,3 +1,5 @@
+;;; File: models/fastdownward_simple.pddl
+;;;
 ;;; Simple domain representation for dungeon crawl stone soup compatible with
 ;;; the fastdownward planner and other pddl planning systems.
 ;;;
@@ -17,9 +19,6 @@
 ;;;        submit an issue on the github if any errors or inconsistencies are
 ;;;        found. Github: https://github.com/dtdannen/dcss-ai-wrapper
 ;;;        Crawl wiki: http://crawl.chaosforge.org/
-;;;
-;;;     2. Quantities of items, such as potions, etc. are not represented
-;;;        because this domain model does not support integers.
 
 
 (define (domain dcss)
