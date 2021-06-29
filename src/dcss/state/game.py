@@ -14,7 +14,7 @@ from dcss.state.mutation import MutationMapping, Mutation
 from dcss.state.statuseffect import StatusEffect
 from dcss.state.skill import SkillMapping
 from dcss.state.spell import Spell, SpellNameMapping
-from dcss.state.ability import Ability, AbilityNameMapping
+from dcss.state.ability import Ability, AbilityName, AbilityNameMapping
 
 
 class GameState:
@@ -1034,13 +1034,23 @@ class GameState:
                 | 5            |   Has Frailty Cost                    |   Boolean              |
                 +--------------+---------------------------------------+------------------------+
 
+            # TODO there are probably more costs (like health, etc) that should end up as additional rows in this table
+
             Returns:
-                 a list of size 94*4.
+                 a list of size 94*6.
         """
 
+        abilities_ordered = list(self.player_abilities)
+        sorted(abilities_ordered, key=lambda s: s.abilityname)
 
+        ability_vector = []
+        for ability in abilities_ordered:
+            ability_vector += ability.get_ability_vector()
 
-        pass
+        for i in range(len(ability_vector) + 1, len(AbilityName)):
+            ability_vector.append(Ability.NULL_SPELL_VECTOR)
+
+        return ability_vector
 
     def get_player_skills_vector(self):
         """
