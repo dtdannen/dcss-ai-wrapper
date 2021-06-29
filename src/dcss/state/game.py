@@ -13,7 +13,8 @@ from dcss.state.menu import Menu
 from dcss.state.mutation import MutationMapping, Mutation
 from dcss.state.statuseffect import StatusEffect
 from dcss.state.skill import SkillMapping
-from dcss.state.spell import Spell, SpellName, SpellNameMapping
+from dcss.state.spell import Spell, SpellNameMapping
+from dcss.state.ability import Ability, AbilityNameMapping
 
 
 class GameState:
@@ -771,12 +772,14 @@ class GameState:
             self.player_place,
 
             StatusEffect.AGILE_STATUS_EFFECT in self.player_status_effects,
+            StatusEffect.ALIVE_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.ANTIMAGIC_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.AUGMENTATION_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BAD_FORMS_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BERSERK_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BLACK_MARK_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BLIND_STATUS_EFFECT in self.player_status_effects,
+            StatusEffect.BLOODLESS_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BRILLIANT_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.CHARM_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.CONFUSING_TOUCH_STATUS_EFFECT in self.player_status_effects,
@@ -1018,13 +1021,17 @@ class GameState:
                 | Vector Index | Description of Data                   | Data Type if available |
                 +==============+=======================================+========================+
                 +--------------+---------------------------------------+------------------------+
-                | 0            |  Ability is known                     |  Boolean               |
+                | 0            |  Ability is ID                        |  Int repr. spell ID    |
                 +--------------+---------------------------------------+------------------------+
-                | 1            |   Failure Likelihood                  |   Float (0-100%)       |
+                | 1            |   Failure Likelihood                  |   Int 0-100            |
                 +--------------+---------------------------------------+------------------------+
-                | 2            |   Magic Point Cost                    |   Int                  |
+                | 2            |   Magic Point Cost                    |   Boolean              |
                 +--------------+---------------------------------------+------------------------+
-                | 3            |   Piety Point Cost                    |   Int                  |
+                | 3            |   Piety Point Cost                    |   Boolean              |
+                +--------------+---------------------------------------+------------------------+
+                | 4            |   Has Delay Cost                      |   Boolean              |
+                +--------------+---------------------------------------+------------------------+
+                | 5            |   Has Frailty Cost                    |   Boolean              |
                 +--------------+---------------------------------------+------------------------+
 
             Returns:
@@ -1428,6 +1435,50 @@ class GameState:
         except:
             print("Ignoring spell processing for messzage: {}".format(message))
             pass
+
+    def _process_single_ability(self, message):
+        # define the regex terms
+        ability_name_regex = re.compile(
+            '(Exsanguinate|Revivify)')
+
+        ability_costs_regex = re.compile(
+            '(Frailty|Delay)')
+
+        ability_fail_rate_regex = re.compile('[0-9]+%')
+
+        try:
+            # get the name of the ability
+            ability_name = AbilityNameMapping.ability_menu_messages_lookup[ability_name_regex.search(message).group()]
+
+            # get the ability_costs
+            ability_costs = []
+            matches = ability_costs_regex.finditer(message)
+            for m in matches:
+                ability_costs.append(AbilityNameMapping.ability_menu_messages_lookup[m.group()])
+
+            # get the fail rate
+            ability_fail_rate = int(ability_fail_rate_regex.search(message).group()[:-1]) # -1 trims off the % sign
+
+            ability_obj = Ability(ability_name, ability_fail_rate, 'MP' in ability_costs, 'Piety' in ability_costs, 'Delay' in ability_costs, 'Frailty' in ability_costs)
+
+            existing_abilities_with_same_name = []
+            for ability_i in self.player_abilities:
+                if ability_i.abilityname == ability_name:
+                    existing_abilities_with_same_name.append(ability_i)
+
+            # remove existing abilities
+            for existing_ability in existing_abilities_with_same_name:
+                self.player_abilities.remove(existing_ability)
+
+            # add this ability
+            self.player_abilities.add(ability_obj)
+            print("Added player ability {} ".format(ability_obj))
+
+        except:
+            print("Ignoring ability processing for message: {}".format(message))
+            pass
+
+
 
 
     def process_messages(self, data):
