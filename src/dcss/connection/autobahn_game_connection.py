@@ -218,7 +218,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         enter_key_msg = {"text": "\r", "msg": "input"}
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
-                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
+                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU, Menu.ABILITY_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
                         self.game_state.draw_cell_map()
                         # the following executes the next action if we are using an instance of Agent to control
                         # sending actions
