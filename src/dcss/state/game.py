@@ -1291,6 +1291,7 @@ class GameState:
         self._process_hp_mp_regen(html_str)
         self._process_spell_slots(html_str)
         self._process_single_spell(html_str)
+        self._process_single_ability(html_str)
 
     def _process_resistances(self, html_str):
         regex = re.compile(
@@ -1459,15 +1460,18 @@ class GameState:
         try:
             # get the name of the ability
             ability_name = AbilityNameMapping.ability_menu_messages_lookup[ability_name_regex.search(message).group()]
+            print("ability name is {}".format(ability_name))
 
             # get the ability_costs
             ability_costs = []
             matches = ability_costs_regex.finditer(message)
             for m in matches:
-                ability_costs.append(AbilityNameMapping.ability_menu_messages_lookup[m.group()])
+                ability_costs.append(m.group())
+            print("ability costs are {}".format(ability_costs))
 
             # get the fail rate
             ability_fail_rate = int(ability_fail_rate_regex.search(message).group()[:-1]) # -1 trims off the % sign
+            print("ability fail rate is {}".format(ability_fail_rate))
 
             ability_obj = Ability(ability_name, ability_fail_rate, 'MP' in ability_costs, 'Piety' in ability_costs, 'Delay' in ability_costs, 'Frailty' in ability_costs)
 
