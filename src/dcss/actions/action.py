@@ -134,7 +134,7 @@ class Action:
     }
 
     # the order of letters and symbols in this string should match the order of MenuChoice enum options
-    dcss_menu_chars = list(string.ascii_lowercase + string.ascii_uppercase + '*!/?')
+    dcss_menu_chars = list(string.ascii_lowercase + string.ascii_uppercase + '0123456789' + '*!/?')
 
     @staticmethod
     def get_execution_repr(command_or_menu_choice):

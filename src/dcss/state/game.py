@@ -2130,7 +2130,7 @@ class GameState:
                 print('')
 
     def _process_skill_lines(self, skill_lines):
-        for line_id, line in skill_lines:
+        for line_id, line in skill_lines.items():
             # todo
             pass
         pass
