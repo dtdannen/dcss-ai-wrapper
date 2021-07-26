@@ -2130,8 +2130,17 @@ class GameState:
                 print('')
 
     def _process_skill_lines(self, skill_lines):
-        for line_id, line in skill_lines.items():
-            # todo
-            pass
-        pass
+        entire_skill_regex = re.compile(
+            '[0-9a-z] \+ (Fighting|Short Blades|Long Blades|Maces &amp; Flails|Axes|Polearms|Staves|Unarmed Combat|Bows|Crossbows|Throwing|Slings|Armour|Dodging|Shields|Spellcasting|Conjurations|Hexes|Summonings|Necromancy|Translocations|Transmutations|Fire Mgaic|Ice Magic|Air Magic|Earth Magic|Poison Magic|Invocations|Evocations|Stealth)\\s*[0-9]+.[0-9]\\s*([0-9]{1,3}%){0,1}\\s*(-|\+){0,1}[0-9]+')  # (-|\+)+[0-9]\\s*</span>
 
+        #todo finish this
+
+        for line_id, line in skill_lines.items():
+            cleaner_line = re.sub('</span>|<span class="[\sa-z0-9]*">', '', line)
+            print("=============================================================================")
+            print("processing: {}".format(line))
+            print("cleaner   : {}".format(cleaner_line))
+            print("-----------------------------------------------------------------------------")
+            matches = entire_skill_regex.finditer(cleaner_line)
+            for m in matches:
+                print("Found {}".format(m.group()))
