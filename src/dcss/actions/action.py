@@ -133,7 +133,8 @@ class Action:
         Command.ENTER_KEY: {'text': '\r', 'msg': 'input'},
     }
 
-    letters = list(string.ascii_lowercase+string.ascii_uppercase)
+    # the order of letters and symbols in this string should match the order of MenuChoice enum options
+    dcss_menu_chars = list(string.ascii_lowercase + string.ascii_uppercase + '*!/?')
 
     @staticmethod
     def get_execution_repr(command_or_menu_choice):
@@ -163,7 +164,7 @@ class Action:
         :return: a message data structure that can be sent directly to the game to select the desired menu option.
         """
         menu_choice_value = choice.value
-        menu_choice_letter = Action.letters[menu_choice_value]
+        menu_choice_letter = Action.dcss_menu_chars[menu_choice_value]
         json_repr = {"text":"{}".format(menu_choice_letter), "msg":"input"}
         return json_repr
 

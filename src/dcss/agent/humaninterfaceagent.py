@@ -117,9 +117,9 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
             return keypress_to_command_no_menu[keypress]
-        elif keypress in Action.letters:
-            letter_i = Action.letters.index(keypress)
-            menuchoice = MenuChoice(letter_i)
+        elif keypress in Action.dcss_menu_chars:
+            dcss_menu_char_i = Action.dcss_menu_chars.index(keypress)
+            menuchoice = MenuChoice(dcss_menu_char_i)
             return menuchoice
         else:
             print("Got keypress {} and current Menu is {}".format(keypress, self.gamestate.get_current_menu()))

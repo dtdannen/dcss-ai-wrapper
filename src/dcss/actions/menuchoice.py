@@ -58,3 +58,7 @@ class MenuChoice(Enum):
     UPPER_X = 49
     UPPER_Y = 50
     UPPER_Z = 51
+    ASTERISK = 52
+    EXCLAMATION_POINT = 53
+    FORWARD_SLASH = 54
+    QUESTION_MARK = 55

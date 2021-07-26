@@ -2131,6 +2131,7 @@ class GameState:
 
     def _process_skill_lines(self, skill_lines):
         for line_id, line in skill_lines:
-
+            # todo
+            pass
         pass
 
