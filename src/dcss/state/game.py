@@ -3,7 +3,7 @@ import os
 import time
 import re
 
-from dcss.actions.action import Action
+from dcss.actions.action import Action, MenuChoice
 from dcss.state.cell import Cell
 from dcss.state.cellmap import CellMap
 from dcss.state.cellrawstrdatum import CellRawStrDatum
@@ -12,7 +12,7 @@ from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
 from dcss.state.mutation import MutationMapping, Mutation
 from dcss.state.statuseffect import StatusEffect
-from dcss.state.skill import SkillMapping
+from dcss.state.skill import SkillMapping, SkillName, Skill
 from dcss.state.spell import Spell, SpellNameMapping
 from dcss.state.ability import Ability, AbilityName, AbilityNameMapping
 
@@ -146,7 +146,7 @@ class GameState:
         self.player_status_effects = set()
         self.player_abilities = set()
         self.player_auxiliary_attacks = set()
-        self.player_skills = {}  # keys are SkillName instances, values are the Skill objects
+        self.player_skills = {s: None for s in SkillName}  # keys are SkillName instances, values are the Skill objects
 
         self.player_spells = set()  # even though its a set, still have to ensure no duplicate spells with different failure rates
 
@@ -1049,7 +1049,7 @@ class GameState:
             ability_vector += ability.get_ability_vector()
 
         for i in range(len(ability_vector) + 1, len(AbilityName)):
-            ability_vector.append(Ability.NULL_ABILITY_VECTOR)
+            ability_vector += Ability.NULL_ABILITY_VECTOR
 
         return ability_vector
 
@@ -1065,14 +1065,23 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 |    0         |        Current value                  | Float                  |
                 +--------------+---------------------------------------+------------------------+
-                |    1         |        Training Percentage            | Float                  |
+                |    1         |        Training Percentage            | Int (0-100)            |
+                +--------------+---------------------------------------+------------------------+
+                |    2         |        Aptitude                       | Int                    |
                 +--------------+---------------------------------------+------------------------+
 
             Returns:
-                 a list of size 62
+                 a list of size 93
         """
-        # TODO write code
-        pass
+        skill_vector = []
+        for skill_name in SkillName:
+            skill_obj = self.player_skills[skill_name]
+            if skill_obj:
+                skill_vector += skill_obj.get_skill_vector()
+            else:
+                skill_vector += Skill.NULL_SKILL_VECTOR
+
+        return skill_vector
 
     def get_egocentric_LOS_map_data_vector(self, radius=7):
         """
@@ -2152,7 +2161,14 @@ class GameState:
                     raw_training_percent = m_tokens[4][:-1]  # trim off the trailing % sign
                     raw_aptitude = m_tokens[5]
 
-                new_skill = Skill()
+                skill_menu_choice = MenuChoice(Action.dcss_menu_chars.indexof(menu_letter))
+                skill_name = SkillMapping.skill_game_text_lookup[raw_skill_name]
+                skill_level = float(raw_skill_level)
+                training_percent = int(raw_training_percent)
+                aptitude = int(raw_aptitude)
+
+                new_skill = Skill(skill_name, skill_menu_choice,skill_level,training_percent,aptitude)
+                self.player_skills[skill_name] = new_skill
 
             print("=============================================================================")
             print("processing: {}".format(line))

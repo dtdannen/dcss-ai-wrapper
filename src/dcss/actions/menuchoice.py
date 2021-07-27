@@ -72,3 +72,8 @@ class MenuChoice(Enum):
     EXCLAMATION_POINT = 63
     FORWARD_SLASH = 64
     QUESTION_MARK = 65
+
+
+class MenuChoiceMapping:
+
+    menu_letter_to_menu_choice = {x:MenuChoice for x in dcss_menu_chars}
