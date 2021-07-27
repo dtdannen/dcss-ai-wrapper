@@ -127,7 +127,7 @@ class Ability:
     Represent a spell that a player can or has learned.
     """
 
-    NULL_SPELL_VECTOR = [AbilityName.NULL_SPELL_SPECIAL_CASE, -1, -1, -1, False, False]
+    NULL_ABILITY_VECTOR = [AbilityName.NULL_SPELL_SPECIAL_CASE, -1, -1, -1, False, False]
 
     def __init__(self, abilityname: AbilityName, fail_chance: int, mp_cost: bool, piety_cost: bool, delay_cost: bool, frailty_cost: bool):
         self.abilityname = abilityname

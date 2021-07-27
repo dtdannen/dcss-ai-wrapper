@@ -12,7 +12,7 @@ from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
 from dcss.state.mutation import MutationMapping, Mutation
 from dcss.state.statuseffect import StatusEffect
-from dcss.state.skill import SkillMapping
+from dcss.state.skillname import SkillMapping
 from dcss.state.spell import Spell, SpellNameMapping
 from dcss.state.ability import Ability, AbilityName, AbilityNameMapping
 
@@ -980,11 +980,11 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 0            |     Spell ID.                         |    Int repr. spell ID  |
                 +--------------+---------------------------------------+------------------------+
-                | 1            |     Spell Skill                       |   Int repr. skill ID   |
+                | 1            |     Spell SkillName                       |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 2            |     Spell Skill #2                    |   Int repr. skill ID   |
+                | 2            |     Spell SkillName #2                    |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 3            |     Spell Skill #3                    |   Int repr. skill ID   |
+                | 3            |     Spell SkillName #3                    |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
                 | 4            |     Failure Likelihood                |    Int 0-100           |
                 +--------------+---------------------------------------+------------------------+
@@ -1048,7 +1048,7 @@ class GameState:
             ability_vector += ability.get_ability_vector()
 
         for i in range(len(ability_vector) + 1, len(AbilityName)):
-            ability_vector.append(Ability.NULL_SPELL_VECTOR)
+            ability_vector.append(Ability.NULL_ABILITY_VECTOR)
 
         return ability_vector
 

@@ -136,11 +136,11 @@ def parse_skill_menu(js):
     is_skill_costs = False
     is_skill_train = False
     for line in js['lines'].keys():
-        if 'Skill' in line and 'Cost' in line:
+        if 'SkillName' in line and 'Cost' in line:
             # header
             is_skill_costs = True
             is_skill_train = False
-        elif 'Skill' in line and 'Train' in line:
+        elif 'SkillName' in line and 'Train' in line:
             # header
             is_skill_costs = False
             is_skill_train = True

@@ -1,5 +1,5 @@
 from enum import Enum
-from dcss.state.skill import Skill
+from dcss.state.skillname import SkillName
 
 
 class SpellName(Enum):
@@ -264,9 +264,9 @@ class Spell:
     Represent a spell that a player can or has learned.
     """
 
-    NULL_SPELL_VECTOR = [SpellName.NULL_SPELL_SPECIAL_CASE, Skill.NULL_SKILL_SPECIAL_CASE, Skill.NULL_SKILL_SPECIAL_CASE, Skill.NULL_SKILL_SPECIAL_CASE, -1, -1]
+    NULL_SPELL_VECTOR = [SpellName.NULL_SPELL_SPECIAL_CASE, SkillName.NULL_SKILL_SPECIAL_CASE, SkillName.NULL_SKILL_SPECIAL_CASE, SkillName.NULL_SKILL_SPECIAL_CASE, -1, -1]
 
-    def __init__(self, spellname: SpellName, skills: [Skill], fail_chance: int, level: int):
+    def __init__(self, spellname: SpellName, skills: [SkillName], fail_chance: int, level: int):
         self.spellname = spellname
         self.skills = skills
         self.fail_chance = fail_chance
@@ -278,7 +278,7 @@ class Spell:
             spell_vec.append(skill)
 
         for i in range(len(spell_vec), 4):
-            spell_vec.append(Skill.NULL_SKILL_SPECIAL_CASE)
+            spell_vec.append(SkillName.NULL_SKILL_SPECIAL_CASE)
 
         spell_vec.append(self.fail_chance)
         spell_vec.append(self.level)

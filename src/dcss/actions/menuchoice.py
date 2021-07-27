@@ -5,7 +5,7 @@ class MenuChoice(Enum):
     """
     Menu choices are always a lower or upper case letter
     """
-
+    NONE = -1
     LOWER_A = 0
     LOWER_B = 1
     LOWER_C = 2
