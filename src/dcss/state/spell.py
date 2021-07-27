@@ -1,5 +1,5 @@
 from enum import Enum
-from dcss.state.skillname import SkillName
+from dcss.state.skill import SkillName
 
 
 class SpellName(Enum):
