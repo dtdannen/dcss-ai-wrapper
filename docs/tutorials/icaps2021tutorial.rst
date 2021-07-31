@@ -103,5 +103,9 @@ Software prequisites:
       and run agents that don't use FastDownward.
 
 
+The ultimate test to see if everything is installed and working correctly is to run the `fastdownwardplanningagent.py` agent in `src/dcss/agent/fastdownwardplanningagent.py` like:
+
+::
+    python
 
 

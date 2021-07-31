@@ -76,4 +76,6 @@ class MenuChoice(Enum):
 
 class MenuChoiceMapping:
 
-    menu_letter_to_menu_choice = {x:MenuChoice for x in dcss_menu_chars}
+    @staticmethod
+    def get_menu_letter_to_menu_choice(dcss_menu_chars):
+        return {x:MenuChoice for x in dcss_menu_chars}
