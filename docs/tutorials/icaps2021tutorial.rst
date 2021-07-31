@@ -85,6 +85,8 @@ Preparing for the Tutorial
 Please perform the following steps to get your system ready for the live tutorial session. This includes installing
 **dcss-ai-wrapper** and the **FastDownward** planner on your system.
 
+**(optional, fun)** Try playing `Dungeon Crawl Stone Soup <https://crawl.develz.org/>`_ yourself to get a feel for the game. See how far in the dungeon you can go!
+
 Software prequisites:
 
 * `Git <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`_
@@ -105,7 +107,10 @@ Software prequisites:
 
 The ultimate test to see if everything is installed and working correctly is to run the `fastdownwardplanningagent.py` agent in `src/dcss/agent/fastdownwardplanningagent.py` like:
 
-::
-    python
+
+.. code-block:: console
+
+    cd dcss-ai-wrapper/  # make sure you're in the project root and the virtual env is active
+    python .\src\dcss\agent\fastdownwardplanningagent.py
 
 
