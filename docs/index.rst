@@ -13,6 +13,7 @@ dcss-ai-wrapper's documentation
    usage/installation
    usage/agents
    usage/state_representation
+   tutorials/icaps2021tutorial
    api/modules
    support
 
