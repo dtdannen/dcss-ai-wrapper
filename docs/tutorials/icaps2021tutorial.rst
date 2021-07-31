@@ -2,6 +2,12 @@
 ICAPS 2021 Tutorial
 *******************
 
+.. note:: We will be adding more content to this page between now and the tutorial start. We welcome any and all questions to be asked via the Gitter public chatroom for the dcss-ai-wrapper project here: `https://gitter.im/dcss-ai-wrapper/community <https://gitter.im/dcss-ai-wrapper/community>`_
+
+    Updates:
+
+    * **[July 30th at 23:00 UTC-4]** First version of these instructions are posted online.
+
 Introduction
 ============
 **dcss-ai-wrapper** aims to enable the Dungeon Crawl Stone Soup (DCSS) video game to be used as a new benchmark
