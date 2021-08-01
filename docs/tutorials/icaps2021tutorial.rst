@@ -2,11 +2,15 @@
 ICAPS 2021 Tutorial
 *******************
 
+.. note:: Unfortunately we have to cancel the tutorial because the main organizer became sick. Stay tuned to the project by joining the Gitter public chatroom, we will announce any future tutorials there. We apologize for the inconvenience.
+
+
 .. note:: We will be adding more content to this page between now and the tutorial start. We welcome any and all questions to be asked via the Gitter public chatroom for the dcss-ai-wrapper project here: `https://gitter.im/dcss-ai-wrapper/community <https://gitter.im/dcss-ai-wrapper/community>`_
 
     Updates:
 
     * **[July 30th at 23:00 UTC-4]** First version of these instructions are posted online.
+    * **[July 31st at 21:00 UTC-4]** Tutorial cancelled due to the organizer falling sick.
 
 Introduction
 ============
@@ -114,3 +118,5 @@ The ultimate test to see if everything is installed and working correctly is to 
     python .\src\dcss\agent\fastdownwardplanningagent.py
 
 
+Then go to the browser and if you can see the agent moving around then it means it's working. It should be exploring new
+tiles and attacking monsters whenever it finds them (albeit sometimes poorly).
