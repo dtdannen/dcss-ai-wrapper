@@ -66,9 +66,9 @@ By default you'll be logged in on the browser but it's recommended for you to be
 **Note:** Do not login on the browser yourself, creating the account is so that the agent in the API can connect and play. You will spectate the agent without logging in yourself.
 
 
-Now you can run your agent by running main_webserver.py::
+Now you can run the random agent by running the following from the project root ( dcss-ai-wrapper/ ) (make sure to use a separate command prompt from the one running the docker container)::
 
-    python main_webserver.py
+    python .\src\dcss\agent\randomagent.py
 
 Within 1-2 seconds you should see the agent show up in the lobby of the web browser, something like this:
 
