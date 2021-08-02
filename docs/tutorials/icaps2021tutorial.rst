@@ -97,6 +97,10 @@ Software prequisites:
 
 **Finally** install FastDownward by following their instructions here: `http://www.fast-downward.org/ObtainingAndRunningFastDownward <http://www.fast-downward.org/ObtainingAndRunningFastDownward>`_
 
+    * Rename the fastdownward folder to be 'FastDownward' and make sure it's in the top level dcss-ai-wrapper directory, like::
+
+        dcss-ai-wrapper/FastDownward/
+
     * You will need to be able to call `fast-downward.py` from the command line (on Windows via powershell, or in Unix based systems on the command line) so the best
       instructions to follow are the ones where you compile it. We have not tested using FastDownward from the Vagrant
       or Docker installation images.
