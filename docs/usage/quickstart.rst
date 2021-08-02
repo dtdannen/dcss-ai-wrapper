@@ -32,6 +32,8 @@ And do a pip install of the project in develop mode so you can change files in b
 
     pip install -e .
 
+**Now open a new terminal to run the the webserver via Docker**
+
 Pull a pre-made docker image with the DCSS webserver installed (if you'd like to create your own docker or install DCSS yourself, see :ref:`installation`)::
 
     docker pull dtdannen34/dcss-ai-wrapper:webtilesserver
@@ -73,8 +75,19 @@ By default you'll be logged in on the browser but it's recommended for you to be
 
 **Note:** Do not login on the browser yourself, creating the account is so that the agent in the API can connect and play. You will spectate the agent without logging in yourself.
 
+**Open a new terminal, navigate to dcss-ai-wrapper, activate the virtual environment, and try running an agent**::
 
-Now you can run the random agent by running the following from the project root ( dcss-ai-wrapper/ ) (make sure to use a separate command prompt from the one running the docker container AND make sure you are using the python environment from above: "source .env/bin/activate")::
+    cd dcss-ai-wrapper/
+
+On Linux in the shell::
+
+    source .env/bin/activate
+
+Or on Windows from powershell::
+
+    ./.env/Scripts/Activate.ps1
+
+Now you can run the random agent by running the following from the project root: dcss-ai-wrapper/ ::
 
     python .\src\dcss\agent\randomagent.py
 
