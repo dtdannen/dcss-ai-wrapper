@@ -1689,6 +1689,8 @@ class GameState:
                         current_status_effects.add(StatusEffect.ALIVE_STATUS_EFFECT)
                     elif v == "Bloodless":
                         current_status_effects.add(StatusEffect.BLOODLESS_STATUS_EFFECT)
+                    elif v == 'Water':
+                        current_status_effects.add(StatusEffect.WATER_STATUS_EFFECT)
                     else:
                         print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))
