@@ -22,7 +22,7 @@ On Linux in the shell::
 
 Or on Windows from powershell::
 
-    ./Scripts/Activate.ps1
+    ./.env/Scripts/Activate.ps1
 
 Then to install all packages into this virtualenv::
 
