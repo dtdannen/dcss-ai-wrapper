@@ -24,7 +24,7 @@ Then to install all packages into this virtualenv::
 
     pip install -r requirements.txt
 
-Pull a pre-made docker image with the DCSS webserver installed (if you'd like to create your own docker or install DCSS yourself, see instructions below)::
+Pull a pre-made docker image with the DCSS webserver installed (if you'd like to create your own docker or install DCSS yourself, see :ref:`installation`)::
 
     docker pull dtdannen34/dcss-ai-wrapper
 
