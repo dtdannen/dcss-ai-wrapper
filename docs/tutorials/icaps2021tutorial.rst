@@ -10,6 +10,7 @@ ICAPS 2021 Tutorial
     * **[July 31st at 21:00 UTC-4]** Tutorial cancelled due to the organizer falling sick.
     * **[Aug 2nd at 07:20 UTC-4]** We are working on providing a modified tutorial instead of cancelling.
     * **[Aug 2nd at 08:30 UTC-4]** We have updated the schedule with a modified list of excercises and timeline.
+    * **[Aug 2nd at 19:30 UTC-4]** Updated :ref:`quickstart` instructions for installation to add clarity.
 
 Introduction
 ============
