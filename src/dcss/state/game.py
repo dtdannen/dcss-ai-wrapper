@@ -1088,57 +1088,19 @@ class GameState:
             Returns a vector containing data on the tiles
             in a ((radius*2)+1)^2 square centered on the player.
 
-            A tile can have 0 or 1 monsters. Monsters do not have IDs therefore they are referred to
-            by the tile they are occupying.
 
-            Each tile is represented by a vector of size 34:
 
-                +--------------+---------------------------------------+------------------------+
-                | Vector Index | Description of Data                   | Data Type if available |
-                +==============+=======================================+========================+
-                +--------------+---------------------------------------+------------------------+
-                    0                 Monster Type               Int representing type ID
-                +--------------+---------------------------------------+------------------------+
-                    1                 Monster is unique          Boolean
-                +--------------+---------------------------------------+------------------------+
-                    2                 Monster danger rating      Int
-                    3                 Monster current health     Int
-                    4                 Monster max health         Int
-                    5                 Monster AC                 Int
-                    6                 Monster EV                 Int
-                    7                 Monster MR                 Int
-                    8                 Monster Speed              Int
-                    9                 Monster Status Effect 1    Int representing type ID
-                    10                Monster Status Effect 2    Int representing type ID
-                    11                Monster Status Effect 3    Int representing type ID
-                    12                Monster Status Effect 4    Int representing type ID
-                    13                Monster Status Effect 5    Int representing type ID
-                    14                Monster Has Spell 1        Int representing type ID
-                    15                Monster Has Spell 2        Int representing type ID
-                    16                Monster Has Spell 3        Int representing type ID
-                    17                Monster Has Spell 4        Int representing type ID
-                    18                Monster Has Spell 5        Int representing type ID
-                    19                Monster Has Spell 6        Int representing type ID
-                    20                Terrain Type               Int representing type ID
-                    21                Has Item Potion            Int representing type ID
-                    22                Has Item Scroll            Int representing type ID
-                    23                Has Item Armour            Int representing type ID
-                    24                Has Item Weapon            Int representing type ID
-                    25                Has Item Missile           Int representing type ID
-                    26                Has Door               0 for None, 1 for closed, 2 for open
-                    27                Has Trap                   Int representing type ID
-                    28                Has Gold                   Boolean
-                    29                Has Smoke /Fog             Boolean
-                    30                Has Wall                   Int representing type ID
-                    31                Has Stairway / Shaft       Int representing type ID
-                    32                Has Rune                   Int representing type ID
-                    33                Has Orb of Zot             Boolean
-
-            Returns:
-                 a list of size 34 * ((radius*2)+1)^2
+          Returns:
+                 a list of size 34 * ((radius*2)+1)^2|
         """
         # TODO write code
-        pass
+        cells = self.cellmap.get_radius_around_agent_cells(r=radius)
+
+        cells_vector = []
+        for cell in cells:
+            cells_vector += cell.get_cell_vector()
+
+        return cells_vector
 
     def get_egocentric_level_map_data_vector(self):
         """ Returns a vector containing data on the tiles

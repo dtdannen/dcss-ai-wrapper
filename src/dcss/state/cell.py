@@ -1,4 +1,6 @@
 from dcss.state.monster import Monster
+from dcss.state.terrain import TerrainType
+
 
 
 class Cell:
@@ -19,6 +21,8 @@ class Cell:
         self.t = None
         self.mf = None
         self.col = None
+
+        self.terrain = None
 
         self.has_wall = False
         self.has_player = False
@@ -97,12 +101,15 @@ class Cell:
 
             elif self.g == '#':
                 self.has_wall = True
+                self.terrain = TerrainType.WALL
 
             elif self.g == '>':
                 self.has_stairs_down = True
+                self.terrain = TerrainType.STAIRS_DOWN
 
             elif self.g == '<':
                 self.has_stairs_up = True
+                self.terrain = TerrainType.STAIRS_UP
 
             elif self.g == '@':
                 self.has_player = True
@@ -111,22 +118,28 @@ class Cell:
             elif self.g == '+':
                 self.has_closed_door = True
                 self.has_open_door = False
+                self.terrain = TerrainType.CLOSED_DOOR
 
             elif self.g == "\'":
                 self.has_closed_door = False
                 self.has_open_door = True
+                self.terrain = TerrainType.OPENED_DOOR
 
             elif self.g == '8':
                 self.has_statue = True
+                self.terrain = TerrainType.WALL
 
             elif self.g == '⌠':
                 self.has_fountain = True
+                self.terrain = TerrainType.WALL
 
             elif self.g == '≈':
                 self.has_lava = True
+                self.terrain = TerrainType.LAVA
 
             elif self.g in ['☘', '♣']:
                 self.has_tree = True
+                self.terrain = TerrainType.TREE
 
             elif self.g == '†':
                 self.has_corpse = True
@@ -143,6 +156,7 @@ class Cell:
 
             elif self.g == '^':
                 self.has_shaft = True
+                self.terrain = TerrainType.SHAFT_DOWN
 
             # A '.' means that its an empty tile
             elif self.g == '.':
@@ -214,6 +228,8 @@ class Cell:
 
         self.raw = vals
 
+    def get_terrain(self):
+
     def remove_all_items(self):
         self.has_plant = False
         self.has_smoke = False
@@ -236,18 +252,41 @@ class Cell:
         return "cellx{}y{}".format(self.x, self.y).replace('-','_')
 
     def get_cell_vector(self):
-        """Do something similar to get_item_vector"""
+        """
+            A tile can have 0 or 1 monsters. Monsters do not have IDs therefore they are referred to
+            by the tile they are occupying.
 
-        # cell vector should contain:
-        # corpse? 0 or 1
-        # monster? (can only be one monster on a tile) - monster vector with
-        # monster vector
-        # current health? (may be in the form of weak, almost dead, bloodied, etc)
-        # maximum health?
-        # monster name
-        # is unique?
-        # items?
-        # special tile features (like water, lava, wall, door, etc)
+            Each tile is represented by a vector of size 34:
+
+                +--------------+---------------------------------------+------------------------+
+                | Vector Index | Description of Data                   | Data Type if available |
+                +==============+=======================================+========================+
+                |  0-19        |   Monster data, see monster.py get_cell_vector()               |
+                +--------------+---------------------------------------+------------------------+
+                |   20         |       Terrain Type                    | Int repr.type ID       |
+                +--------------+---------------------------------------+------------------------+
+                |   21         |       Has Item Potion                 |     Int repr. type ID  |
+                +--------------+---------------------------------------+------------------------+
+                |   22         |       Has Item Scroll                 |     Int repr. type ID  |
+                +--------------+---------------------------------------+------------------------+
+                |   23         |       Has Item Armour                 |     Int repr. type ID  |
+                +--------------+---------------------------------------+------------------------+
+                |   24         |       Has Item Weapon                 |      Int repr. type ID |
+                +--------------+---------------------------------------+------------------------+
+                |   25         |       Has Item Missile                |     Int repr. type ID  |
+                +--------------+---------------------------------------+------------------------+
+                |   26         |       Has Gold                        |     Boolean            |
+                +--------------+---------------------------------------+------------------------+
+                |   27         |       Has Smoke /Fog                  |     Boolean            |
+                +--------------+---------------------------------------+------------------------+
+                |   30         |   (TODO)    Has Rune                  |      Int repr. type ID |
+                +--------------+---------------------------------------+------------------------+
+                |   31         |   Has Orb of Zot                      |     Boolean            |
+                +--------------+---------------------------------------+------------------------+
+
+        """
+
+        return self.monster.get_cell_vector() + [self.terrain, self.has_potion, self.has_scroll, self.has_armour, self.has_hand_weapon, self.has_missile, self.has_gold, self.has_smoke, self.has_orb_of_zot]
 
     def get_pddl_facts(self):
         pddl_facts = []
