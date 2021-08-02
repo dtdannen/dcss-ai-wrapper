@@ -28,7 +28,7 @@ Then to install all packages into this virtualenv::
 
     pip install -r requirements.txt
 
-And do a pip install of the project in develop mode so you can change files then run it::
+And do a pip install of the project in develop mode so you can change files in between running agents::
 
     pip install -e .
 
@@ -41,7 +41,7 @@ Run the docker and open an interactive shell::
     docker run -it -p 8080:8080 b3d5cdf181b8
 
 
-Now launch the webserver from within the docker interactive shell by first activate python::
+Now launch the webserver from within the docker interactive shell by first activating python environment and then running the webserver::
 
     cd /dcss/crawl/crawl-ref/source/webserver
     source venv/bin/activate
