@@ -8,6 +8,10 @@ Clone the repository::
 
     git clone https://github.com/dtdannen/dcss-ai-wrapper.git
 
+Change directory to the new dcss-ai-wrapper folder::
+
+    cd dcss-ai-wrapper/
+
 Create a virtualenv and install packages::
 
     python3 -m venv .env
