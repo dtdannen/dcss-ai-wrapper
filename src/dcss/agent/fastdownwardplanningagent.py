@@ -308,8 +308,6 @@ if __name__ == "__main__":
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
     my_config.delay = 0.4
-    my_config.always_start_new_game = True
-    my_config.auto_start_new_game = True
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
 
