@@ -228,8 +228,6 @@ class Cell:
 
         self.raw = vals
 
-    def get_terrain(self):
-
     def remove_all_items(self):
         self.has_plant = False
         self.has_smoke = False

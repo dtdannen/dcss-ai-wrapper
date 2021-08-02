@@ -1088,12 +1088,9 @@ class GameState:
             Returns a vector containing data on the tiles
             in a ((radius*2)+1)^2 square centered on the player.
 
+            See cell.py get_cell_vector() for a description of what is in each cell vector.
 
-
-          Returns:
-                 a list of size 34 * ((radius*2)+1)^2|
         """
-        # TODO write code
         cells = self.cellmap.get_radius_around_agent_cells(r=radius)
 
         cells_vector = []
@@ -1112,7 +1109,9 @@ class GameState:
             More realistically returns a vector ranging from a minimum size of 7,650 (225 LOS tiles * 34)
             up to possible sizes of 68,000+ (2000 tiles * 34).
         """
-        # TODO write code
+
+        # TODO - need to find a structured way to do this so that vectors are always the same (i.e. there
+        # TODO   could be non-existent tiles in a row, so we'd need to fill these in with an empty vector of some kind)
         pass
 
     def get_all_map_data_vector(self):
@@ -1124,7 +1123,8 @@ class GameState:
             More realistically returns a vector ranging from a minimum size of 7,650 (225 LOS tiles * 34)
             up to possible sizes of 3,400,000+ (100,000 tiles * 34).
         """
-        # TODO write code
+        # TODO - need to find a structured way to do this so that vectors are always the same (i.e. there
+        # TODO   could be non-existent tiles in a row, so we'd need to fill these in with an empty vector of some kind)
         pass
 
     def get_player_stats_pddl(self):
