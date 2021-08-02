@@ -9,6 +9,7 @@ ICAPS 2021 Tutorial
     * **[July 30th at 23:00 UTC-4]** First version of these instructions are posted online.
     * **[July 31st at 21:00 UTC-4]** Tutorial cancelled due to the organizer falling sick.
     * **[Aug 2nd at 07:20 UTC-4]** We are working on providing a modified tutorial instead of cancelling.
+    * **[Aug 2nd at 08:30 UTC-4]** We have updated the schedule with a modified list of excercises and timeline.
 
 Introduction
 ============
@@ -59,24 +60,20 @@ for this project: `https://gitter.im/dcss-ai-wrapper/community <https://gitter.i
 +---------------+-----------------------------------------------------------------------+
 |   Time        | Description                                                           |
 +===============+=======================================================================+
-| -1hr to Start | Open session to ensure attendee’s environments are properly configured|
+| -1hr to Start | Open session to help attendee’s with any installation issues          |
 +---------------+-----------------------------------------------------------------------+
-| Start - 30min |  Introductory Lecture to the DCSS Game and the API                    |
+| Start - 45min |  Introductory Lecture to the DCSS Game and the API + Live Demo        |
 +---------------+-----------------------------------------------------------------------+
-| 30min - 1 hr  | Learning objective #1 - Get a classical planning agent (using         |
-|               | Fastdownward) running in the game                                     |
-+---------------+-----------------------------------------------------------------------+
-| 1 hr to 1.5hr | Learning objective #2 - Obtain and visualize data about the           |
-|               | performance of the planning agent against other baseline agents       |
-+---------------+-----------------------------------------------------------------------+
-| 1.5 hr to 2hr | Learning objective #3 - Extend the planning agent with more           |
-|               | goal types, including attacking monsters and picking up items.        |
-+---------------+-----------------------------------------------------------------------+
-| 2 hr to End   | Extra Credit Exercises:                                               |
+| 45 min to End | Excercises (organizers will be available to help guide participants   |
+|               | through these excercises):                                            |
 |               |                                                                       |
-|               | * Extend the planning agent with goals and other behaviors to see how |
-|               |   far it can travel in the dungeon before dying                       |
-|               | * Customize PDDL knowledge for an alternative planner to FastDownward |
+|               | * Exercise 1: Get random agent running and watch it play in the       |
+|               |   browser                                                             |
+|               | * Exercise 2: Get fastdownward agent running and watch it play in the |
+|               |   browser                                                             |
+|               | * Exercise 3: Plot performance of random agent                        |
+|               | * Exercise 4: Plot performance of planning agent                      |
+|               | * Exercise 5: See how far you can get by modifying the planning agent |
 +---------------+-----------------------------------------------------------------------+
 
 
