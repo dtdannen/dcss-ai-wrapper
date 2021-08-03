@@ -167,7 +167,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         # print("platform is {}".format(platform.system()))
         if platform.system() == 'Windows':
             os.system(fast_downward_system_call)
-        elif platform.system() == 'Linux':
+        elif platform.system() == 'Linux' or platform.system() == 'Darwin':
             subprocess.run(fast_downward_process_call, shell=True, stdout=subprocess.DEVNULL)
 
         # step 3: read in the resulting plan
