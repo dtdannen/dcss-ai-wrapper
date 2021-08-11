@@ -36,6 +36,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.new_goal = None
         self.new_goal_type = None
         self.current_goal_type = None
+        self.cells_visited = 0
 
     def do_dungeon(self):
         # select dungeon and character build
@@ -76,6 +77,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             if cell.has_closed_door:
                 closed_door_cells.append(cell)
 
+        self.cells_visited = len(cells_visited)
         # print("Found {} not visited cells".format(len(cells_not_visited)))
         i = 1
         farthest_away_cells = []
@@ -246,17 +248,18 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         return it and save some work
         """
 
+        cells_visited_threshold_try_stairs = 300
+
         # attack monsters first
         monster_goal = self.get_first_monster_goal()
         if monster_goal:
             return monster_goal, "monster"
-        #elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
-        #    return self.get_full_health_goal(), "heal"
-        # elif self.actions_taken_so_far % 10 == 0 and random.random() < 0.25:
-        #     # TODO - choose a lower depth for current branch of the dungeon
-        #     lower_splace_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
-        #                                      self.current_game_state.player_depth)
-        #     return "(playerplace {})".format(lower_place_str), "stairsdown"
+#        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
+#            return self.get_full_health_goal(), "heal"
+        if self.cells_visited > cells_visited_threshold_try_stairs:
+            lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
+                                             self.current_game_state.player_depth+1)
+            return "(playerplace {})".format(lower_place_str), "stairsdown"
         else:
             goal = self.get_random_nonvisited_nonwall_playerat_goal()
             selected_goal = goal

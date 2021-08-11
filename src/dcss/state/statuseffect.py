@@ -98,6 +98,7 @@ class StatusEffect(Enum):
     VULNERABLE_STATUS_EFFECT = 88
     WATER_STATUS_EFFECT = 89
     WEAK_STATUS_EFFECT = 90
+    ZOT_STATUS_EFFECT = 91
 
 
 class StatusEffectMapping:

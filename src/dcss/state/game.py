@@ -1693,6 +1693,8 @@ class GameState:
                         current_status_effects.add(StatusEffect.WATER_STATUS_EFFECT)
                     elif v == 'Constr':
                         current_status_effects.add(StatusEffect.CONSTRICTION_STATUS_EFFECT)
+                    elif v == 'Zot':
+                        current_status_effects.add(StatusEffect.ZOT_STATUS_EFFECT)
 
                     else:
                         print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
@@ -1726,8 +1728,10 @@ class GameState:
             for i in range(1, len(ascending_bin_labels)+1):
                 if self.player_current_hp < i * bin_size:
                     player_pddl_strs.append("(playerhealth {})".format(ascending_bin_labels[i-1]))
-                    print("Just wrote player_health to be {} becauase its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
+                    print("Just wrote player_health to be {} because its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
                     break
+
+        player_pddl_strs.append("(playerplace {}_{})".format(self.player_place.lower().strip(), self.player_depth))
 
         return player_pddl_strs
 
