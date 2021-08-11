@@ -14,7 +14,7 @@
 
 **dcss-ai-wrapper** is an API for Dungeon Crawl Stone Soup for Artificial Intelligence research. This effort started with the following paper: 
 
-###Papers:
+### Papers:
 
 - *Dannenhauer, D., Dannenhauer, Z. A., Decker, J., Amos-Binks, A., Floyd, M., Aha D. W. [dcss ai wrapper: An API for Dungeon Crawl Stone Soup providing both Vector and Symbolic State Representations.](https://prl-theworkshop.github.io/prl2021/papers/PRL2021_paper_24.pdf) PRL Workshop - Bridging the Gap Between AI Planning and Reinforcement Learning. International Conference on Automated Planning and Scheduling (ICAPS). 2021.*
 
@@ -22,7 +22,7 @@
 
 If you use this repository in your research, please cite the most recent paper.
 
-###Tutorials:
+### Tutorials:
 
 - *[ICAPS 2021 Tutorial](https://dcss-ai-wrapper.readthedocs.io/en/latest/tutorials/icaps2021tutorial.html)*
 
