@@ -314,6 +314,9 @@ if __name__ == "__main__":
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
 
+    #my_config.auto_start_new_game = True
+    #my_config.always_start_new_game = True
+
     # create game
     game = WebSockGame(config=my_config, agent_class=FastDownwardPlanningBaseAgent)
     game.run()

@@ -23,36 +23,39 @@
 
 (define (domain dcss)
 (:requirements :strips :negative-preconditions :existential-preconditions)
-(:types monster
-        cell
-        place ; examples: zot_4, dungeon_12, vaults_2
-        skill
-        ability
-        spell
-        god
-        qualitative_quantity
-        status
-        mutation
-        terrain
-        danger_rating
-        item
-        rune
-        status_effect
-        target_ability_text_message
+(:types monster - object
+        cell - object
+        place - object ; examples: zot_4, dungeon_12, vaults_2
+        skill - object
+        ability - object
+        spell - object
+        god - object
+        qualitative_quantity - object
+        status - object
+        mutation - object
+        terrain - object
+        danger_rating - object
+        item - object
+        rune - object
+        status_effect - object
+        target_ability_text_message - object
 
         non_target_based_spell - spell
         target_based_spell - spell
 
         non_target_ability - ability
         target_ability - ability
+
         target_ability_location - target_ability
         target_ability_menu - target_ability
         target_ability_text_message_choice - target_ability
 
         consumeitem - item
         equipitem - item
+
         potion - consumeitem
         scroll - consumeitem
+
         weapon - equipitem
         armour - equipitem
 )
@@ -1336,7 +1339,7 @@
     (hasmonster ?cell - cell)
     (monster_danger_rating ?cell - cell ?danger - danger_rating)
     (monster_health ?cell - cell ?amount - qualitative_quantity)
-    (monster_status_effect ?cell - cell ?status - status)
+    (monster_status_effect ?cell - cell ?status - status_effect)
 
     ; levels
     (playerplace ?place - place)
@@ -1843,7 +1846,7 @@
 )
 
 (:action travel_staircase_down
-    :parameters (?currentplace ?currcell ?nextlowestplace)
+    :parameters (?currentplace - place ?currcell - cell ?nextlowestplace - place)
     :precondition
     (and
         (playerat ?currcell)
@@ -1859,7 +1862,7 @@
 )
 
 (:action travel_staircase_up
-    :parameters (?currentplace ?currcell ?nexthighestplace)
+    :parameters (?currentplace - place ?currcell - cell ?nexthighestplace - place)
     :precondition
     (and
         (playerat ?currcell)
@@ -1870,13 +1873,13 @@
     :effect
     (and
         (not (playerplace ?currentplace))
-        (playerplace ?nextlowestplace)
+        (playerplace ?nexthighestplace)
     )
 )
 
 
 (:action pickup_item
-    :parameters (?item ?cell)
+    :parameters (?item - item ?cell - cell)
     :precondition
     (and
         (playerat ?cell)
@@ -1889,7 +1892,7 @@
 )
 
 (:action drop_item
-    :parameters (?item ?cell)
+    :parameters (?item - item ?cell - cell)
     :precondition
     (and
         (playerat ?cell)
@@ -1903,7 +1906,7 @@
 
 
 (:action equip_weapon
-    :parameters (?weaponitem)
+    :parameters (?weaponitem - weapon)
     :precondition
     (and
         (invhasweapon ?weaponitem)
@@ -1917,7 +1920,7 @@
 
 
 (:action equip_armour
-    :parameters (?armouritem)
+    :parameters (?armouritem - armour)
     :precondition
     (and
         (invhasarmour ?armouritem)
@@ -1930,7 +1933,7 @@
 )
 
 (:action remove_weapon
-    :parameters (?weaponitem)
+    :parameters (?weaponitem - weapon)
     :precondition
     (and
         (invhasweapon ?weaponitem)
@@ -1944,7 +1947,7 @@
 
 
 (:action remove_armour
-    :parameters (?armouritem)
+    :parameters (?armouritem - armour)
     :precondition
     (and
         (invhasarmour ?armouritem)
@@ -1958,7 +1961,7 @@
 
 
 (:action consume_potion
-    :parameters (?potion)
+    :parameters (?potion - potion)
     :precondition
     (and
         (invhaspotion ?potion)
@@ -1970,7 +1973,7 @@
 )
 
 (:action consume_scroll
-    :parameters (?scroll)
+    :parameters (?scroll - scroll)
     :precondition
     (and
         (invhasscroll ?scroll)
@@ -1982,7 +1985,7 @@
 )
 
 (:action attack_by_throwing
-    :parameters (?item ?targetcell)
+    :parameters (?item - item ?targetcell - cell)
     :precondition
     (and
         (invhasitem ?item)

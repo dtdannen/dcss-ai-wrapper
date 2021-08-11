@@ -321,11 +321,13 @@ class Cell:
         if self.has_stave:
             pddl_facts.append("(hasstave {})".format(self.get_pddl_name()))
         if self.has_hand_weapon:
-            pddl_facts.append("(hashandweapon {})".format(self.get_pddl_name()))
+            pddl_facts.append("(hasweapon {})".format(self.get_pddl_name()))
         if self.has_armour:
             pddl_facts.append("(hasarmour {})".format(self.get_pddl_name()))
         if self.has_missile:
-            pddl_facts.append("(hasmissile {})".format(self.get_pddl_name()))
+            # TODO - add support for this to the pddl domain file
+            #pddl_facts.append("(hasmissile {})".format(self.get_pddl_name()))
+            pass
         if self.has_amulet:
             pddl_facts.append("(hasamulet {})".format(self.get_pddl_name()))
         if self.has_wand:
