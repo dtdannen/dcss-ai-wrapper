@@ -63,8 +63,6 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
                 self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
                 print("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
-            if cell.has
-
         self.num_cells_visited = len(self.cells_visited)
 
     def get_full_health_goal(self):
