@@ -62,12 +62,12 @@ class CellMap:
         # safety check - cell with player matches x and y
         if self.agent_x and self.agent_y:
             player_cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(self.agent_x, self.agent_y)]
-            if not player_cell.has_player:
-                print("WARNING - discrepancy in player location:")
-                print("     agent.x = {}".format(self.agent_x))
-                print("     agent.y = {}".format(self.agent_y))
-                print("     playercell.x = {}".format(player_cell.x))
-                print("     playercell.y = {}".format(player_cell.y))
+            # if not player_cell.has_player:
+            #     print("WARNING - discrepancy in player location:")
+            #     print("     agent.x = {}".format(self.agent_x))
+            #     print("     agent.y = {}".format(self.agent_y))
+            #     print("     playercell.x = {}".format(player_cell.x))
+            #     print("     playercell.y = {}".format(player_cell.y))
 
     def set_agent_x(self, x):
         self.agent_x = x

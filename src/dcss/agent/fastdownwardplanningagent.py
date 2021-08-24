@@ -39,26 +39,6 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.cells_visited = 0
         self.player_has_seen_stairs_down = {x:False for x in range(0,50)}  # key is depth, value is whether seen stairs down
 
-    def do_dungeon(self):
-        # select dungeon and character build
-        return [{'msg': 'key', 'keycode': ord('b')},
-                {'msg': 'key', 'keycode': ord('h')},
-                {'msg': 'key', 'keycode': ord('b')},
-                ]
-
-    def do_dungeon_webserver(self):
-        # select dungeon and character build
-        return [{'msg': 'input', 'text': 'b'},
-                {'msg': 'input', 'text': 'i'},
-                {'msg': 'input', 'text': 'c'},
-                ]
-
-    def get_game_mode_setup_actions(self):
-        return self.do_dungeon()
-
-    def get_game_mode_setup_actions_webserver(self):
-        return self.do_dungeon_webserver()
-
     def get_full_health_goal(self):
         return "(playerfullhealth)"
 
@@ -79,8 +59,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
                 closed_door_cells.append(cell)
 
             if cell.has_stairs_down:
-                if self.current_game_state.player_depth not in self.player_has_seen_stairs_down.keys():
-                    self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
+                self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
+                print("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
         self.cells_visited = len(cells_visited)
         # print("Found {} not visited cells".format(len(cells_not_visited)))
@@ -106,7 +86,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
         #print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
-        if i < 4 and len(closed_door_cells) > 1:
+        if len(closed_door_cells) > 1:
             # print("Attempting to choose a closed door as a goal if possible")
             goal_cell = random.choice(closed_door_cells)
         elif len(farthest_away_cells) > 0:
