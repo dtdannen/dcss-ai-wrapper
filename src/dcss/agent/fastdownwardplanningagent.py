@@ -36,44 +36,54 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.new_goal = None
         self.new_goal_type = None
         self.current_goal_type = None
-        self.cells_visited = 0
+        self.num_cells_visited = 0
         self.player_has_seen_stairs_down = {x:False for x in range(0,50)}  # key is depth, value is whether seen stairs down
 
-    def get_full_health_goal(self):
-        return "(playerfullhealth)"
+        self.cells_not_visited = []
+        self.cells_visited = []
+        self.closed_door_cells = []
 
-    def get_random_nonvisited_nonwall_playerat_goal(self):
-        cells_not_visited = []
-        cells_visited = []
-        closed_door_cells = []
+        self.found_item = None # if not None, this will be a cell
+        self.inventory_full = False
+
+    def process_gamestate_via_cells(self):
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.has_player_visited:
-                cells_visited.append(cell)
+                self.cells_visited.append(cell)
             elif not cell.has_wall and not cell.has_player and not cell.has_statue and not cell.has_lava and not cell.has_plant and not cell.has_tree and cell.g:
                 # print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
-                cells_not_visited.append(cell)
+                self.cells_not_visited.append(cell)
             else:
                 pass
 
             if cell.has_closed_door:
-                closed_door_cells.append(cell)
+                self.closed_door_cells.append(cell)
 
             if cell.has_stairs_down:
                 self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
                 print("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
-        self.cells_visited = len(cells_visited)
-        # print("Found {} not visited cells".format(len(cells_not_visited)))
+            if cell.has
+
+        self.num_cells_visited = len(self.cells_visited)
+
+    def get_full_health_goal(self):
+        return "(playerfullhealth)"
+
+    def get_nearest_item_pickup_goal(self):
+        pass
+
+    def get_random_nonvisited_nonwall_playerat_goal(self):
         i = 1
         farthest_away_cells = []
-        target_cells = cells_not_visited
+        target_cells = self.cells_not_visited
         while len(target_cells) > 1:
             farthest_away_cells = target_cells
             # remove all cells that are i distance away from other visited cells
             new_target_cells = []
             for potential_cell in target_cells:
                 found_close_visited_cell = False
-                for visited_cell in cells_visited:
+                for visited_cell in self.cells_visited:
                     if visited_cell.straight_line_distance(potential_cell) <= i:
                         found_close_visited_cell = True
 
@@ -86,9 +96,9 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
         #print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
-        if len(closed_door_cells) > 1:
+        if len(self.closed_door_cells) > 1:
             # print("Attempting to choose a closed door as a goal if possible")
-            goal_cell = random.choice(closed_door_cells)
+            goal_cell = random.choice(self.closed_door_cells)
         elif len(farthest_away_cells) > 0:
             goal_cell = random.choice(farthest_away_cells)
             # print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
@@ -265,6 +275,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
+        self.process_gamestate_via_cells()
 
         self.new_goal, self.new_goal_type = self.goal_selection()
         print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))

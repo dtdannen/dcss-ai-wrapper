@@ -1334,6 +1334,7 @@
 
     ; player health
     (playerhealth ?amount - qualitative_quantity)
+    (playermagicpoints ?amount - qualitative_quantity)
 
     ; monster related predicates - only one monster per cell
     (hasmonster ?cell - cell)
