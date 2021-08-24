@@ -69,6 +69,11 @@ class CellMap:
                 print("     playercell.x = {}".format(player_cell.x))
                 print("     playercell.y = {}".format(player_cell.y))
 
+    def set_agent_x(self, x):
+        self.agent_x = x
+
+    def set_agent_y(self, y):
+        self.agent_y = y
 
     def draw_cell_map(self):
 

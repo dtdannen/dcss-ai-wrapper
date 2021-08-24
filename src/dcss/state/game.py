@@ -1558,6 +1558,7 @@ class GameState:
             elif k == 'depth':
                 self.player_depth = data[k]
                 self.get_cell_map().set_current_depth(self.player_depth)
+                print("Player is now at Depth {}".format(self.player_depth))
 
             elif k == 'time':
                 self.game_time = data[k]
@@ -1649,6 +1650,9 @@ class GameState:
                 self.player_position = data[k]
                 self.agent_x = self.player_position['x']
                 self.agent_y = self.player_position['y']
+                self.cellmap.set_agent_x(self.agent_x)
+                self.cellmap.set_agent_y(self.agent_y)
+                print("Player position is now x={}, y={}".format(self.agent_x, self.agent_y))
 
             # Todo - I don't know the difference between adjusted noise and noise
             elif k == 'adjusted_noise':

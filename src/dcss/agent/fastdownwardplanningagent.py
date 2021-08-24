@@ -37,6 +37,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.new_goal_type = None
         self.current_goal_type = None
         self.cells_visited = 0
+        self.player_has_seen_stairs_down = {x:False for x in range(0,50)}  # key is depth, value is whether seen stairs down
 
     def do_dungeon(self):
         # select dungeon and character build
@@ -76,6 +77,10 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
             if cell.has_closed_door:
                 closed_door_cells.append(cell)
+
+            if cell.has_stairs_down:
+                if self.current_game_state.player_depth not in self.player_has_seen_stairs_down.keys():
+                    self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
 
         self.cells_visited = len(cells_visited)
         # print("Found {} not visited cells".format(len(cells_not_visited)))
@@ -256,10 +261,12 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             return monster_goal, "monster"
 #        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
 #            return self.get_full_health_goal(), "heal"
-        if self.cells_visited > cells_visited_threshold_try_stairs:
+        if self.player_has_seen_stairs_down[self.current_game_state.player_depth]:
             lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
                                              self.current_game_state.player_depth+1)
-            return "(playerplace {})".format(lower_place_str), "stairsdown"
+            lower_place_goal = "(playerplace {})".format(lower_place_str)
+            print("Goal selection choosing next goal: {}".format(lower_place_goal))
+            return lower_place_goal, "descend"
         else:
             goal = self.get_random_nonvisited_nonwall_playerat_goal()
             selected_goal = goal
