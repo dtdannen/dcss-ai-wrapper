@@ -1134,8 +1134,10 @@ class GameState:
 
         quantitative_choices = ['none', 'low', 'medium_low', 'medium', 'medium_high', 'high', 'maxed']
 
-        player_stats_pddl.append('(playerhealth {})'.format(int((self.player_current_hp / self.player_hp_max) * len(quantitative_choices))))
-        player_stats_pddl.append('(playermagicpoints {})'.format(int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices))))
+        health_index = int((self.player_current_hp / self.player_hp_max) * len(quantitative_choices))
+        player_stats_pddl.append('(playerhealth {})'.format(quantitative_choices[health_index]))
+        magicpoints_index = int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices))
+        player_stats_pddl.append('(playermagicpoints {})'.format(quantitative_choices[magicpoints_index]))
 
         # TODO - finish turning these into PDDL
         player_stats = [
