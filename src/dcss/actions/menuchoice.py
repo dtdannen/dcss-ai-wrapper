@@ -1,5 +1,5 @@
 from enum import Enum
-
+from dcss.state.menu import Menu
 
 class MenuChoice(Enum):
     """
@@ -75,6 +75,17 @@ class MenuChoice(Enum):
 
 
 class MenuChoiceMapping:
+
+    menus_to_choices = {Menu.ATTRIBUTE_INCREASE_TEXT_MENU: [MenuChoice.UPPER_S, MenuChoice.UPPER_I, MenuChoice.UPPER_D]}
+
+    @staticmethod
+    def get_possible_actions_for_current_menu(menu: Menu):
+        if menu in MenuChoiceMapping.menus_to_choices.keys():
+            return MenuChoiceMapping.menus_to_choices[menu]
+        elif menu in [Menu.NO_MENU]:
+            return None
+        else:
+            raise Exception("Don't have choices set for Menu: {}".format(menu))
 
     @staticmethod
     def get_menu_letter_to_menu_choice(dcss_menu_chars):

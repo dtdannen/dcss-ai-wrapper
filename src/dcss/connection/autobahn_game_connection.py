@@ -2,6 +2,7 @@ import json
 import time
 
 from dcss.actions.action import Action
+from dcss.actions.menuchoice import MenuChoice
 from dcss.connection import config
 import zlib
 import copy
@@ -218,7 +219,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         enter_key_msg = {"text": "\r", "msg": "input"}
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
-                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU, Menu.ABILITY_MENU, Menu.SKILL_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
+                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU, Menu.ABILITY_MENU, Menu.SKILL_MENU, Menu.ATTRIBUTE_INCREASE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
                         self.game_state.draw_cell_map()
                         # the following executes the next action if we are using an instance of Agent to control
                         # sending actions
@@ -228,6 +229,11 @@ class DCSSProtocol(WebSocketClientProtocol):
                             # then delete game if config has always_start_new_game set to True
                             if config.WebserverConfig.always_start_new_game and not self._CREATED_A_NEW_CHARACTER:
                                 self._BEGIN_DELETING_GAME = True
+                            # elif next_action and isinstance(next_action, MenuChoice):
+                            #     print("We are about to send menu choice action: {}".format(next_action))
+                            #     self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
+                            #     self.last_message_sent = next_action
+                            #     self.actions_sent += 1
                             elif next_action:
                                 print("We are about to send action: {}".format(next_action))
                                 self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
@@ -434,6 +440,12 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("setting _RECEIVED_MAP_DATA = TRUE")
             self._RECEIVED_MAP_DATA = True
 
+        if self.check_for_attribute_increase(json_msg):
+            print("AGENT HAS CHOICE OF ATTRIBUTE INCREASE")
+            self._IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU
+            self.attribute_increase_menu_options = self.get_ability_menu_options(json_msg)
+            print("setting _IN_MENU = Menu.SKILL_MENU")
+
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):
                 print("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES")
@@ -554,6 +566,12 @@ class DCSSProtocol(WebSocketClientProtocol):
     def get_skill_menu_options(self, json_msg):
         # TODO: get something like the following to work
         pass
+
+    def check_for_attribute_increase(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            if "Increase (S)trength, (I)ntelligence, or (D)exterity?" in v:
+                return True
+        return False
 
     def check_for_ability_menu(self, json_msg):
         input_mode_found = False

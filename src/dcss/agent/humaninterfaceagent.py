@@ -131,10 +131,11 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.always_start_new_game = True
-    my_config.auto_start_new_game = True
-    my_config.species = 'Vampire'
-    my_config.background = 'Necromancer'
+    my_config.always_start_new_game = False
+    my_config.auto_start_new_game = False
+    my_config.species = 'Minotaur'
+    my_config.background = 'Berserker'
+    my_config.starting_weapon = 'hand axe'
 
     # create game
     game = WebSockGame(config=my_config, agent_class=HumanInterfaceBaseAgentDataTracking)

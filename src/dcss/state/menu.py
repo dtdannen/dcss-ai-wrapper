@@ -13,4 +13,5 @@ class Menu(Enum):
     ABILITY_MENU = 9
     ALL_SPELLS_MENU = 10
     SKILL_MENU = 11
+    ATTRIBUTE_INCREASE_TEXT_MENU = 12
 

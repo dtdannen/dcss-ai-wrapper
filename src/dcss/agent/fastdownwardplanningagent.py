@@ -8,7 +8,9 @@ from dcss.connection.config import WebserverConfig
 
 from dcss.agent.base import BaseAgent
 from dcss.actions.command import Command
+from dcss.actions.menuchoice import MenuChoiceMapping
 from dcss.state.game import GameState
+from dcss.state.menu import Menu
 
 import logging
 logging.basicConfig(level=logging.WARNING)
@@ -274,6 +276,10 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
         self.process_gamestate_via_cells()
+
+        available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(self.current_game_state.get_current_menu())
+        if available_menu_choices:
+            return random.choice(available_menu_choices)
 
         self.new_goal, self.new_goal_type = self.goal_selection()
         print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))

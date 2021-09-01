@@ -1128,7 +1128,28 @@ class GameState:
         pass
 
     def get_player_stats_pddl(self):
-        """ Returns a list of PDDL facts representing player stats
+        """
+        Returns PDDL 2.2 level 1 which DOES NOT include all aspects of numeric planning.
+        Therefore the following player stats aren't available.
+
+        +--------------+---------------------------------------+------------------------+
+        | Player Stat  | Description of Data                   | Why not included?      |
+        +==============+=======================================+========================+
+        +--------------+---------------------------------------+------------------------+
+        |     AC       |        Represents Armour              | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+        |    EV        |        Represents Evasion             |  Non-relative Int      |
+        +--------------+---------------------------------------+------------------------+
+        |    SH        |        Represents Shelf              |  Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+        |  Strength    |        Current value                  | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+        | Intelligence |        Training Percentage            | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+        | Dexterity    |        Aptitude                       | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+
+        Returns a list of PDDL facts representing player stats
         """
         player_stats_pddl = []
 
@@ -1138,6 +1159,8 @@ class GameState:
         player_stats_pddl.append('(playerhealth {})'.format(quantitative_choices[health_index]))
         magicpoints_index = int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices))
         player_stats_pddl.append('(playermagicpoints {})'.format(quantitative_choices[magicpoints_index]))
+
+
 
         # TODO - finish turning these into PDDL
         player_stats = [
@@ -1897,7 +1920,8 @@ class GameState:
                         current_status_effects.add(StatusEffect.CONSTRICTION_STATUS_EFFECT)
                     elif v == 'Zot':
                         current_status_effects.add(StatusEffect.ZOT_STATUS_EFFECT)
-
+                    elif v == 'Berserk':
+                        current_status_effects.add(StatusEffect.BERSERK_STATUS_EFFECT)
                     else:
                         print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))
