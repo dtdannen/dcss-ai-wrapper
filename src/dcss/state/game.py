@@ -121,22 +121,22 @@ class GameState:
         self.player_progress = None
         self.player_gold = 0
 
-        self.player_rFire = -1
-        self.player_rCold = -1
-        self.player_rCorr = -1
-        self.player_rNeg = -1
-        self.player_rElec = -1
-        self.player_rPois = -1
+        self.player_rFire = 0
+        self.player_rCold = 0
+        self.player_rCorr = 0
+        self.player_rNeg = 0
+        self.player_rElec = 0
+        self.player_rPois = 0
         self.player_faith_status = False
         self.player_reflect_status = False
         self.player_spirit_status = False
         self.player_harm_status = False
         self.player_rampage_status = False
-        self.player_stealth = -1
-        self.player_willpower = -1
+        self.player_stealth = 0
+        self.player_willpower = 0
         self.player_hp_regen = 0.00
         self.player_mp_regen = 0.00
-        self.player_spell_slots_left = -1
+        self.player_spell_slots_left = 0
         self.player_see_invis = None
 
         self.player_attack_speed = AttackSpeed.UNKNOWN
@@ -1160,42 +1160,41 @@ class GameState:
         magicpoints_index = int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices))
         player_stats_pddl.append('(playermagicpoints {})'.format(quantitative_choices[magicpoints_index]))
 
+        player_stats_pddl.append('(player_worshipping {})'.format(self.player_god))
+        player_stats_pddl.append('(player_piety {})').format(quantitative_choices[self.player_piety_rank])
+
+        if self.player_spell_slots_left > 0:
+            player_stats_pddl.append('(player_has_available_spell_slot)')
+
+        player_stats_pddl.append('(player_resist_fire {})'.format(quantitative_choices[self.player_rFire]))
+        player_stats_pddl.append('(player_resist_cold {})'.format(quantitative_choices[self.player_rCold]))
+        player_stats_pddl.append('(player_resist_neg {})'.format(quantitative_choices[self.player_rNeg]))
+        player_stats_pddl.append('(player_resist_pois {})'.format(quantitative_choices[self.player_rPois]))
+        player_stats_pddl.append('(player_resist_elec {})'.format(quantitative_choices[self.player_rElec]))
+        player_stats_pddl.append('(player_resist_corr {})'.format(quantitative_choices[self.player_rCorr]))
+        player_stats_pddl.append('(player_willpower {})'.format(quantitative_choices[self.player_willpower]))
+
+        stealth_index = 0
+        if self.player_stealth > 0:
+            max_stealth = 11 # from the game
+            stealth_index = int((self.player_stealth / max_stealth) * len(quantitative_choices))
+
+        player_stats_pddl.append('(player_stealth {})'.format(quantitative_choices[stealth_index]))
+
+        if self.player_see_invis:
+            player_stats_pddl.append('(player_see_invis)')
+        if self.player_faith_status:
+            player_stats_pddl.append('(player_faith_status)')
+        if self.player_spirit_status:
+            player_stats_pddl.append('(player_spirit_status)')
+        if self.player_reflect_status:
+            player_stats_pddl.append('(player_reflect_status)')
+        if self.player_harm_status:
+            player_stats_pddl.append('(player_harm_status)')
 
 
         # TODO - finish turning these into PDDL
         player_stats = [
-            self.player_ac,
-            self.player_ev,
-            self.player_sh,
-            self.player_strength,
-            self.player_strength_max,
-            self.player_int,
-            self.player_int_max,
-            self.player_dex,
-            self.player_dex_max,
-            self.player_level,
-            self.player_progress,
-            self.player_god,
-            self.player_piety_rank,
-            self.player_spell_slots_left,
-            self.player_gold,
-            self.player_rFire,
-            self.player_rCold,
-            self.player_rNeg,
-            self.player_rPois,
-            self.player_rElec,
-            self.player_rCorr,
-            self.player_willpower,
-            self.player_stealth,
-            self.player_hp_regen,
-            self.player_mp_regen,
-            self.player_see_invis,
-            self.player_faith_status,
-            self.player_spirit_status,
-            self.player_reflect_status,
-            self.player_harm_status,
-            self.game_turn,
-            self.game_time,
             self.player_movement_speed.value,
             self.player_attack_speed.value,
             self.player_place,

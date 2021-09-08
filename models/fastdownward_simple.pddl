@@ -93,6 +93,7 @@
   deep_water - terrain
   lava - terrain
   rock_wall - terrain
+  statue - terrain
   translucent_rock_wall - terrain
   green_crystal_wall - terrain
   stone_wall - terrain
@@ -1319,8 +1320,6 @@
     (opendoor ?cell - cell)
     (closeddoor ?cell - cell)
 
-    (statue ?cell - cell)
-
     (hasterrain ?cell - cell ?terrain - terrain)
 
     ;altars enable worshipping a god
@@ -1335,6 +1334,20 @@
     ; player stats
     (playerhealth ?amount - qualitative_quantity)
     (playermagicpoints ?amount - qualitative_quantity)
+    (player_resist_fire ?amount - qualitative_quantity)
+    (player_resist_cold ?amount - qualitative_quantity)
+    (player_resist_neg ?amount - qualitative_quantity)
+    (player_resist_pois ?amount - qualitative_quantity)
+    (player_resist_elec ?amount - qualitative_quantity)
+    (player_resist_corr ?amount - qualitative_quantity)
+    (player_willpower ?amount - qualitative_quantity)
+    (player_stealth ?amount - qualitative_quantity)
+    (player_see_invis)
+    (player_faith_status)
+    (player_spirit_status)
+    (player_reflect_status)
+    (player_harm_status)
+    (player_rampage)
 
 
     ; monster related predicates - only one monster per cell
@@ -1397,6 +1410,7 @@
     (player_memorised_spell ?spell - spell)
     (spell_chance_of_failure ?spell - spell ?amount - qualitative_quantity)
     (spell_available_to_memorise ?spell - spell)
+    (player_has_available_spell_slot)
 
     ;abilities
     (player_has_ability ?ability - ability)
@@ -1410,7 +1424,7 @@
     (and
         (southof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1429,7 +1443,7 @@
     (and
         (northof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1449,7 +1463,7 @@
     (and
         (eastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1468,7 +1482,7 @@
     (and
         (westof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1487,7 +1501,7 @@
     (and
         (northwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1506,7 +1520,7 @@
     (and
         (southwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1525,7 +1539,7 @@
     (and
         (northeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1544,7 +1558,7 @@
     (and
         (southeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1563,7 +1577,7 @@
     (and
         (northof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1582,7 +1596,7 @@
     (and
         (southof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1601,7 +1615,7 @@
     (and
         (eastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1620,7 +1634,7 @@
     (and
         (westof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1639,7 +1653,7 @@
     (and
         (northwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1658,7 +1672,7 @@
     (and
         (southwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1677,7 +1691,7 @@
     (and
         (northeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1696,7 +1710,7 @@
     (and
         (southeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))

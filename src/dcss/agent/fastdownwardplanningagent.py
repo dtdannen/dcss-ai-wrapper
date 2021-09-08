@@ -48,6 +48,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.found_item = None # if not None, this will be a cell
         self.inventory_full = False
 
+        self.failed_goals = []
+
     def process_gamestate_via_cells(self):
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.has_player_visited:
@@ -98,8 +100,12 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
         if len(self.closed_door_cells) > 1:
             # print("Attempting to choose a closed door as a goal if possible")
+            self.closed_door_cells = [cell for cell in self.closed_door_cells if cell not in self.failed_goals]
+            print("Ignore failed goals: {}".format(self.failed_goals))
             goal_cell = random.choice(self.closed_door_cells)
         elif len(farthest_away_cells) > 0:
+            farthest_away_cells = [cell for cell in farthest_away_cells if cell not in self.failed_goals]
+            print("Ignore failed goals: {}".format(self.failed_goals))
             goal_cell = random.choice(farthest_away_cells)
             # print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
         else:
@@ -183,6 +189,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
                         pass
         except FileNotFoundError:
             print("Plan could not be generated...")
+            self.failed_goals+=goals
+            self.failed_goals = list(set(self.failed_goals))
             return []
         except:
             print("Unknown error preventing plan from being generated")
@@ -278,8 +286,9 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.process_gamestate_via_cells()
 
         available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(self.current_game_state.get_current_menu())
+        print("available_menu_choices = {}".format(available_menu_choices))
         if available_menu_choices:
-            return random.choice(available_menu_choices)
+            return available_menu_choices[0]
 
         self.new_goal, self.new_goal_type = self.goal_selection()
         print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))

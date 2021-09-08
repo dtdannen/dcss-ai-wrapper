@@ -444,7 +444,13 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("AGENT HAS CHOICE OF ATTRIBUTE INCREASE")
             self._IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU
             self.attribute_increase_menu_options = self.get_ability_menu_options(json_msg)
-            print("setting _IN_MENU = Menu.SKILL_MENU")
+            print("setting _IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU")
+
+        if self.check_for_walk_into_teleport_trap(json_msg):
+            print("AGENT HAS CHOICE OF WALKING INTO TELEPORT TRAP")
+            self._IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU
+            self.teleport_trap_menu_options = self.get_ability_menu_options(json_msg)
+            print("setting _IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU")
 
         if self._GAME_STARTED:
             if self.check_for_species_selection_menu(json_msg):
@@ -570,6 +576,12 @@ class DCSSProtocol(WebSocketClientProtocol):
     def check_for_attribute_increase(self, json_msg):
         for v in nested_lookup('text', json_msg):
             if "Increase (S)trength, (I)ntelligence, or (D)exterity?" in v:
+                return True
+        return False
+
+    def check_for_walk_into_teleport_trap(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            if "Really walk into teleport trap?" in v:
                 return True
         return False
 
