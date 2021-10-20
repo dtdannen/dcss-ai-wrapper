@@ -793,7 +793,8 @@
   orb_status - status_effect
   ozocubus_armour_status - status_effect
   paralysis_status - status_effect
-  petrifying_or_petrified_status - status_effect
+  petrifying_status - status_effect
+  petrified_status - status_effect
   poison_status - status_effect
   powered_by_death_status - status_effect
   quad_damage_status - status_effect
@@ -869,6 +870,23 @@
   tough_skin - mutation
   wild_magic - mutation
   yellow_scales - mutation
+  offhand_punch_aux_atk - mutation
+  offhand_punch_w_claws_aux_atk - mutation
+  offhand_punch_w__blade_hands_aux_atk - mutation
+  headbutt_aux_atk - mutation
+  peck_aux_atk - mutation
+  kick_w_hooves_aux_atk - mutation
+  kick_w_talons_aux_atk - mutation
+  tail_slap_aux_atk - mutation
+  tail_slap_w_stinger_aux_atk - mutation
+  bite_w_fangs_aux_atk - mutation
+  bite_w_acidic_bite_aux_atk - mutation
+  bite_w_anti_magic_bite_aux_atk - mutation
+  pseudopods_aux_atk - mutation
+  tentacle_spike_aux_atk - mutation
+  tentacle_slap_aux_atk - mutation
+  tentacles_squeeze_aux_atk - mutation
+  constriction_aux_atk - mutation
 
   ashenzari - god
   beogh - god
@@ -1348,7 +1366,10 @@
     (player_reflect_status)
     (player_harm_status)
     (player_rampage)
-
+    (player_movement_speed - qualitative_quantity)
+    (player_attack_speed - qualitative_quantity)
+    (player_has_status_effect - status_effect)
+    (player_has_mutation - mutation)
 
     ; monster related predicates - only one monster per cell
     (hasmonster ?cell - cell)

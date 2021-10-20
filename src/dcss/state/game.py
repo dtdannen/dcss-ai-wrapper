@@ -10,11 +10,12 @@ from dcss.state.cellrawstrdatum import CellRawStrDatum
 from dcss.state.inventoryitem import InventoryItem
 from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
-from dcss.state.mutation import MutationMapping, Mutation
-from dcss.state.statuseffect import StatusEffect
+from dcss.state.mutation import MutationMapping, Mutation, MutationPDDLMapping
+from dcss.state.statuseffect import StatusEffect, StatusEffectPDDLMapping
 from dcss.state.skill import SkillMapping, SkillName, Skill
 from dcss.state.spell import Spell, SpellNameMapping
 from dcss.state.ability import Ability, AbilityName, AbilityNameMapping
+
 
 
 class GameState:
@@ -1130,6 +1131,33 @@ class GameState:
     def get_player_stats_pddl(self):
         """
         Returns PDDL 2.2 level 1 which DOES NOT include all aspects of numeric planning.
+
+        PDDL predicates that are provided via this function:
+
+        * playerhealth
+        * playermagicpoints
+        * player_worshipping
+        * player_piety
+        * player_has_available_spell_slot
+        * player_resist_fire
+        * player_resist_cold
+        * player_resist_neg
+        * player_resist_pois
+        * player_resist_elec
+        * player_resist_corr
+        * player_willpower
+        * player_stealth
+        * player_see_invis
+        * player_faith_status
+        * player_spirit_status
+        * player_reflect_status
+        * player_harm_status
+        * player_movement_speed
+        * player_attack_speed
+        * playerplace
+        * player_has_status_effect
+        * player_has_mutation
+
         Therefore the following player stats aren't available.
 
         +--------------+---------------------------------------+------------------------+
@@ -1192,166 +1220,34 @@ class GameState:
         if self.player_harm_status:
             player_stats_pddl.append('(player_harm_status)')
 
+        player_stats_pddl.append('(player_movement_speed {})'.format(quantitative_choices[self.player_movement_speed.value]))
 
-        # TODO - finish turning these into PDDL
-        player_stats = [
-            self.player_movement_speed.value,
-            self.player_attack_speed.value,
-            self.player_place,
+        attack_speed_quantitative_choice_i = 0  # UNKNOWN case gets 'none' by default
+        if self.player_attack_speed.value in [AttackSpeed.EXTREMELY_SLOW, AttackSpeed.VERY_SLOW]:
+            attack_speed_quantitative_choice_i = 1
+        elif self.player_attack_speed.value in [AttackSpeed.QUITE_SLOW, AttackSpeed.BELOW_AVERAGE]:
+            attack_speed_quantitative_choice_i = 2
+        elif self.player_attack_speed.value in [AttackSpeed.AVERAGE, AttackSpeed.ABOVE_AVERAGE]:
+            attack_speed_quantitative_choice_i = 3
+        elif self.player_attack_speed.value in [AttackSpeed.QUITE_FAST, AttackSpeed.VERY_FAST]:
+            attack_speed_quantitative_choice_i = 4
+        elif self.player_attack_speed.value in [AttackSpeed.EXTREMELY_FAST, AttackSpeed.BLINDINGLY_FAST]:
+            attack_speed_quantitative_choice_i = 5
 
-            StatusEffect.AGILE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ALIVE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ANTIMAGIC_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.AUGMENTATION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BAD_FORMS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BERSERK_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BLACK_MARK_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BLIND_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BLOODLESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BRILLIANT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CHARM_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CONFUSING_TOUCH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CONFUSION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CONSTRICTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.COOLDOWNS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CORONA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CORROSION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DARKNESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DAZED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DEATH_CHANNEL_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DEATHS_DOOR_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DEFLECT_MISSILES_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DISJUNCTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DIVINE_PROTECTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DIVINE_SHIELD_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DOOM_HOWL_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DRAIN_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ENGORGED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ENGULF_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FAST_SLOW_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FEAR_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FINESSE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FIRE_VULNERABLE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FLAYED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FLIGHT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FROZEN_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HASTE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HEAVENLY_STORM_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HELD_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HEROISM_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HORRIFIED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.INNER_FLAME_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.INVISIBILITY_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.LAVA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.LEDAS_LIQUEFACTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MAGIC_CONTAMINATION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MARK_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MESMERISED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MIGHT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MIRROR_DAMAGE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.NO_POTIONS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.NO_SCROLLS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.OLGREBS_TOXIC_RADIANCE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ORB_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.OZOCUBUS_ARMOUR_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.PARALYSIS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.PETRIFYING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.PETRIFIED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.POISON_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.POWERED_BY_DEATH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.QUAD_DAMAGE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.RECALL_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.REGENERATING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.REPEL_MISSILES_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.RESISTANCE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.RING_OF_FLAMES_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SAPPED_MAGIC_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SCRYING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SEARING_RAY_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SERPENTS_LASH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SHROUD_OF_GOLUBRIA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SICKNESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SILENCE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLEEP_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLIMIFY_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLOW_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLUGGISH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STARVING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STAT_ZERO_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STICKY_FLAME_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STILL_WINDS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SWIFTNESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TELEPORT_PREVENTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TELEPORT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TORNADO_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TRANSMUTATIONS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.UMBRA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.VITALISATION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.VULNERABLE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.WATER_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.WEAK_STATUS_EFFECT in self.player_status_effects,
+        player_stats_pddl.append('(player_attack_speed {})'.format(quantitative_choices[attack_speed_quantitative_choice_i]))
 
-            Mutation.ACUTE_VISION_MUTATION in self.player_mutations,
-            Mutation.ANTENNAE_MUTATION in self.player_mutations,
-            Mutation.BEAK_MUTATION in self.player_mutations,
-            Mutation.BIG_WINGS_MUTATION in self.player_mutations,
-            Mutation.BLINK_MUTATION in self.player_mutations,
-            Mutation.CAMOUFLAGE_MUTATION in self.player_mutations,
-            Mutation.CLARITY_MUTATION in self.player_mutations,
-            Mutation.CLAWS_MUTATION in self.player_mutations,
-            Mutation.COLD_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.ELECTRICITY_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.EVOLUTION_MUTATION in self.player_mutations,
-            Mutation.FANGS_MUTATION in self.player_mutations,
-            Mutation.FIRE_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.HIGH_MP_MUTATION in self.player_mutations,
-            Mutation.HOOVES_MUTATION in self.player_mutations,
-            Mutation.HORNS_MUTATION in self.player_mutations,
-            Mutation.ICY_BLUE_SCALES_MUTATION in self.player_mutations,
-            Mutation.IMPROVED_ATTRIBUTES_MUTATION in self.player_mutations,
-            Mutation.IRIDESCENT_SCALES_MUTATION in self.player_mutations,
-            Mutation.LARGE_BONE_PLATES_MUTATION in self.player_mutations,
-            Mutation.MAGIC_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.MOLTEN_SCALES_MUTATION in self.player_mutations,
-            Mutation.MUTATION_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.PASSIVE_MAPPING_MUTATION in self.player_mutations,
-            Mutation.POISON_BREATH_MUTATION in self.player_mutations,
-            Mutation.POISON_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.REGENERATION_MUTATION in self.player_mutations,
-            Mutation.REPULSION_FIELD_MUTATION in self.player_mutations,
-            Mutation.ROBUST_MUTATION in self.player_mutations,
-            Mutation.RUGGED_BROWN_SCALES_MUTATION in self.player_mutations,
-            Mutation.SHAGGY_FUR_MUTATION in self.player_mutations,
-            Mutation.SLIMY_GREEN_SCALES_MUTATION in self.player_mutations,
-            Mutation.STINGER_MUTATION in self.player_mutations,
-            Mutation.STRONG_LEGS_MUTATION in self.player_mutations,
-            Mutation.TALONS_MUTATION in self.player_mutations,
-            Mutation.TENTACLE_SPIKE_MUTATION in self.player_mutations,
-            Mutation.THIN_METALLIC_SCALES_MUTATION in self.player_mutations,
-            Mutation.THIN_SKELETAL_STRUCTURE_MUTATION in self.player_mutations,
-            Mutation.TOUGH_SKIN_MUTATION in self.player_mutations,
-            Mutation.WILD_MAGIC_MUTATION in self.player_mutations,
-            Mutation.YELLOW_SCALES_MUTATION in self.player_mutations,
-            Mutation.OFFHAND_PUNCH_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.OFFHAND_PUNCH_W_CLAWS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.OFFHAND_PUNCH_W__BLADE_HANDS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.HEADBUTT_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.PECK_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.KICK_W_HOOVES_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.KICK_W_TALONS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TAIL_SLAP_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TAIL_SLAP_W_STINGER_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.BITE_W_FANGS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.BITE_W_ACIDIC_BITE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.BITE_W_ANTI_MAGIC_BITE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.PSEUDOPODS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TENTACLE_SPIKE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TENTACLE_SLAP_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TENTACLES_SQUEEZE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.CONSTRICTION_AUX_ATK_MUTATION in self.player_mutations,
-        ]
+        player_stats_pddl.append('(playerplace {}_{})'.format(self.player_place.lower().strip(), self.player_depth))
 
-        pass
+        # TODO - better option for player place is to seperate player place and depth,
+        # TODO - will need to update both planning model and game PDDL API
+        #player_stats_pddl.append('(playerplace {})'.format(self.player_place))
+
+        for status_effect in self.player_status_effects:
+            player_stats_pddl.append('(player_has_status_effect {})'.format(StatusEffectPDDLMapping.status_effect_pddl_lookup[status_effect]))
+
+        for mutation in self.player_mutations:
+            player_stats_pddl.append('(player_has_mutation {})'.format(MutationPDDLMapping.mutation_pddl_lookup[mutation]))
+
 
     def get_player_inventory_pddl(self):
         """ Returns a list of PDDL facts representing the player's inventory
