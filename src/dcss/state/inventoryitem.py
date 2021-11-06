@@ -111,6 +111,31 @@ class InventoryItem:
 
         return item_vector
 
+    def get_item_pddl(self):
+        """
+        Returns:
+             1. list of pddl object statements where each item has a unique name
+             2. list of pddl predicates about that item
+
+        Index  Information Contained
+        -----  ---------------------
+          0    Item Type (Armour, Weapon, etc)
+          1    Item Count
+          2    Item Bonus ("+x" value)
+          3    Item Equipped
+          4    Property* (Fire resist, stealth, venom, etc)
+          5   Property* (Fire resist, stealth, venom, etc)
+          6   Property* (Fire resist, stealth, venom, etc)
+        """
+
+        item_pddl_facts = ["(quantity {} {})".format(self.name, self.quantity)]
+
+        if self.equipped:
+            item_pddl_facts.append("(equipped {})".format(self.name))
+
+        return self.name, item_pddl_facts
+
+
     @staticmethod
     def get_empty_item_vector():
         item_vector = [0 for i in range(InventoryItem.ITEM_VECTOR_LENGTH)]

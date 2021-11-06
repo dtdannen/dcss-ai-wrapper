@@ -82,6 +82,15 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         print("Player stats vector has length {}".format(len(player_stats_vector)))
 
 
+    def print_player_inv_pddl(self):
+        objs, facts = self.gamestate.get_player_inventory_pddl()
+        print("Inventory Item Names are:")
+        for obj in objs:
+            print("  {}".format(obj))
+        print("Inventory Item Facts are:")
+        for fact in facts:
+            print("  {}".format(fact))
+
     def get_command_from_human_keypress(self, keypress):
         """
         Return the command that matches the keypress from the user
@@ -114,6 +123,9 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             'I': Command.LIST_ALL_SPELLS,
             'm': Command.SHOW_SKILL_SCREEN,
         }
+
+        if keypress in ['i']:
+            self.print_player_inv_pddl()
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
             return keypress_to_command_no_menu[keypress]

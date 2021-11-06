@@ -964,7 +964,7 @@ class GameState:
         """
         inv_vector = []
         for inv_item in sorted(self.inventory_by_id.values(), key=lambda i: i.get_num_id()):
-            inv_vector.append(inv_item)
+            inv_vector.append(inv_item.get_item_vector())
 
         for i in range(len(inv_vector)+1, 52):
             inv_vector.append(InventoryItem.NULL_ITEM_VECTOR)
@@ -1168,7 +1168,7 @@ class GameState:
         +--------------+---------------------------------------+------------------------+
         |    EV        |        Represents Evasion             |  Non-relative Int      |
         +--------------+---------------------------------------+------------------------+
-        |    SH        |        Represents Shelf              |  Non-relative Int       |
+        |    SH        |        Represents Shelf               |  Non-relative Int      |
         +--------------+---------------------------------------+------------------------+
         |  Strength    |        Current value                  | Non-relative Int       |
         +--------------+---------------------------------------+------------------------+
@@ -1248,12 +1248,19 @@ class GameState:
         for mutation in self.player_mutations:
             player_stats_pddl.append('(player_has_mutation {})'.format(MutationPDDLMapping.mutation_pddl_lookup[mutation]))
 
-
     def get_player_inventory_pddl(self):
         """ Returns a list of PDDL facts representing the player's inventory
         """
-        # TODO write code
-        pass
+
+        inv_obj_names = []
+        inv_pddl_facts = []
+
+        for inv_item in self.inventory_by_id.values():
+            name, facts = inv_item.get_item_pddl()
+            inv_obj_names.append(name)
+            inv_pddl_facts += facts
+
+        return inv_obj_names, inv_pddl_facts
 
     def get_player_skills_pddl(self):
         """ Returns a list of PDDL facts representing the player's skills
