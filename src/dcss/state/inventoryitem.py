@@ -21,7 +21,12 @@ class InventoryItem:
         self.base_type = base_type
 
         if base_type is not None:
-            self.item_type = ItemType(base_type)
+            try:
+                self.item_type = ItemType(base_type)
+            except:
+                print("Found an UNKNOWN BASE TYPE - Please update API")
+                print("   Base Type is {}".format(base_type))
+                print("   The name of the item is {}".format(self.name))
 
         if self.name:
             if '(curse)' in self.name:
