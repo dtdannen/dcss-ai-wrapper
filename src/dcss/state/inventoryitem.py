@@ -150,7 +150,16 @@ class InventoryItem:
             item_pddl_facts.append("(equipped {})".format(self.simple_name))
 
         if self.item_bonus != 0:
-            item_pddl_facts.append("(item_bonus {} {})".format(self.simple_name, self.item_bonus))
+            quantitative_choices = ['none','low', 'medium', 'high']
+            quantitative_choice_id = 0
+            if 1 <= self.item_bonus <= 3:
+                quantitative_choice_id = 1
+            elif 4 <= self.item_bonus <= 7:
+                quantitative_choice_id = 2
+            elif self.item_bonus > 7:
+                quantitative_choice_id = 3
+
+            item_pddl_facts.append("(item_bonus {} {})".format(self.simple_name, quantitative_choices[quantitative_choice_id]))
 
         if self.cursed:
             item_pddl_facts.append("(cursed {})".format(self.simple_name))

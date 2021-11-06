@@ -1397,6 +1397,7 @@
     (armour ?item - item)
     (only_one_remaining ?item - item)
     (multiple_remaining ?item - item)
+    (item_bonus ?item - item ?amount - qualitative_quantity)
 
     ; special items
     (hasorbofzot ?cell - cell)
