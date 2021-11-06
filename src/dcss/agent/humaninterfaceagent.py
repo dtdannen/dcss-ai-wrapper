@@ -39,7 +39,7 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
 
     def get_action(self, gamestate: GameState):
         self.gamestate = gamestate
-        self.print_player_stats_vector(verbose=True)
+        #self.print_player_stats_vector(verbose=True)
         gameturn = gamestate.get_current_game_turn()
         num_facts = len(gamestate.all_pddl_facts())
         self.gameturns.append(gameturn)

@@ -9,21 +9,30 @@ class InventoryItem:
 
     NULL_ITEM_VECTOR = [0, 0, 0, False, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY]
 
-    def __init__(self, id_num, name, quantity, base_type=None):
+    def __init__(self, id_num, name, quantity, menu_id, base_type=None):
         self.id_num = int(id_num)
         self.name = name
         self.quantity = quantity
         self.base_type = base_type
         self.item_bonus = 0
+        self.menu_id = menu_id
+        self.cursed = False
         self.properties = []
 
         if self.name:
+            if '(curse)' in self.name:
+                self.cursed = True
+                self.name = self.name.replace("(curse)", "")
+
+            self.simple_name = "{}_{}".format(self.get_letter(),re.sub(r'[+-]?[0-9][0-9]?', '', self.name).strip().replace(" ","_"))
+
             if '+' in self.name or '-' in self.name:
                 m = re.search('[+-][1-9][1-9]?', self.name)
                 if m:
                     self.item_bonus = int(m.group(0))
                 else:
                     self.item_bonus = 0
+
         else:
             if self.quantity == 0:
                 # Might just be an empty slot that the server is telling us about
@@ -33,6 +42,7 @@ class InventoryItem:
                     "\n\nself.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}\n\n".format(
                         id_num, name, quantity, base_type))
                 exit(1)
+
 
         # TODO - figure out how to know if item is equipped
         self.equipped = False
@@ -128,12 +138,18 @@ class InventoryItem:
           6   Property* (Fire resist, stealth, venom, etc)
         """
 
-        item_pddl_facts = ["(quantity {} {})".format(self.name, self.quantity)]
+        item_pddl_facts = ["(quantity {} {})".format(self.simple_name, self.quantity)]
 
         if self.equipped:
-            item_pddl_facts.append("(equipped {})".format(self.name))
+            item_pddl_facts.append("(equipped {})".format(self.simple_name))
 
-        return self.name, item_pddl_facts
+        if self.item_bonus != 0:
+            item_pddl_facts.append("(item_bonus {} {})".format(self.simple_name, self.item_bonus))
+
+        if self.cursed:
+            item_pddl_facts.append("(cursed {})".format(self.simple_name))
+
+        return self.simple_name, item_pddl_facts
 
 
     @staticmethod

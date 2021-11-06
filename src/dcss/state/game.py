@@ -1993,8 +1993,8 @@ class GameState:
                         del self.inventory_by_id[inv_id]
                     else:
                         print(
-                            "  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
-                        self.inventory_by_id[inv_id].set_quantity(quantity)
+                            "  **** Remaking item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
+                        self.inventory_by_id[inv_id] = InventoryItem(inv_id, name, quantity, base_type)
 
     def process_equip(self, data):
         """
