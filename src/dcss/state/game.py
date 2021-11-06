@@ -50,6 +50,7 @@ class GameState:
         self.cellmap = CellMap()
 
         self.inventory_by_id = {}
+        self.equip_slots_to_inv_id = {}  # values are "0", "1", etc. that are set by the game
 
         self.last_recorded_movement = ''
 
@@ -1996,17 +1997,34 @@ class GameState:
                             "  **** Remaking item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
                         self.inventory_by_id[inv_id] = InventoryItem(inv_id, name, quantity, base_type)
 
+        # IMPORTANT - need to check that all items are consistent with equipped item state
+        currently_equipped_items = set(self.equip_slots_to_inv_id.values())
+        for inv_item_id, inv_item in self.inventory_by_id.items():
+            if int(inv_item_id) in currently_equipped_items:
+                inv_item.equip()
+            else:
+                inv_item.unequip()
+
     def process_equip(self, data):
         """
-        This function should probably always come after process_inv.
         """
 
-        for equip_slot, equip_item in data.items():
-            # TODO parse what the player has equipped
-            # print("equip slot {} has value {}".format(equip_slot, equip_item))
-            pass
+        for equip_slot, item in data.items():
+            """
+            Unequipping weapon gives: {"msg":"player","time":8100,"turn":804,"equip":{"0":-1}}
+            Equipping weapon inv letter a gives: {"msg":"player","time":8105,"turn":805,"equip":{"0":0}}
+            Equipping weapon inv letter d gives: {"msg":"player","time":8105,"turn":805,"equip":{"0":3}}
+            """
+            self.equip_slots_to_inv_id[equip_slot] = item
+            print("*******===**** adding equip slot {} with item id {}".format(equip_slot, item))
 
-        # Todo - if an item is equipped, find the item in the inventory, and update the is_equipped flag
+        # IMPORTANT - need to check that all items are consistent with equipped item state
+        currently_equipped_items = set(self.equip_slots_to_inv_id.values())
+        for inv_item_id, inv_item in self.inventory_by_id.items():
+            if int(inv_item_id) in currently_equipped_items:
+                inv_item.equip()
+            else:
+                inv_item.unequip()
 
     def process_quiver_item(self, data):
         # Todo - update the inventory quiver item to be this item

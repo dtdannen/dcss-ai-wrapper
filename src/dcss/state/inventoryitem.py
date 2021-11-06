@@ -47,10 +47,6 @@ class InventoryItem:
                         id_num, name, quantity, base_type))
                 exit(1)
 
-
-        # TODO - figure out how to know if item is equipped
-        self.equipped = False
-
     def set_base_type(self, base_type):
         self.base_type = base_type
 
@@ -83,6 +79,12 @@ class InventoryItem:
 
     def is_item_equipped(self):
         return self.equipped
+
+    def unequip(self):
+        self.equipped = False
+
+    def equip(self):
+        self.equipped = True
 
     def get_item_type(self):
         """
@@ -144,11 +146,6 @@ class InventoryItem:
 
         item_pddl_facts = []
 
-        if self.quantity == 1:
-            item_pddl_facts.append("(only_one_remaining {})".format(self.simple_name))
-        elif self.quantity > 1:
-            item_pddl_facts.append("(multiple_remaining {})".format(self.simple_name))
-
         if self.equipped:
             item_pddl_facts.append("(equipped {})".format(self.simple_name))
 
@@ -158,16 +155,25 @@ class InventoryItem:
         if self.cursed:
             item_pddl_facts.append("(cursed {})".format(self.simple_name))
 
+        # singleton item types (will never have more than one per item slot in inventory)
         if self.item_type is ItemType.WEAPON:
             item_pddl_facts.append("(weapon {})".format(self.simple_name))
         elif self.item_type is ItemType.ARMOUR:
             item_pddl_facts.append("(armour {})".format(self.simple_name))
-        elif self.item_type is ItemType.POTION:
-            item_pddl_facts.append("(potion {})".format(self.simple_name))
-        elif self.item_type is ItemType.SCROLL:
-            item_pddl_facts.append("(scroll {})".format(self.simple_name))
-        elif self.item_type is ItemType.AMMUNITION:
-            item_pddl_facts.append("(ammunition {})".format(self.simple_name))
+        else:
+            # items with quantities, so need to provide some quantity information
+            if self.quantity == 1:
+                item_pddl_facts.append("(only_one_remaining {})".format(self.simple_name))
+            elif self.quantity > 1:
+                item_pddl_facts.append("(multiple_remaining {})".format(self.simple_name))
+
+            # and don't forget item type for these
+            if self.item_type is ItemType.POTION:
+                item_pddl_facts.append("(potion {})".format(self.simple_name))
+            elif self.item_type is ItemType.SCROLL:
+                item_pddl_facts.append("(scroll {})".format(self.simple_name))
+            elif self.item_type is ItemType.AMMUNITION:
+                item_pddl_facts.append("(ammunition {})".format(self.simple_name))
 
         return self.simple_name, item_pddl_facts
 
