@@ -1250,7 +1250,17 @@ class GameState:
             player_stats_pddl.append('(player_has_mutation {})'.format(MutationPDDLMapping.mutation_pddl_lookup[mutation]))
 
     def get_player_inventory_pddl(self):
-        """ Returns a list of PDDL facts representing the player's inventory
+        """
+            Returns a simple PDDL representation for inventory items that will describe items with the following
+            predicates. Note that this function returns two data objects, first is a list of inventory object names and
+            the second is a list of the pddl facts, as strings, about those objects.
+
+            Predicates currently supported:
+            * equipped
+            * cursed
+            * item_bonus (refers to the +3 kinds of bonuses on items)
+            * weapon, scroll, ammunition, potion, or armour (others may be discovered and then must be added here)
+            * only_one_left or more_than_one_remaining
         """
 
         inv_obj_names = []
