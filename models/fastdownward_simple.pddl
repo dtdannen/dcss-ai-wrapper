@@ -1391,6 +1391,12 @@
     (hasarmour ?cell - cell)
     (hasfooditem ?cell - cell)
     (hasitem ?cell - cell ?item - item)
+    (cursed ?item - item)
+    (equipped ?item - item)
+    (weapon ?item - item)
+    (armour ?item - item)
+    (only_one_remaining ?item - item)
+    (multiple_remaining ?item - item)
 
     ; special items
     (hasorbofzot ?cell - cell)

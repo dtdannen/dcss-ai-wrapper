@@ -1,5 +1,6 @@
 import re
 import string
+from enum import Enum
 
 from dcss.state.itemproperty import ItemProperty
 
@@ -9,15 +10,18 @@ class InventoryItem:
 
     NULL_ITEM_VECTOR = [0, 0, 0, False, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY]
 
-    def __init__(self, id_num, name, quantity, menu_id, base_type=None):
+    def __init__(self, id_num, name, quantity, base_type=None):
         self.id_num = int(id_num)
         self.name = name
         self.quantity = quantity
         self.base_type = base_type
         self.item_bonus = 0
-        self.menu_id = menu_id
         self.cursed = False
         self.properties = []
+        self.base_type = base_type
+
+        if base_type is not None:
+            self.item_type = ItemType(base_type)
 
         if self.name:
             if '(curse)' in self.name:
@@ -138,7 +142,12 @@ class InventoryItem:
           6   Property* (Fire resist, stealth, venom, etc)
         """
 
-        item_pddl_facts = ["(quantity {} {})".format(self.simple_name, self.quantity)]
+        item_pddl_facts = []
+
+        if self.quantity == 1:
+            item_pddl_facts.append("(only_one_remaining {})".format(self.simple_name))
+        elif self.quantity > 1:
+            item_pddl_facts.append("(multiple_remaining {})".format(self.simple_name))
 
         if self.equipped:
             item_pddl_facts.append("(equipped {})".format(self.simple_name))
@@ -148,6 +157,17 @@ class InventoryItem:
 
         if self.cursed:
             item_pddl_facts.append("(cursed {})".format(self.simple_name))
+
+        if self.item_type is ItemType.WEAPON:
+            item_pddl_facts.append("(weapon {})".format(self.simple_name))
+        elif self.item_type is ItemType.ARMOUR:
+            item_pddl_facts.append("(armour {})".format(self.simple_name))
+        elif self.item_type is ItemType.POTION:
+            item_pddl_facts.append("(potion {})".format(self.simple_name))
+        elif self.item_type is ItemType.SCROLL:
+            item_pddl_facts.append("(scroll {})".format(self.simple_name))
+        elif self.item_type is ItemType.AMMUNITION:
+            item_pddl_facts.append("(ammunition {})".format(self.simple_name))
 
         return self.simple_name, item_pddl_facts
 
@@ -163,3 +183,19 @@ class InventoryItem:
     def __str__(self):
         return "{}({}) - {} (#={}, base_type={})".format(self.get_letter(), self.id_num, self.get_name(),
                                                          self.get_quantity(), self.get_base_type())
+
+
+class ItemType(Enum):
+    """
+    Represents a type of item, enum value matches what the game sends over as 'base_type'
+    """
+
+    NULL_ITEM_TYPE = -1
+
+    WEAPON = 0
+    AMMUNITION = 1
+    ARMOUR = 2
+    SCROLL = 5
+    POTION = 7
+
+
