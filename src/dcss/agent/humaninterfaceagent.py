@@ -81,6 +81,13 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         print(player_stats_vector)
         print("Player stats vector has length {}".format(len(player_stats_vector)))
 
+    def print_player_skills_pddl(self):
+        """
+            Print the pddl facts about the players skill and what they are training, current level, etc.
+        """
+        print("PLAYER SKILL FACTS:")
+        for pddl_fact in self.gamestate.get_player_skills_pddl():
+            print("   {}".format(pddl_fact))
 
     def print_player_inv_pddl(self):
         objs, facts = self.gamestate.get_player_inventory_pddl()
@@ -126,6 +133,9 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
 
         if keypress in ['i']:
             self.print_player_inv_pddl()
+
+        if keypress in ['m']:
+            self.print_player_skills_pddl()
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
             return keypress_to_command_no_menu[keypress]

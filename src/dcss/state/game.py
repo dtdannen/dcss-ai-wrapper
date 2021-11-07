@@ -1274,10 +1274,21 @@ class GameState:
         return inv_obj_names, inv_pddl_facts
 
     def get_player_skills_pddl(self):
-        """ Returns a list of PDDL facts representing the player's skills
         """
-        # TODO write code
-        pass
+            Skill names as objects are already provided in the PDDL domain file since they are constant across
+            all characters and game modes.
+
+            Only PDDL facts about whether each skill has training off, low, or high is returned, and the current value
+            of said skill using qualitative quantifiers of: 'none', 'low', 'medium_low', 'medium', 'medium_high', 'high', 'maxed'
+
+        """
+        pddl_facts = []
+        for skill_name in SkillName:
+            skill_obj = self.player_skills[skill_name]
+            if skill_obj:
+                pddl_facts += skill_obj.get_skill_pddl()
+
+        return pddl_facts
 
     def get_egocentric_LOS_map_data_pddl(self, radius=7):
         """ Returns a list of PDDL facts representing the tiles around the player for the given radius.
@@ -2268,7 +2279,7 @@ class GameState:
 
     def _process_skill_lines(self, skill_lines):
         entire_skill_regex = re.compile(
-            '[0-9a-z] \+ (Fighting|Short Blades|Long Blades|Maces &amp; Flails|Axes|Polearms|Staves|Unarmed Combat|Bows|Crossbows|Throwing|Slings|Armour|Dodging|Shields|Spellcasting|Conjurations|Hexes|Summonings|Necromancy|Translocations|Transmutations|Fire Mgaic|Ice Magic|Air Magic|Earth Magic|Poison Magic|Invocations|Evocations|Stealth)\\s*[0-9]+.[0-9]\\s*([0-9]{1,3}%){0,1}\\s*(-|\+){0,1}[0-9]+')  # (-|\+)+[0-9]\\s*</span>
+            '[0-9a-z] (-|\+|\*) (Fighting|Short Blades|Long Blades|Maces &amp; Flails|Axes|Polearms|Staves|Unarmed Combat|Bows|Crossbows|Throwing|Slings|Armour|Dodging|Shields|Spellcasting|Conjurations|Hexes|Summonings|Necromancy|Translocations|Transmutations|Fire Magic|Ice Magic|Air Magic|Earth Magic|Poison Magic|Invocations|Evocations|Stealth)\\s*[0-9]+.[0-9]\\s*([0-9]{1,3}%){0,1}\\s*(-|\+){0,1}[0-9]+')  # (-|\+)+[0-9]\\s*</span>
 
         for line_id, line in skill_lines.items():
             cleaner_line = re.sub('</span>|<span class="[\sa-z0-9]*">', '', line)
@@ -2276,19 +2287,29 @@ class GameState:
             matches = entire_skill_regex.finditer(cleaner_line)
             for m in matches:
                 m_tokens = m.group().split(' ')
-                menu_letter = m_tokens[0]
-                # note: we skip m_tokens[1] because it's not needed and regex doesn't remove it (it's an extra '+')
-                raw_skill_name = m_tokens[2]
-                raw_skill_level = m_tokens[3]
+                print("m_tokens is {}".format(m_tokens))
+                menu_letter = m_tokens.pop(0)
+
+                m_tokens.pop(0) # note: we skip m_tokens[1] because it's not needed and regex doesn't remove it (it's an extra '+')
+
+                raw_skill_name = m_tokens.pop(0)
+                if raw_skill_name in ['Short', 'Long', 'Unarmed','Ice','Fire','Air','Earth','Poison']: # handle 2-word skills with an extra pop
+                    raw_skill_name+= ' ' + m_tokens.pop(0)
+                elif raw_skill_name in ['Maces']:  # handle 3-word skills with a third extra pop
+                    m_tokens.pop(0)  # m_tokens.pop(0) should equal '&amp;', let's throw it out
+                    raw_skill_name += ' &'  # and replace with this '&' instead
+                    raw_skill_name += ' ' + m_tokens.pop(0)
+
+                raw_skill_level = m_tokens.pop(0)
 
                 # set defaults in case there is NOT training percentage
                 raw_training_percent = 0
-                raw_aptitude = m_tokens[4]
-                if '%' in m_tokens[4]: # check for training percentage and adjust accordingly
-                    raw_training_percent = m_tokens[4][:-1]  # trim off the trailing % sign
-                    raw_aptitude = m_tokens[5]
+                raw_aptitude = m_tokens.pop(0)
+                if '%' in raw_aptitude:  # check for training percentage and adjust accordingly
+                    raw_training_percent = raw_aptitude[:-1]  # trim off the trailing % sign
+                    raw_aptitude = m_tokens.pop(0)
 
-                skill_menu_choice = MenuChoice(Action.dcss_menu_chars.indexof(menu_letter))
+                skill_menu_choice = MenuChoice(Action.dcss_menu_chars.index(menu_letter))
                 skill_name = SkillMapping.skill_game_text_lookup[raw_skill_name]
                 skill_level = float(raw_skill_level)
                 training_percent = int(raw_training_percent)
