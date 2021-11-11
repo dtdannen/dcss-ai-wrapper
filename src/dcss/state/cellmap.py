@@ -164,16 +164,22 @@ class CellMap:
         return s
 
     def get_cell_map_pddl_global(self):
-        object_strs = []
-        fact_strs = []
+        """
+            Returns PDDL object and fact statements for the entire game so far, including multiple levels
+        """
+        monster_obj_strs = []
+        monster_facts_strs = []
+
+        tile_object_strs = []
+        tile_fact_strs = []
         for place in self.place_depth_to_x_y_to_cells.keys():
             for depth in self.place_depth_to_x_y_to_cells[place].keys():
                 for (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[place][depth].keys():
                     cell = self.place_depth_to_x_y_to_cells[place][depth][(curr_x, curr_y)]
-                    object_strs.append(cell.get_pddl_name())
+                    tile_object_strs.append(cell.get_pddl_name())
 
                     for f in cell.get_pddl_facts():
-                        fact_strs.append(f)
+                        tile_fact_strs.append(f)
 
                     # print('cellxy = {}, cellname is {}'.format(str((curr_x, curr_y)), cell.get_pddl_name()))
                     northcellxy = (cell.x, cell.y - 1)
@@ -182,30 +188,30 @@ class CellMap:
                         northcell = self.place_depth_to_x_y_to_cells[place][depth][
                             northcellxy]
                         # print("northcell = {}".format(northcell.get_pddl_name()))
-                        fact_strs.append("(northof {} {})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
+                        tile_fact_strs.append("(northof {} {})".format(cell.get_pddl_name(), northcell.get_pddl_name()))
 
                     southcellxy = (cell.x, cell.y + 1)
                     if southcellxy in self.place_depth_to_x_y_to_cells[place][depth].keys():
                         southcell = self.place_depth_to_x_y_to_cells[place][depth][
                             southcellxy]
-                        fact_strs.append("(southof {} {})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
+                        tile_fact_strs.append("(southof {} {})".format(cell.get_pddl_name(), southcell.get_pddl_name()))
 
                     westcellxy = (cell.x - 1, cell.y)
                     if westcellxy in self.place_depth_to_x_y_to_cells[place][depth].keys():
                         westcell = self.place_depth_to_x_y_to_cells[place][depth][westcellxy]
-                        fact_strs.append("(westof {} {})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
+                        tile_fact_strs.append("(westof {} {})".format(cell.get_pddl_name(), westcell.get_pddl_name()))
 
                     eastcellxy = (cell.x + 1, cell.y)
                     if eastcellxy in self.place_depth_to_x_y_to_cells[place][depth].keys():
                         eastcell = self.place_depth_to_x_y_to_cells[place][depth][eastcellxy]
-                        fact_strs.append("(eastof {} {})".format(cell.get_pddl_name(), eastcell.get_pddl_name()))
+                        tile_fact_strs.append("(eastof {} {})".format(cell.get_pddl_name(), eastcell.get_pddl_name()))
 
                     northeastcellxy = (cell.x + 1, cell.y - 1)
                     if northeastcellxy in self.place_depth_to_x_y_to_cells[place][
                         depth].keys():
                         northeastcell = self.place_depth_to_x_y_to_cells[place][depth][
                             northeastcellxy]
-                        fact_strs.append(
+                        tile_fact_strs.append(
                             "(northeastof {} {})".format(cell.get_pddl_name(), northeastcell.get_pddl_name()))
 
                     northwestcellxy = (cell.x - 1, cell.y - 1)
@@ -213,7 +219,7 @@ class CellMap:
                         depth].keys():
                         northwestcell = self.place_depth_to_x_y_to_cells[place][depth][
                             northwestcellxy]
-                        fact_strs.append(
+                        tile_fact_strs.append(
                             "(northwestof {} {})".format(cell.get_pddl_name(), northwestcell.get_pddl_name()))
 
                     southeastcellxy = (cell.x + 1, cell.y + 1)
@@ -221,7 +227,7 @@ class CellMap:
                         depth].keys():
                         southeastcell = self.place_depth_to_x_y_to_cells[place][depth][
                             southeastcellxy]
-                        fact_strs.append(
+                        tile_fact_strs.append(
                             "(southeastof {} {})".format(cell.get_pddl_name(), southeastcell.get_pddl_name()))
 
                     southwestcellxy = (cell.x - 1, cell.y + 1)
@@ -229,13 +235,15 @@ class CellMap:
                         depth].keys():
                         southwestcell = self.place_depth_to_x_y_to_cells[place][depth][
                             southwestcellxy]
-                        fact_strs.append(
+                        tile_fact_strs.append(
                             "(southwestof {} {})".format(cell.get_pddl_name(), southwestcell.get_pddl_name()))
 
-        return object_strs, fact_strs
+        return tile_object_strs, tile_fact_strs
 
     def get_cell_map_pddl_radius(self, radius=8):
-
+        """
+            Returns PDDL objects and facts for the current level with the given radius (default=8)
+        """
         object_strs = []
         fact_strs = []
         for curr_y in range(self.min_y, self.max_y + radius):

@@ -313,7 +313,7 @@
   freezing_wraith - monster
   frilled_lizard - monster
   frost_giant - monster
-  frost-covered_statue - monster
+  frost_covered_statue - monster
   gargoyle_monster - monster
   gastronok - monster
   gelid_demonspawn - monster
@@ -652,7 +652,6 @@
   swamp_drake - monster
   swamp_worm - monster
   tarantella - monster
-  template:monster_info - monster
   tengu_monster - monster
   tengu_conjurer - monster
   tengu_reaver - monster
@@ -680,7 +679,7 @@
   troll - monster
   troll_monster - monster
   twister - monster
-  two-headed_ogre - monster
+  two_headed_ogre - monster
   tyrant_leech - monster
   tzitzimitl - monster
   ufetubus - monster
@@ -716,7 +715,7 @@
   white_imp - monster
   wight - monster
   wiglaf - monster
-  will-o-the-wisp - monster
+  will_o_the_wisp - monster
   wind_drake - monster
   wizard_monster - monster
   wizard_statue - monster
@@ -1372,7 +1371,7 @@
     (player_has_mutation - mutation)
 
     ; monster related predicates - only one monster per cell
-    (hasmonster ?cell - cell)
+    (hasmonster ?cell - cell ?monster - monster)
     (monster_danger_rating ?cell - cell ?danger - danger_rating)
     (monster_health ?cell - cell ?amount - qualitative_quantity)
     (monster_status_effect ?cell - cell ?status - status_effect)
@@ -1443,6 +1442,9 @@
     ;abilities
     (player_has_ability ?ability - ability)
     (ability_chance_of_failure ?ability - ability ?amount - qualitative_quantity)
+
+    ;examination_menu
+    (cursor ?cell - cell)
 )
 
 

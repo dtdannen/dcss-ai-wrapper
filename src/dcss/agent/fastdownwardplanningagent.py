@@ -136,6 +136,13 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         # time.sleep(1)
         return monster_goal_str
 
+    def generate_current_state_pddl(self, goals):
+        if self.current_game_state:
+            self.current_game_state.get_player_stats_pddl()
+            self.current_game_state.get_player_skills_pddl()
+            self.current_game_state.get_player_inventory_pddl()
+            self.current_game_state.object_strs, fact_strs = self.cellmap.get_cell_map_pddl_global()
+
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:

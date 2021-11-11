@@ -79,6 +79,7 @@ class Action:
         Command.PUT_ON_JEWELLERY: {'text': 'P', 'msg': 'input'},
         Command.REMOVE_JEWELLERY: {'text': 'R', 'msg': 'input'},
         Command.EVOKE: {'text': 'v', 'msg': 'input'},
+        Command.EXAMINE_TILE_IN_EXPLORE_MENU: {'text': 'v', 'msg': 'input'},
         Command.SELECT_ITEM_TO_EVOKE: {'text': 'V', 'msg': 'input'},
         Command.MEMORISE: {'text': 'M', 'msg': 'input'},
         Command.COUNT_GOLD: {'text': '$', 'msg': 'input'},

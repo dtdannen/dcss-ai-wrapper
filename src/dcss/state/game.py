@@ -17,7 +17,6 @@ from dcss.state.spell import Spell, SpellNameMapping
 from dcss.state.ability import Ability, AbilityName, AbilityNameMapping
 
 
-
 class GameState:
     """
         This file stores the state class that is used to keep track of
@@ -162,6 +161,8 @@ class GameState:
         GameState.ID += 1
 
         self._in_menu = Menu.NO_MENU
+        self.cursor_x = 0
+        self.cursor_y = 0
 
     def update(self, msg_from_server):
         """
@@ -1297,18 +1298,21 @@ class GameState:
         # TODO write code
         pass
 
-    def get_egocentric_level_map_data_pddl(self):
+    def get_current_level_map_data_pddl(self):
         """ Returns a list of PDDL facts representing the tiles in player's current level.
             Information about tiles outside of the current level is not returned.
         """
-        # TODO write code
+        # TODO
         pass
 
     def get_all_map_data_pddl(self):
         """ Returns a list of PDDL facts for every tile encountered by the player thus far.
         """
-        # TODO write code
-        pass
+        tile_objects_pddl, tile_facts_pddl = self.cellmap.get_cell_map_pddl_global()
+
+        return tile_objects_pddl, tile_facts_pddl
+
+
 
     def get_background_pddl(self):
         """ Returns a static list of pddl facts, including all type instances
@@ -1382,6 +1386,9 @@ class GameState:
 
                 if k == 'msg' and s[k] == 'player':
                     self.process_player(s)
+
+                if k == 'msg' and s[k] == 'cursor':
+                    self.process_cursor(s)
 
                 if k == 'mutations':
                     self._process_mutations(s[k])
@@ -1608,9 +1615,6 @@ class GameState:
         except:
             print("Ignoring ability processing for message: {}".format(message))
             pass
-
-
-
 
     def process_messages(self, data):
         # begin: this is just for html stripping
@@ -1853,6 +1857,26 @@ class GameState:
                         raise Exception("Please update knowledge to support this status effect")
 
         self.player_status_effects = current_status_effects
+
+    def process_cursor(self, data):
+        for k in data.keys():
+            if k == 'loc':
+                self.cursor_x = data[k]["x"]
+                self.cursor_x = data[k]["y"]
+
+    def process_cell_description(self, data):
+        """
+           Decoding turns it into: {"msgs":[{"title":"A frilled lizard.","body":"A lizard with a giant and colourful fringe folded
+            around its neck. It flares its impressive frill at its victims while hissing angrily.\u000a\u000aMax HP: about 2\u000aAC \u
+            000aEV +++ (about 60% to evade your +0 dagger)\u000aMR \u000a\u000aIt looks harmless.\u000aIt is cold-blooded and may be sl
+            owed by cold attacks.\u000aIt is tiny.\u000aIt can bite for up to 3 damage.\u000aIt can travel through water.","quote":"","
+            spellset":[],"fg_idx":5065,"flag":0,"doll":[[5065,32]],"mcache":null,"msg":"ui-push","type":"describe-monster","ui-centred"
+            :false,"generation_id":4}
+            ]}
+
+        """
+
+        pass
 
     def get_pddl_current_state_player(self):
         player_object_strs = []

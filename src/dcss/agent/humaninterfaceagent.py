@@ -129,6 +129,8 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
             'q': Command.QUAFF,
             'I': Command.LIST_ALL_SPELLS,
             'm': Command.SHOW_SKILL_SCREEN,
+            'x': Command.EXAMINE_SURROUNDINGS_AND_TARGETS,
+            'v': Command.EXAMINE_TILE_IN_EXPLORE_MENU,
         }
 
         if keypress in ['i']:
