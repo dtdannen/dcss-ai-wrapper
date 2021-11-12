@@ -12,6 +12,8 @@ from dcss.actions.menuchoice import MenuChoiceMapping
 from dcss.state.game import GameState
 from dcss.state.menu import Menu
 
+from time import time
+
 import logging
 logging.basicConfig(level=logging.WARNING)
 
@@ -39,13 +41,13 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.new_goal_type = None
         self.current_goal_type = None
         self.num_cells_visited = 0
-        self.player_has_seen_stairs_down = {x:False for x in range(0,50)}  # key is depth, value is whether seen stairs down
+        self.player_has_seen_stairs_down = {x: False for x in range(0,50)}  # key is depth, value is whether seen stairs down
 
-        self.cells_not_visited = []
-        self.cells_visited = []
-        self.closed_door_cells = []
+        self.cells_not_visited = {x: set() for x in range(0,50)}  # key is depth
+        self.cells_visited = {x: set() for x in range(0,50)}  # key is depth
+        self.closed_door_cells = {x: set() for x in range(0,50)}  # key is depth
 
-        self.found_item = None # if not None, this will be a cell
+        self.found_item = None  # if not None, this will be a cell
         self.inventory_full = False
 
         self.failed_goals = []
@@ -53,21 +55,21 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def process_gamestate_via_cells(self):
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.has_player_visited:
-                self.cells_visited.append(cell)
+                self.cells_visited[self.current_game_state.player_depth].add(cell)
             elif not cell.has_wall and not cell.has_player and not cell.has_statue and not cell.has_lava and not cell.has_plant and not cell.has_tree and cell.g:
                 # print("added {} as an available cell, it's g val is {}".format(cell.get_pddl_name(), cell.g))
-                self.cells_not_visited.append(cell)
+                self.cells_not_visited[self.current_game_state.player_depth].add(cell)
             else:
                 pass
 
             if cell.has_closed_door:
-                self.closed_door_cells.append(cell)
+                self.closed_door_cells[self.current_game_state.player_depth].add(cell)
 
             if cell.has_stairs_down:
                 self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
                 print("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
-        self.num_cells_visited = len(self.cells_visited)
+        self.num_cells_visited = len(self.cells_visited[self.current_game_state.player_depth])
 
     def get_full_health_goal(self):
         return "(playerfullhealth)"
@@ -77,20 +79,20 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
     def get_random_nonvisited_nonwall_playerat_goal(self):
         i = 1
-        farthest_away_cells = []
-        target_cells = self.cells_not_visited
+        farthest_away_cells = set()
+        target_cells = self.cells_not_visited[self.current_game_state.player_depth].copy()
         while len(target_cells) > 1:
             farthest_away_cells = target_cells
             # remove all cells that are i distance away from other visited cells
-            new_target_cells = []
+            new_target_cells = set()
             for potential_cell in target_cells:
                 found_close_visited_cell = False
-                for visited_cell in self.cells_visited:
+                for visited_cell in self.cells_visited[self.current_game_state.player_depth]:
                     if visited_cell.straight_line_distance(potential_cell) <= i:
                         found_close_visited_cell = True
 
                 if not found_close_visited_cell:
-                    new_target_cells.append(potential_cell)
+                    new_target_cells.add(potential_cell)
 
             # print("  i={} with {} target cells".format(i, len(new_target_cells)))
             target_cells = new_target_cells
@@ -98,16 +100,13 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
         #print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
-        if len(self.closed_door_cells) > 1:
-            # print("Attempting to choose a closed door as a goal if possible")
-            self.closed_door_cells = [cell for cell in self.closed_door_cells if cell not in self.failed_goals]
-            print("Ignore failed goals: {}".format(self.failed_goals))
-            goal_cell = random.choice(self.closed_door_cells)
+        if len(self.closed_door_cells[self.current_game_state.player_depth]) > 1:
+            print("Attempting to choose a closed door as a goal if possible")
+            goal_cell = self.closed_door_cells[self.current_game_state.player_depth].pop()
         elif len(farthest_away_cells) > 0:
-            farthest_away_cells = [cell for cell in farthest_away_cells if cell not in self.failed_goals]
-            print("Ignore failed goals: {}".format(self.failed_goals))
-            goal_cell = random.choice(farthest_away_cells)
-            # print("Visited {} cells - Goal is now {}".format(len(cells_visited), goal_cell.get_pddl_name()))
+            goal_cell = farthest_away_cells.pop()
+            print("Visited {} cells - Goal is now {}".format(len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
+
         else:
             # can't find any cells
             return None
@@ -151,7 +150,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
                                                                      goals=goals)
         else:
             print("WARNING current game state is null when trying to call fast downward planner")
-            return []
+            time.sleep(1000)
 
         # step 2: run fastdownward
         # fast_downward_process_call = ["./FastDownward/fast-downward.py",
@@ -316,6 +315,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         if self.plan and len(self.plan) > 0:
             next_action = self.plan.pop(0)
             self.actions_taken_so_far += 1
+
             return next_action
 
         print("warning - no plan, taking random action!")
@@ -328,7 +328,7 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.4
+    my_config.delay = 0.5
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
 

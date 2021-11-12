@@ -1523,7 +1523,7 @@ class GameState:
             print("   {}".format(i))
 
     def _process_single_spell(self, message):
-        print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
+        #print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
 
         # define the regex terms
         spell_name_regex = re.compile(
@@ -1866,14 +1866,7 @@ class GameState:
 
     def process_cell_description(self, data):
         """
-           Decoding turns it into: {"msgs":[{"title":"A frilled lizard.","body":"A lizard with a giant and colourful fringe folded
-            around its neck. It flares its impressive frill at its victims while hissing angrily.\u000a\u000aMax HP: about 2\u000aAC \u
-            000aEV +++ (about 60% to evade your +0 dagger)\u000aMR \u000a\u000aIt looks harmless.\u000aIt is cold-blooded and may be sl
-            owed by cold attacks.\u000aIt is tiny.\u000aIt can bite for up to 3 damage.\u000aIt can travel through water.","quote":"","
-            spellset":[],"fg_idx":5065,"flag":0,"doll":[[5065,32]],"mcache":null,"msg":"ui-push","type":"describe-monster","ui-centred"
-            :false,"generation_id":4}
-            ]}
-
+            Note: need to figure out how to deal with unicode letters like
         """
 
         pass
