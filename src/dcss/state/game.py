@@ -1569,7 +1569,7 @@ class GameState:
             print("   {}".format(i))
 
     def _process_single_spell(self, message):
-        print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
+        #print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
 
         # define the regex terms
         spell_name_regex = re.compile(

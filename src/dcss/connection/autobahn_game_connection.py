@@ -287,7 +287,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             payload += bytes([0, 0, 255, 255])
             json_message = self.decomp.decompress(payload)
             json_message_decoded = json_message.decode("utf-8")
-            print("   Decoding turns it into: {}".format(json_message_decoded))
+            #print("   Decoding turns it into: {}".format(json_message_decoded))
             message_as_str = json_message_decoded
         else:
             print("Text message received: {0}".format(payload.decode('utf-8')))
