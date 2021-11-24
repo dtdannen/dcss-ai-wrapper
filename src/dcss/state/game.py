@@ -1365,7 +1365,7 @@ class GameState:
                     # self.update_map_obj(cells_x_y_g_data_only)
                     # self.update_map_obj()
                 last_key = k
-
+                print("k is {}".format(k))
                 if k == 'more':
                     if s[k]:
                         self.more_prompt = True
@@ -1389,6 +1389,9 @@ class GameState:
 
                 if k == 'msg' and s[k] == 'cursor':
                     self.process_cursor(s)
+
+                if k == 'type' and s[k] == 'describe-monster':
+                    self.process_describe_monster(s['body'])
 
                 if k == 'mutations':
                     self._process_mutations(s[k])
@@ -1864,12 +1867,56 @@ class GameState:
                 self.cursor_x = data[k]["x"]
                 self.cursor_x = data[k]["y"]
 
-    def process_cell_description(self, data):
+    def process_describe_monster(self, data):
         """
-            Note: need to figure out how to deal with unicode letters like
+            Process description of cells that describe monsters via the examine mode
         """
 
-        pass
+        print("********* In process describe monster ***************")
+
+        re.sub("\u000a", "\n", data)
+
+        print("Doing special char substitution:\n\n")
+
+        monster_health = -1
+        AC_level = 0
+        EV_level = 0
+        MR_level = 0
+
+        danger_rating = "error"
+
+        i = 0
+        for line in data.split('\n'):
+            if 'AC' in line:
+                AC_level = line.split(' ')[1].count('+')
+            elif 'EV' in line:
+                EV_level = line.split(' ')[1].count('+')
+            elif 'MR' in line:
+                MR_level = line.split(' ')[1].count('+')
+            elif 'looks' in line:
+                danger_rating = line.split(' ')[-1]
+            elif 'Max HP:' in line:
+                monster_health = line.split(' ')[-1]
+
+            print("  {}:{}".format(i, line))
+            i += 1
+
+        # now get the monster object and add it's details to it
+
+        print("health: {}".format(monster_health))
+        print("AC: {}".format(AC_level))
+        print("EV: {}".format(EV_level))
+        print("MR: {}".format(MR_level))
+        print("danger_rating: {}".format(danger_rating))
+
+        print("\n\ncursor_x and y is {}, {}".format(self.cursor_x, self.cursor_y))
+
+        #todo left off here
+        #monster_at_cursor = self.cellmap.ge
+
+        print("The retrieved monster at {},{} is a {}".format(self.cursor_x, self.cursor_y))
+
+
 
     def get_pddl_current_state_player(self):
         player_object_strs = []
