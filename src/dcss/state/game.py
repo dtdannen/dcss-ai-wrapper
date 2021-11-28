@@ -1391,8 +1391,10 @@ class GameState:
                     self.process_cursor(s)
 
                 if k == 'type' and s[k] == 'describe-monster':
-                    self.process_describe_monster(s['body'])
-
+                    if 'body' in s.keys():
+                        self.process_describe_monster(s['body'])
+                    else:
+                        print("We're in a describe monster message but not 'body' key found in s, which is:\n\t{}".format(s))
                 if k == 'mutations':
                     self._process_mutations(s[k])
 
@@ -1862,10 +1864,16 @@ class GameState:
         self.player_status_effects = current_status_effects
 
     def process_cursor(self, data):
+        print("processing cursor update from data: {}".format(data))
+        print("\tBEFORE: cursor_x is {}".format(self.cursor_x))
+        print("\tBEFORE: cursor_y is {}".format(self.cursor_y))
         for k in data.keys():
             if k == 'loc':
                 self.cursor_x = data[k]["x"]
-                self.cursor_x = data[k]["y"]
+                self.cursor_y = data[k]["y"]
+
+        print("\tAFTER: cursor_x is {}".format(self.cursor_x))
+        print("\tAFTER: cursor_y is {}".format(self.cursor_y))
 
     def process_describe_monster(self, data):
         """
@@ -1896,7 +1904,7 @@ class GameState:
             elif 'looks' in line:
                 danger_rating = line.split(' ')[-1]
             elif 'Max HP:' in line:
-                monster_health = line.split(' ')[-1]
+                monster_health = int(line.split(' ')[-1])
 
             print("  {}:{}".format(i, line))
             i += 1
@@ -1911,10 +1919,19 @@ class GameState:
 
         print("\n\ncursor_x and y is {}, {}".format(self.cursor_x, self.cursor_y))
 
-        #todo left off here
-        #monster_at_cursor = self.cellmap.ge
+        player_x, player_y = self.get_cell_map().agent_x, self.get_cell_map().agent_y
+        monster_x = player_x + self.cursor_x
+        monster_y = player_y + self.cursor_y
+        monster_at_cursor_cell = self.cellmap.get_xy_to_cells_dict()[monster_x, monster_y]
+        monster_at_cursor = monster_at_cursor_cell.monster
 
-        print("The retrieved monster at {},{} is a {}".format(self.cursor_x, self.cursor_y))
+        monster_at_cursor.set_health(monster_health)
+        monster_at_cursor.set_ac(AC_level)
+        monster_at_cursor.set_ev(EV_level)
+        monster_at_cursor.set_mr(MR_level)
+        monster_at_cursor.set_danger_rating(danger_rating)
+
+        print("The retrieved monster at {},{} is a {}".format(monster_x, monster_y, monster_at_cursor))
 
 
 

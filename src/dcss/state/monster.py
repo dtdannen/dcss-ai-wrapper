@@ -36,6 +36,10 @@ class Monster:
         self.threat = 0
         self.type = None
         self.danger_rating = None
+        self.health = None
+        self.ac = None
+        self.ev = None
+        self.mr = None
 
     @staticmethod
     def create_or_update_monster(vals, ascii_sym):
@@ -98,6 +102,21 @@ class Monster:
         ]
         return strs
 
+    def set_health(self, health:int):
+        self.health = health
+
+    def set_danger_rating(self, danger_rating:str):
+        self.danger_rating = danger_rating
+
+    def set_ac(self, ac:int):
+        self.ac = ac
+
+    def set_ev(self, ev:int):
+        self.ev = ev
+
+    def set_mr(self, mr:int):
+        self.mr = mr
+
     def get_monster_vector(self):
         """
             Returns a vector of a monster with the following fields:
@@ -149,6 +168,19 @@ class Monster:
 
         """
         return [self.type]
+
+    def __str__(self):
+        if self.vals:
+            print("Monster vals: ")
+            for v in self.vals:
+                print("\t{}: {}".format(v, self.vals[v]))
+
+        print("\n\tAdditional Monster Details:")
+        print("\tHealth: {}".format(self.health))
+        print("\tac: {}".format(self.ac))
+        print("\tev: {}".format(self.ev))
+        print("\tmr: {}".format(self.mr))
+        print("\tdanger_rating: {}".format(self.danger_rating))
 
 
 class MonsterName(Enum):
