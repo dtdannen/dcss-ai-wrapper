@@ -108,13 +108,13 @@ class Monster:
     def set_danger_rating(self, danger_rating:str):
         self.danger_rating = danger_rating
 
-    def set_ac(self, ac:int):
+    def set_ac(self, ac: int):
         self.ac = ac
 
-    def set_ev(self, ev:int):
+    def set_ev(self, ev: int):
         self.ev = ev
 
-    def set_mr(self, mr:int):
+    def set_mr(self, mr: int):
         self.mr = mr
 
     def get_monster_vector(self):
@@ -170,17 +170,20 @@ class Monster:
         return [self.type]
 
     def __str__(self):
+        s = ""
         if self.vals:
-            print("Monster vals: ")
+            s += "Monster vals: \n"
             for v in self.vals:
-                print("\t{}: {}".format(v, self.vals[v]))
+                s += "\t{}: {}\n".format(v, self.vals[v])
 
-        print("\n\tAdditional Monster Details:")
-        print("\tHealth: {}".format(self.health))
-        print("\tac: {}".format(self.ac))
-        print("\tev: {}".format(self.ev))
-        print("\tmr: {}".format(self.mr))
-        print("\tdanger_rating: {}".format(self.danger_rating))
+        s += "\n\tAdditional Monster Details:\n"
+        s += "\tHealth: {}\n".format(self.health)
+        s += "\tac: {}\n".format(self.ac)
+        s += "\tev: {}\n".format(self.ev)
+        s += "\tmr: {}\n".format(self.mr)
+        s += "\tdanger_rating: {}\n".format(self.danger_rating)
+
+        return s
 
 
 class MonsterName(Enum):
