@@ -17,26 +17,26 @@ def get_pddl_state_file(domainname: str = "dcss", problemname: str = "test_prob"
     :returns: a string containing a complete pddl state file, ready to be given to a pddl planner
     """
 
-    pddl_str = ";;{}\n".format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    pddl_str += "(define (problem {problemname})\n(:domain {domainname})\n".format(problemname=problemname,
+    pddl_str = ";; Generated on {}\n".format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    pddl_str += "(define (problem {problemname})\n  (:domain {domainname})\n\n".format(problemname=problemname,
                                                                                     domainname=domainname)
 
-    pddl_str += "(:objects \n"
+    pddl_str += "  (:objects \n"
     for obj in objects:
-        pddl_str += "  {}\n".format(obj)
+        pddl_str += "    {}\n".format(obj)
 
-    pddl_str += ")\n ;; closes the '(:objects' clause\n"
+    pddl_str += "  ) ;; closes the '(:objects' clause\n\n"
 
-    pddl_str += "(:init \n"
+    pddl_str += "  (:init \n"
     for fact in init_facts:
-        pddl_str += "  {}\n".format(fact)
+        pddl_str += "    {}\n".format(fact)
 
-    pddl_str += ")\n ;; closes the '(:init' clause\n"
+    pddl_str += "  ) ;; closes the '(:init' clause\n\n"
 
-    pddl_str += "(:goal \n  (and \n"
+    pddl_str += "  (:goal \n  (and \n"
     for goal in goals:
         pddl_str += "    {}\n".format(goal)
-    pddl_str += ")\n"
+    pddl_str += "  )\n"
     pddl_str += ")\n\n)"
 
     return pddl_str

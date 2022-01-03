@@ -58,6 +58,9 @@
 
         weapon - equipitem
         armour - equipitem
+        ammunition - equipitem
+
+
 )
 
 (:constants

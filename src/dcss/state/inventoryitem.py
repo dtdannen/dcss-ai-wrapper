@@ -5,10 +5,26 @@ from enum import Enum
 from dcss.state.itemproperty import ItemProperty
 
 
+class ItemType(Enum):
+    """
+    Represents a type of item, enum value matches what the game sends over as 'base_type'
+    """
+
+    NULL_ITEM_TYPE = -1
+
+    WEAPON = 0
+    AMMUNITION = 1
+    ARMOUR = 2
+    SCROLL = 5
+    POTION = 7
+
+
 class InventoryItem:
     ITEM_VECTOR_LENGTH = 7
 
     NULL_ITEM_VECTOR = [0, 0, 0, False, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY]
+
+    ITEM_TYPE_MAPPING = {item_enum_obj: item_enum_obj.name.lower() for item_enum_obj in ItemType}
 
     def __init__(self, id_num, name, quantity, base_type=None):
         self.id_num = int(id_num)
@@ -189,7 +205,9 @@ class InventoryItem:
             elif self.item_type is ItemType.AMMUNITION:
                 item_pddl_facts.append("(ammunition {})".format(self.simple_name))
 
-        return self.simple_name, item_pddl_facts
+        pddl_obj_name = "{} - {}".format(self.simple_name, InventoryItem.ITEM_TYPE_MAPPING[self.item_type])
+
+        return pddl_obj_name, item_pddl_facts
 
 
     @staticmethod
@@ -204,18 +222,5 @@ class InventoryItem:
         return "{}({}) - {} (#={}, base_type={})".format(self.get_letter(), self.id_num, self.get_name(),
                                                          self.get_quantity(), self.get_base_type())
 
-
-class ItemType(Enum):
-    """
-    Represents a type of item, enum value matches what the game sends over as 'base_type'
-    """
-
-    NULL_ITEM_TYPE = -1
-
-    WEAPON = 0
-    AMMUNITION = 1
-    ARMOUR = 2
-    SCROLL = 5
-    POTION = 7
 
 

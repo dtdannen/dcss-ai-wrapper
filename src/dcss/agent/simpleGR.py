@@ -150,7 +150,9 @@ class SimpleGRAgent(BaseAgent):
 
             pddl_facts += self.current_game_state.get_player_stats_pddl()
             pddl_facts += self.current_game_state.get_player_skills_pddl()
-            pddl_facts += self.current_game_state.get_player_inventory_pddl()
+            inv_objects, inv_facts = self.current_game_state.get_player_inventory_pddl()
+            pddl_objects += inv_objects
+            pddl_facts += inv_facts
 
         return pddl.get_pddl_state_file(objects=pddl_objects, init_facts=pddl_facts, goals=goals)
 
