@@ -1989,6 +1989,14 @@ class GameState:
         fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
         return fact_strs
 
+    def get_all_map_objects_in_pddl(self):
+        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap()
+
+        # add type 'cell' to cell_map_object_strs
+        cell_map_object_strs = [cell_str + ' - cell' for cell_str in cell_map_object_strs]
+
+        return cell_map_object_strs
+
     def write_pddl_current_state_to_file(self, filename, goals):
         """Filename is assumed to be a relevant filename from the folder that the main script is running"""
 

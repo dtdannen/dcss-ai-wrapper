@@ -11,12 +11,22 @@ from dcss.actions.command import Command
 from dcss.actions.menuchoice import MenuChoiceMapping
 from dcss.state.game import GameState
 from dcss.state.menu import Menu
+from enum import Enum
+import dcss.state.pddl as pddl
 
 from time import time
 
 import logging
 
 logging.basicConfig(level=logging.WARNING)
+
+
+class Goal(Enum):
+    EXPLORE = 1
+    ATTACK = 2
+    RETREAT = 3
+    COLLECT_ITEMS = 4
+    HEAL = 5
 
 
 class SimpleGRAgent(BaseAgent):
@@ -31,6 +41,7 @@ class SimpleGRAgent(BaseAgent):
         self.current_game_state = None
         self.next_command_id = 1
         self.plan_domain_filename = "models/fastdownward_simple.pddl"
+        self.plan_current_pddl_state_filename = "models/fdtempfiles/state.pddl"
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
         self.actions_taken_so_far = 0
@@ -132,18 +143,24 @@ class SimpleGRAgent(BaseAgent):
         return monster_goal_str
 
     def generate_current_state_pddl(self, goals):
+        pddl_objects = []
+        pddl_facts = []
         if self.current_game_state:
-            self.current_game_state.get_player_stats_pddl()
-            self.current_game_state.get_player_skills_pddl()
-            self.current_game_state.get_player_inventory_pddl()
-            self.current_game_state.object_strs, fact_strs = self.cellmap.get_cell_map_pddl_global()
+            pddl_objects += self.current_game_state.get_all_map_objects_in_pddl()
 
+            pddl_facts += self.current_game_state.get_player_stats_pddl()
+            pddl_facts += self.current_game_state.get_player_skills_pddl()
+            pddl_facts += self.current_game_state.get_player_inventory_pddl()
 
+        return pddl.get_pddl_state_file(objects=pddl_objects, init_facts=pddl_facts, goals=goals)
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
             print("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
+            with open(self.plan_current_pddl_state_filename.format(), 'w') as f:
+                f.write(self.generate_current_state_pddl(goals=goals))
+            print("wrote to file {}".format(self.plan_current_pddl_state_filename))
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:
@@ -336,5 +353,5 @@ if __name__ == "__main__":
     my_config.always_start_new_game = True
 
     # create game
-    game = WebSockGame(config=my_config, agent_class=FastDownwardPlanningBaseAgent)
+    game = WebSockGame(config=my_config, agent_class=SimpleGRAgent)
     game.run()
