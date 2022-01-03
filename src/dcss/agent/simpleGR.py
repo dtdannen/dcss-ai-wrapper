@@ -161,8 +161,7 @@ class SimpleGRAgent(BaseAgent):
             with open(self.plan_current_pddl_state_filename.format(), 'w') as f:
                 f.write(self.generate_current_state_pddl(goals=goals))
             print("wrote to file {}".format(self.plan_current_pddl_state_filename))
-            self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
-                                                                     goals=goals)
+
         else:
             print("WARNING current game state is null when trying to call fast downward planner")
             time.sleep(1000)

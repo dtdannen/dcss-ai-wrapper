@@ -1185,13 +1185,16 @@ class GameState:
 
         quantitative_choices = ['none', 'low', 'medium_low', 'medium', 'medium_high', 'high', 'maxed']
 
-        health_index = int((self.player_current_hp / self.player_hp_max) * len(quantitative_choices))
-        player_stats_pddl.append('(playerhealth {})'.format(quantitative_choices[health_index]))
-        magicpoints_index = int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices))
+        health_index = int((self.player_current_hp / self.player_hp_max) * len(quantitative_choices)) - 1
+        player_stats_pddl.append('(playerhealth {})'.format(quantitative_choices[health_index-1]))
+
+        magicpoints_index = 0
+        if self.player_mp_max > 0:
+            magicpoints_index = int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices)) - 1
         player_stats_pddl.append('(playermagicpoints {})'.format(quantitative_choices[magicpoints_index]))
 
         player_stats_pddl.append('(player_worshipping {})'.format(self.player_god))
-        player_stats_pddl.append('(player_piety {})').format(quantitative_choices[self.player_piety_rank])
+        player_stats_pddl.append('(player_piety {})'.format(quantitative_choices[self.player_piety_rank]))
 
         if self.player_spell_slots_left > 0:
             player_stats_pddl.append('(player_has_available_spell_slot)')
@@ -1249,6 +1252,8 @@ class GameState:
 
         for mutation in self.player_mutations:
             player_stats_pddl.append('(player_has_mutation {})'.format(MutationPDDLMapping.mutation_pddl_lookup[mutation]))
+
+        return player_stats_pddl
 
     def get_player_inventory_pddl(self):
         """

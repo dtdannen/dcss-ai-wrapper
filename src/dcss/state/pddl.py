@@ -18,7 +18,7 @@ def get_pddl_state_file(domainname: str = "dcss", problemname: str = "test_prob"
     """
 
     pddl_str = ";;{}\n".format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-    pddl_str += "(define (problem {problemname}})\n(:domain {domainname})\n".format(problemname=problemname,
+    pddl_str += "(define (problem {problemname})\n(:domain {domainname})\n".format(problemname=problemname,
                                                                                     domainname=domainname)
 
     pddl_str += "(:objects \n"
