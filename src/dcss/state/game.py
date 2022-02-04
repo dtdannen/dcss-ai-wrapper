@@ -1317,8 +1317,6 @@ class GameState:
 
         return tile_objects_pddl, tile_facts_pddl
 
-
-
     def get_background_pddl(self):
         """ Returns a static list of pddl facts, including all type instances
             and dungeon level connections.
@@ -1938,8 +1936,6 @@ class GameState:
 
         print("The retrieved monster at {},{} is a {}".format(monster_x, monster_y, monster_at_cursor))
 
-
-
     def get_pddl_current_state_player(self):
         player_object_strs = []
         player_fact_strs = []
@@ -1971,7 +1967,7 @@ class GameState:
 
         return player_pddl_strs
 
-    def get_pddl_current_state_cellmap(self, radius=8):
+    def get_pddl_current_state_cellmap(self, radius=10):
         if radius >= 0:
             object_strs, fact_strs = self.cellmap.get_cell_map_pddl_radius(radius=radius)
         else:
@@ -2000,7 +1996,7 @@ class GameState:
         # add type 'cell' to cell_map_object_strs
         cell_map_object_strs = [cell_str + ' - cell' for cell_str in cell_map_object_strs]
 
-        return cell_map_object_strs
+        return cell_map_object_strs, cell_map_fact_strs
 
     def write_pddl_current_state_to_file(self, filename, goals):
         """Filename is assumed to be a relevant filename from the folder that the main script is running"""

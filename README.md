@@ -77,6 +77,18 @@ def main():
     game.run()
 ```
 
+# Contribute
+
+- **Jan. 17, 2022**: We are currently working towards towards version 0.1 described in the [roadmap](contribute/Roadmap.md).
+
+- The most recent branch is the `dev` branch.
+
+- Please feel free to look at existing issues and submit a PR.
+
+- We welcome any and all questions on the [Gitter](https://gitter.im/dcss-ai-wrapper/community).
+
+- We expect to publish academic papers as we meet more milestones. If you contribute to the development of the project, we would like to include you as an author. 
+
 # Building the documentation
 
 Make sure the library is installed or autodoc may complain:

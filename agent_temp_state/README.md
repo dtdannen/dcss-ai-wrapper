@@ -1,0 +1,1 @@
+This directory serves as a placeholder for agents to keep temporary files (like pddl problem files) that should not be saved in the repository.

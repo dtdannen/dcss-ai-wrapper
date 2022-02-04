@@ -41,7 +41,8 @@ class SimpleGRAgent(BaseAgent):
         self.current_game_state = None
         self.next_command_id = 1
         self.plan_domain_filename = "models/fastdownward_simple.pddl"
-        self.plan_current_pddl_state_filename = "models/fdtempfiles/state.pddl"
+        self._pddl_state_counter = 0
+        self._pddl_state_filename = self.get_pddl_state_filename()
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
         self.actions_taken_so_far = 0
@@ -63,6 +64,9 @@ class SimpleGRAgent(BaseAgent):
         self.inventory_full = False
 
         self.failed_goals = []
+
+    def get_pddl_state_filename(self):
+        return "agent_temp_state/state{}.pddl".format(self._pddl_state_counter)
 
     def process_gamestate_via_cells(self):
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
@@ -146,7 +150,9 @@ class SimpleGRAgent(BaseAgent):
         pddl_objects = []
         pddl_facts = []
         if self.current_game_state:
-            pddl_objects += self.current_game_state.get_all_map_objects_in_pddl()
+            pddl_map_objects, pddl_map_facts = self.current_game_state.get_all_map_objects_in_pddl()
+            pddl_objects += pddl_map_objects
+            pddl_facts += pddl_map_facts
 
             pddl_facts += self.current_game_state.get_player_stats_pddl()
             pddl_facts += self.current_game_state.get_player_skills_pddl()
@@ -154,15 +160,17 @@ class SimpleGRAgent(BaseAgent):
             pddl_objects += inv_objects
             pddl_facts += inv_facts
 
-        return pddl.get_pddl_state_file(objects=pddl_objects, init_facts=pddl_facts, goals=goals)
+        return pddl.get_pddl_problem(objects=pddl_objects, init_facts=pddl_facts, goals=goals)
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            print("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
-            with open(self.plan_current_pddl_state_filename.format(), 'w') as f:
+            self._pddl_state_counter += 1
+            print("About to write out game state with filename {}".format(self.get_pddl_state_filename()))
+            with open(self.get_pddl_state_filename(), 'w') as f:
                 f.write(self.generate_current_state_pddl(goals=goals))
-            print("wrote to file {}".format(self.plan_current_pddl_state_filename))
+            print("...wrote to file {}".format(self.get_pddl_state_filename()))
+
 
         else:
             print("WARNING current game state is null when trying to call fast downward planner")
@@ -179,12 +187,12 @@ class SimpleGRAgent(BaseAgent):
             "./FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
                 self.plan_result_filename,
                 self.plan_domain_filename,
-                self.plan_current_pddl_state_filename), ]
+                self.get_pddl_state_filename()), ]
         # This is used for windows
         fast_downward_system_call = "python FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\" {}".format(
             self.plan_result_filename,
             self.plan_domain_filename,
-            self.plan_current_pddl_state_filename,
+            self.get_pddl_state_filename(),
             "> NUL")  # this last line is to remove output from showing up in the terminal, feel free to remove this if debugging
 
         # print("About to call fastdownward like:")

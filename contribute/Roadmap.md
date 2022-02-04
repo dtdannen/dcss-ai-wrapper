@@ -5,14 +5,14 @@ The following is a tentative roadmap for the project to reach version 1.0.
 ### v0.1
 *  ~~Sprint game mode is supported~~
 *  ~~Items in cells can be parsed by the game state~~
-*  Add pddl actions to pickup, equip, drop, take-off, and more for items
-*  New agent class that acts as a passthrough for a human player to play the game 
+*  API for vector state representations is complete
+*  API for PDDL state representations is complete
+*  Update `models/fastdownward_simple.pddl` to be consistent with PDDL state representation API
+*  Create simple RL agent that uses vector-based API
+*  Create simple planning agent that uses PDDL-based API 
+*  ~~New agent class that acts as a passthrough for a human player to play the game~~ 
 
 ### v0.2 
-*  Complete vector-based state representations are available
-*  Partial-view vector-based state representations are available
-*  Complete pddl-based state representations are available
-*  Partial pddl-based state representations are available
 *  Simple planning agent working on tutorials
 *  Simple reinforcement learning agent working on tutorials
 

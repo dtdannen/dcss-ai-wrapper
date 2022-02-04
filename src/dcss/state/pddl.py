@@ -1,8 +1,8 @@
 from datetime import datetime
 
 
-def get_pddl_state_file(domainname: str = "dcss", problemname: str = "test_prob", objects: [str] = None,
-                        init_facts: [str] = None, goals: [str] = None) -> str:
+def get_pddl_problem(domainname: str = "dcss", problemname: str = "test_prob", objects: [str] = None,
+                     init_facts: [str] = None, goals: [str] = None) -> str:
     """
     Returns a complete pddl state string ready to be passed to a planner, given the domain name, objects, init facts,
     and goals.

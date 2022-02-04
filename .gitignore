@@ -8,6 +8,7 @@ models/tests/
 models/fdtempfiles/dcss_plan.sas
 models/fdtempfiles/state.pddl
 
+agent_temp_state/state*
 data/*.csv
 visualization/graphs/*
 downward/
