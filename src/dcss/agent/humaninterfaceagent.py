@@ -56,8 +56,8 @@ class HumanInterfaceBaseAgentDataTracking(BaseAgent):
         # windows solution
         #next_action = None
         print("Waiting for your next keypress, human")
-        next_action = msvcrt.getch().decode()
-        #next_action = input("Waiting for your next keypress, human")
+        #next_action = msvcrt.getch().decode()
+        next_action = input("Waiting for your next keypress, human")
         # while not next_action:
         #     try:
         #         next_action = msvcrt.getch().decode()

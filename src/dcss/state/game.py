@@ -984,11 +984,11 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 0            |     Spell ID.                         |    Int repr. spell ID  |
                 +--------------+---------------------------------------+------------------------+
-                | 1            |     Spell SkillName                       |   Int repr. skill ID   |
+                | 1            |     Spell SkillName                   |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 2            |     Spell SkillName #2                    |   Int repr. skill ID   |
+                | 2            |     Spell SkillName #2                |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 3            |     Spell SkillName #3                    |   Int repr. skill ID   |
+                | 3            |     Spell SkillName #3                |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
                 | 4            |     Failure Likelihood                |    Int 0-100           |
                 +--------------+---------------------------------------+------------------------+
@@ -2405,6 +2405,7 @@ class GameState:
                 training_percent = int(raw_training_percent)
                 aptitude = int(raw_aptitude)
 
+                print("Adding skill {} to player with {}, {}, {}, {}".format(skill_name, skill_menu_choice,skill_level,training_percent,aptitude))
                 new_skill = Skill(skill_name, skill_menu_choice,skill_level,training_percent,aptitude)
                 self.player_skills[skill_name] = new_skill
 
@@ -2415,3 +2416,4 @@ class GameState:
             matches = entire_skill_regex.finditer(cleaner_line)
             for m in matches:
                 print("Found {}".format(m.group()))
+
