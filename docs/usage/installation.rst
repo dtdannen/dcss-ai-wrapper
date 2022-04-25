@@ -7,6 +7,47 @@ Installation
 Installing Dungeon Crawl Stone Soup
 ===================================
 
+
+Building on Docker
+------------------
+
+The docker that is available for download can be built using the dockerfile in `webserver_docker/`::
+
+    cd ~/dcss-ai-wrapper/webserver_docker/
+
+    docker build .
+
+
+Compiling from Source on Ubuntu
+-------------------------------
+
+Note that these instructions were adapted from https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md ::
+
+1. Install system packages:
+
+    sudo apt install build-essential libncursesw5-dev bison flex liblua5.1-0-dev libsqlite3-dev \
+    libz-dev pkg-config python3-yaml binutils-gold python-is-python3 python2 make \
+    libsdl2-image-dev libsdl2-mixer-dev libsdl2-dev libfreetype6-dev libpng-dev \
+    fonts-dejavu-core advancecomp pngcrush git python3.8-venv
+
+2. Clone the repository including submodules::
+
+    git clone --recurse-submodules -j8 https://github.com/crawl/crawl.git crawl/
+
+
+3. Compile crawl::
+
+    cd crawl/crawl-ref/source/
+    make install prefix=/usr/local WEBTILES=y
+
+4. Create an RCS directory that's used to hold player data::
+
+    mkdir /dcss/crawl/crawl-ref/source/rcs/
+
+5.
+
+Old Instructions
+----------------
 **NOTE** These instructions have not been tested for a while. I have included these instructions in case it helps you to use the terminal version of the game. The current best way to use the API is using the pre-made docker container - see :ref:`quickstart`.
 
 While this API is likely to work with the current dcss master branch, it has been tested with the 23.1 version, which
