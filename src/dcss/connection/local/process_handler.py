@@ -17,13 +17,13 @@ from tornado.escape import xhtml_escape
 from tornado.ioloop import IOLoop
 from tornado.ioloop import PeriodicCallback
 
-from webtiles import config, connection, game_data_handler, inotify, terminal, util, ws_handler
-from webtiles.connection import WebtilesSocketConnection
-from webtiles.game_data_handler import GameDataHandler
-from webtiles.inotify import DirectoryWatcher
-from webtiles.terminal import TerminalRecorder
-from webtiles.util import DynamicTemplateLoader, dgl_format_str, parse_where_data
-from webtiles.ws_handler import CrawlWebSocket, remove_in_lobbys, update_all_lobbys
+from dcss.connection.local import config, socket_connection, game_data_handler, inotify, terminal, util, ws_handler
+from dcss.connection.local.socket_connection import WebtilesSocketConnection
+from dcss.connection.local.game_data_handler import GameDataHandler
+from dcss.connection.local.inotify import DirectoryWatcher
+from dcss.connection.local.terminal import TerminalRecorder
+from dcss.connection.local.util import DynamicTemplateLoader, dgl_format_str, parse_where_data
+from dcss.connection.local.ws_handler import CrawlWebSocket, remove_in_lobbys, update_all_lobbys
 
 try:
     from typing import Dict, Set, Tuple, Any

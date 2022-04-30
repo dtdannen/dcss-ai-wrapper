@@ -32,3 +32,4 @@ if __name__ == "__main__":
     # create game
     game = WebSockGame(config=my_config, agent_class=MyAgent)
     game.run()
+

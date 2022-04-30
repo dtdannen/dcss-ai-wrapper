@@ -13,6 +13,7 @@ class LocalConfig:
     server_uri = None
     agent_name = 'midca'
     crawl_socketpath = '/home/dustin/Projects/crawl/crawl-ref/source/rcs/' + agent_name + ':crawl.sock'
+    delay = 0.5
 
 
     @staticmethod
