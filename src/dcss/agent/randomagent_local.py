@@ -12,6 +12,8 @@ import logging
 import random
 import os
 
+from tornado.ioloop import IOLoop
+
 
 class MyAgent(BaseAgent):
 
@@ -58,6 +60,8 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__name__)
 
+
+
     socket_conn = WebtilesSocketConnection(my_config.crawl_socketpath, logger)
     socket_conn.message_callback = _on_socket_message
     socket_conn.connect()
@@ -69,6 +73,9 @@ if __name__ == "__main__":
 
     print("Setting up game...")
     time.sleep(1)
+
+    IOLoop.current().start()
+    print("we started the IOLoop")
 
     while True:
         print("game_updates_called = {}".format(game_updates_called))
