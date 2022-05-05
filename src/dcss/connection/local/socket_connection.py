@@ -104,6 +104,7 @@ class WebtilesSocketConnection(object):
             if self.message_callback:
                 print("Calling message_callback in WebtilesSocketConnection")
                 self.message_callback(to_unicode(data))
+                #self.message_callback(data)
 
     def send_message(self, data): # type: (str) -> None
         start = datetime.now()

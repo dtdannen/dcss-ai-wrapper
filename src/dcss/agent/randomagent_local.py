@@ -37,16 +37,19 @@ if __name__ == "__main__":
     decomp = zlib.decompressobj(-zlib.MAX_WBITS)
 
     def _on_socket_message(msg):  # type: (str) -> None()
-        print("here")
+        print("received message: {}".format(msg))
 
-        print("Binary message received: {0} bytes".format(len(msg)))
-        msg += bytes([0, 0, 255, 255])
-        json_message = decomp.decompress(msg)
-        json_message_decoded = json_message.decode("utf-8")
-        print("   Decoding turns it into: {}".format(json_message_decoded))
-        message_as_str = json_message_decoded
 
-        message_as_json = {}
+        #print("Binary message received: {0} bytes".format(len(msg)))
+        #msg += bytes([0, 0, 255, 255])
+        #json_message = decomp.decompress(msg)
+        #json_message_decoded = json_message.decode("utf-8")
+        #print("   Decoding turns it into: {}".format(json_message_decoded))
+        #message_as_str = json_message_decoded
+
+        #message_as_json = {}
+        message_as_str = msg
+        message_as_json = msg
         try:
             message_as_json = json.loads(message_as_str)
         except:
