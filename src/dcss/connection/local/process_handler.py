@@ -180,6 +180,7 @@ class CrawlProcessHandlerBase(object):
     def flush_messages_to_all(self):
         for receiver in self._receivers:
             receiver.flush_messages()
+            receiver.flush_messages()
 
     def write_to_all(self, msg, send): # type: (str, bool) -> None
         for receiver in self._receivers:

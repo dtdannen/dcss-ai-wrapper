@@ -5,6 +5,7 @@ from dcss.actions.action import Action
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig, LocalConfig
 from dcss.connection.local.socket_connection import WebtilesSocketConnection
+from dcss.connection.local.process_handler import CrawlProcessHandler
 
 import json
 import time
@@ -33,6 +34,14 @@ class MyAgent(BaseAgent):
 
 
 if __name__ == "__main__":
+
+    process_handler = CrawlProcessHandler(None)
+
+    # TODO left off here
+
+    # TODO - OLD code below
+
+
     import zlib
     game_state = GameState()
     global game_updates_called
