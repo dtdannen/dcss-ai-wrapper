@@ -15,7 +15,7 @@ from dcss.state.menu import Menu
 from time import time
 
 import logging
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class FastDownwardPlanningBaseAgent(BaseAgent):
@@ -67,7 +67,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
             if cell.has_stairs_down:
                 self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
-                print("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
+                logging.debug("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
         self.num_cells_visited = len(self.cells_visited[self.current_game_state.player_depth])
 
@@ -101,11 +101,11 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         #print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if len(self.closed_door_cells[self.current_game_state.player_depth]) > 1:
-            print("Attempting to choose a closed door as a goal if possible")
+            logging.debug("Attempting to choose a closed door as a goal if possible")
             goal_cell = self.closed_door_cells[self.current_game_state.player_depth].pop()
         elif len(farthest_away_cells) > 0:
             goal_cell = farthest_away_cells.pop()
-            print("Visited {} cells - Goal is now {}".format(len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
+            logging.debug("Visited {} cells - Goal is now {}".format(len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
 
         else:
             # can't find any cells
@@ -145,12 +145,11 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            print("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
+            logging.debug("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:
-            print("WARNING current game state is null when trying to call fast downward planner")
-            time.sleep(1000)
+            logging.warning("current game state is null when trying to call fast downward planner")
 
         # step 2: run fastdownward
         # fast_downward_process_call = ["./FastDownward/fast-downward.py",
@@ -199,7 +198,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             self.failed_goals = list(set(self.failed_goals))
             return []
         except:
-            print("Unknown error preventing plan from being generated")
+            logging.error("Unknown error preventing plan from being generated")
             return
 
         # for ps in plan:
@@ -269,7 +268,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
                                              self.current_game_state.player_depth+1)
             lower_place_goal = "(playerplace {})".format(lower_place_str)
-            print("Goal selection choosing next goal: {}".format(lower_place_goal))
+            logging.info("Goal selection choosing next goal: {}".format(lower_place_goal))
             return lower_place_goal, "descend"
         else:
             goal = self.get_random_nonvisited_nonwall_playerat_goal()
@@ -292,21 +291,21 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.process_gamestate_via_cells()
 
         available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(self.current_game_state.get_current_menu())
-        print("available_menu_choices = {}".format(available_menu_choices))
+        logging.debug("available_menu_choices = {}".format(available_menu_choices))
         if available_menu_choices:
             return available_menu_choices[0]
 
         self.new_goal, self.new_goal_type = self.goal_selection()
-        print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
-        print("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
+        logging.info("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
+        logging.info("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
         for a in self.plan:
-            print("  plan action is {}".format(a))
+            logging.info("  plan action is {}".format(a))
 
         if self.new_goal and self.new_goal_type and (len(self.plan) < 1 or self.new_goal_type != self.previous_goal_type):
             self.current_goal = self.new_goal
             self.current_goal_type = self.new_goal_type
             # plan
-            print("Planning with goal {}".format(self.new_goal))
+            logging.info("Planning with goal {}".format(self.new_goal))
             self.plan = self.get_plan_from_fast_downward(goals=[self.new_goal])
             self.previous_goal = self.new_goal
             self.previous_goal_type = self.new_goal_type
@@ -318,7 +317,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
             return next_action
 
-        print("warning - no plan, taking random action!")
+        logging.info("No plan, taking random action!")
         next_action = self.get_random_simple_action()
         return next_action
 
