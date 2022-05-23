@@ -74,7 +74,7 @@ class Monster:
             self.id = vals['id']
 
         if 'name' in vals.keys():
-            self.name = vals['name']
+            self.name = vals['name'].replace(' ', '_')
 
         if 'type' in vals.keys():
             self.type = vals['type']
