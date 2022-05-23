@@ -32,6 +32,8 @@ class WebserverConfig:
     """
         This configuration should be used when running DCSS in webserver mode.
     """
+    time_data_save_dir = "/Users/jason/projects/dcss-ai-wrapper/time_analysis_jupyter"
+
     server_uri = 'ws://127.0.0.1:8080/socket'
     server_ip = '127.0.0.1'
     server_port = '8080'

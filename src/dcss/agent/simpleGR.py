@@ -354,7 +354,9 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.5
+    my_config.delay = 0.75
+    my_config.delay = 0.05
+
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
 

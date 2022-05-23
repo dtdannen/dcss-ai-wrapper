@@ -17,6 +17,18 @@ from dcss.state.game import GameState
 from dcss.state.menu import Menu
 
 
+from pathlib import Path
+import pickle
+#times = []
+
+#time_data_save_dir = Path("../../../time_analysis_jupyter")
+
+from dcss.connection.config import WebserverConfig
+time_data_save_dir = Path(WebserverConfig.time_data_save_dir)
+suffix = str(int(time.time()))
+
+assert time_data_save_dir.exists()
+
 class DCSSProtocol(WebSocketClientProtocol):
 
     def __init__(self):
@@ -85,6 +97,8 @@ class DCSSProtocol(WebSocketClientProtocol):
         self.previous_agents = []
         self.previous_game_states = []
 
+        self.onOpenMainLoopGenerator = None
+
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
         print("setting _CONNECTED = True")
@@ -92,8 +106,14 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     async def onOpen(self):
         print("WebSocket connection open.")
-
         # start sending messages every second ..
+
+        self.onOpenMainLoopGenerator = self.onOpenMainLoop()
+
+    def onOpenMainLoop(self):
+        times = []
+        save_time_delay = 4.
+        last_saved_time = None
         while True:
             if self._CONNECTED and self._NEEDS_PONG:
                 print("SENDING PONG MESSAGE")
@@ -220,7 +240,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
                     if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU, Menu.ABILITY_MENU, Menu.SKILL_MENU, Menu.ATTRIBUTE_INCREASE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
-                        self.game_state.draw_cell_map()
+                        #self.game_state.draw_cell_map()
                         # the following executes the next action if we are using an instance of Agent to control
                         # sending actions
                         if self.agent:
@@ -282,7 +302,25 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self.reset_before_next_game()
 
             print("About to sleep for delay {}".format(config.WebserverConfig.delay))
-            await asyncio.sleep(config.WebserverConfig.delay)
+
+            yield
+
+            # self.sleep_task = asyncio.create_task(asyncio.sleep(config.WebserverConfig.delay))
+            # await self.sleep_task
+            # self.sleep_task = None
+
+            #await asyncio.sleep(config.WebserverConfig.delay)
+
+            #print(str(int(time.time())) + "  return from asyncio.sleep()")
+            times.append(time.time())
+            if last_saved_time == None:
+                last_saved_time = time.time()
+            elif time.time() - last_saved_time > save_time_delay:
+                with open(time_data_save_dir / ("times" + suffix + ".pkl"), 'ab') as f:
+                    pickle.dump(times, f)
+                last_saved_time = time.time()
+                times = []
+
 
     def onMessage(self, payload, isBinary):
         print("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))
@@ -298,6 +336,12 @@ class DCSSProtocol(WebSocketClientProtocol):
         else:
             print("Text message received: {0}".format(payload.decode('utf-8')))
             message_as_str = payload.decode('utf-8')
+        '''
+        print("****************************************************************************")
+        print("Message Number: " + str(self.messages_received_counter))
+        print(message_as_str)
+        print("****************************************************************************")
+        '''
 
         message_as_json = {}
         try:
@@ -313,6 +357,12 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         # this must come AFTER perform_state_checks()
         self.game_state.set_current_menu(self._IN_MENU)
+
+        if self.onOpenMainLoopGenerator != None:
+            next(self.onOpenMainLoopGenerator)
+
+        #if self.sleep_task != None:
+        #   self.sleep_task.cancel()
 
     def reset_before_next_game(self):
         print("CALLING RESET BEFORE THE NEXT GAME")
