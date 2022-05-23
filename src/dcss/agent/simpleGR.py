@@ -14,7 +14,7 @@ from dcss.state.menu import Menu
 from enum import Enum
 import dcss.state.pddl as pddl
 
-from time import time
+import time
 
 import logging
 
@@ -141,7 +141,7 @@ class SimpleGRAgent(BaseAgent):
             return None
 
         monster_cell_goal = random.choice(cells_with_monsters)
-        monster_goal_str = "(not (hasmonster {}))".format(monster_cell_goal.get_pddl_name())
+        monster_goal_str = "(not (hasmonster {} {}))".format(monster_cell_goal.get_pddl_name(), monster_cell_goal.monster.name)
         # print("about to return monster goal: {}".format(monster_goal_str))
         # time.sleep(1)
         return monster_goal_str
@@ -167,6 +167,7 @@ class SimpleGRAgent(BaseAgent):
         if self.current_game_state:
             self._pddl_state_counter += 1
             print("About to write out game state with filename {}".format(self.get_pddl_state_filename()))
+            print("current working directory: {}".format(os.getcwd()))
             with open(self.get_pddl_state_filename(), 'w') as f:
                 f.write(self.generate_current_state_pddl(goals=goals))
             print("...wrote to file {}".format(self.get_pddl_state_filename()))
@@ -226,8 +227,9 @@ class SimpleGRAgent(BaseAgent):
             print("Unknown error preventing plan from being generated")
             return
 
-        # for ps in plan:
-        #    print("Plan step: {}".format(ps))
+        for ps in plan:
+            print("Plan step: {}".format(ps))
+        time.sleep(10)
 
         return plan
 
@@ -354,12 +356,10 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.5
+    my_config.delay = 1.0
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
-
-    my_config.auto_start_new_game = True
-    my_config.always_start_new_game = True
+    my_config.draw_map = True
 
     # create game
     game = WebSockGame(config=my_config, agent_class=SimpleGRAgent)

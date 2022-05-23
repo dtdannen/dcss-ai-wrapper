@@ -16,6 +16,8 @@ from autobahn.asyncio.websocket import WebSocketClientProtocol
 from dcss.state.game import GameState
 from dcss.state.menu import Menu
 
+import logging
+
 
 class DCSSProtocol(WebSocketClientProtocol):
 
@@ -220,7 +222,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
                     if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU, Menu.ABILITY_MENU, Menu.SKILL_MENU, Menu.ATTRIBUTE_INCREASE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
-                        self.game_state.draw_cell_map()
+                        if self.config.draw_map: self.game_state.draw_cell_map()
                         # the following executes the next action if we are using an instance of Agent to control
                         # sending actions
                         if self.agent:
@@ -289,14 +291,14 @@ class DCSSProtocol(WebSocketClientProtocol):
         self.messages_received_counter += 1
         message_as_str = None
         if isBinary:
-            print("Binary message received: {0} bytes".format(len(payload)))
+            logging.debug("Binary message received: {0} bytes".format(len(payload)))
             payload += bytes([0, 0, 255, 255])
             json_message = self.decomp.decompress(payload)
             json_message_decoded = json_message.decode("utf-8")
-            print("   Decoding turns it into: {}".format(json_message_decoded))
+            logging.debug("   Decoding turns it into: {}".format(json_message_decoded))
             message_as_str = json_message_decoded
         else:
-            print("Text message received: {0}".format(payload.decode('utf-8')))
+            logging.debug("Text message received: {0}".format(payload.decode('utf-8')))
             message_as_str = payload.decode('utf-8')
 
         message_as_json = {}

@@ -9,6 +9,7 @@ import os
 import socket
 import errno
 
+
 class WebSockGame:
 
     def __init__(self, agent_class, config=WebserverConfig):

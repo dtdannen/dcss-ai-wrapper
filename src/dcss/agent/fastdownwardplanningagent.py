@@ -11,11 +11,10 @@ from dcss.actions.command import Command
 from dcss.actions.menuchoice import MenuChoiceMapping
 from dcss.state.game import GameState
 from dcss.state.menu import Menu
-
-from time import time
+import time
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 class FastDownwardPlanningBaseAgent(BaseAgent):
@@ -136,11 +135,16 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         return monster_goal_str
 
     def generate_current_state_pddl(self, goals):
+        pddl_state_objects = []
+        pddl_state_init = []
         if self.current_game_state:
-            self.current_game_state.get_player_stats_pddl()
-            self.current_game_state.get_player_skills_pddl()
-            self.current_game_state.get_player_inventory_pddl()
-            self.current_game_state.object_strs, fact_strs = self.cellmap.get_cell_map_pddl_global()
+            pddl_state_objects, pddl_state_init = self.cellmap.get_cell_map_pddl_global()
+            pddl_state_init += self.current_game_state.get_player_stats_pddl()
+            pddl_state_init += self.current_game_state.get_player_skills_pddl()
+            pddl_state_init += self.current_game_state.get_player_inventory_pddl()
+
+
+
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
@@ -196,13 +200,14 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             print("Plan could not be generated...")
             self.failed_goals+=goals
             self.failed_goals = list(set(self.failed_goals))
+            raise Exception("Plan could not be generated")
             return []
         except:
             logging.error("Unknown error preventing plan from being generated")
             return
 
-        # for ps in plan:
-        #    print("Plan step: {}".format(ps))
+        for ps in plan:
+            print("Plan step: {}".format(ps))
 
         return plan
 
@@ -309,6 +314,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             self.plan = self.get_plan_from_fast_downward(goals=[self.new_goal])
             self.previous_goal = self.new_goal
             self.previous_goal_type = self.new_goal_type
+            time.sleep(10)
 
         next_action = None
         if self.plan and len(self.plan) > 0:
@@ -331,7 +337,9 @@ if __name__ == "__main__":
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
 
-    my_config.auto_start_new_game = True
+    my_config.draw_map = True
+
+    my_config.auto_start_new_game = False
     my_config.always_start_new_game = True
 
     # create game

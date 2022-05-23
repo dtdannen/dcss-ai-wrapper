@@ -73,3 +73,6 @@ class WebserverConfig:
     species = 'Minotaur'  # species name must match exactly to the string in the dcss menu after the dash, i.e. a hill orc is "Hill Orc"
     background = "Berserker"  # background name must match exactly to the string in the dcss menu after the dash
     starting_weapon = "hand axe"  # starting_weapon name must match exactly to the string in the dcss menu after the dash
+
+    # whether or not to draw the map
+    draw_map = False

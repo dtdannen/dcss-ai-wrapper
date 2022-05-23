@@ -79,7 +79,7 @@ class CellMap:
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
                                                                       self.min_x, self.max_x, self.min_y, self.max_y)
-        print(s)
+        #print(s)
         non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
             for curr_x in range(self.min_x, self.max_x + 1):
@@ -167,9 +167,6 @@ class CellMap:
         """
             Returns PDDL object and fact statements for the entire game so far, including multiple levels
         """
-        monster_obj_strs = []
-        monster_facts_strs = []
-
         tile_object_strs = []
         tile_fact_strs = []
         for place in self.place_depth_to_x_y_to_cells.keys():

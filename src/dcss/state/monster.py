@@ -96,10 +96,16 @@ class Monster:
             (monster_health ?cell - cell ?amount - qualitative_quantity)
             (monster_status_effect ?cell - cell ?status - status_effect)
         """
+        print("about to write hasmonster with name: {}".format(self.name))
         strs = [
             "(hasmonster {} {})".format(pddl_cell_str, self.name),
-            "(monster_danger"
         ]
+
+        # TODO - also return other monster pddl strings:
+        #         (monster_danger_rating ?cell - cell ?danger - danger_rating)
+        #         (monster_health ?cell - cell ?amount - qualitative_quantity)
+        #         (monster_status_effect ?cell - cell ?status - status_effect)
+
         return strs
 
     def set_health(self, health:int):

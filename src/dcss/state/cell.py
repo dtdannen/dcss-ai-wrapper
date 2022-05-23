@@ -308,8 +308,6 @@ class Cell:
             pddl_facts.append('(hasstairsdown {})'.format(self.get_pddl_name()))
         if self.has_stairs_up:
             pddl_facts.append('(hasstairsup {})'.format(self.get_pddl_name()))
-        if self.has_monster:
-            pddl_facts.append("(hasmonster {})".format(self.get_pddl_name()))
         if self.has_potion:
             pddl_facts.append("(haspotion {})".format(self.get_pddl_name()))
         if self.has_scroll:

@@ -173,7 +173,7 @@ class GameState:
         """
         try:
             # print(str(self.state))
-            logging.info("state.update() is now processing: {}".format(str(msg_from_server)))
+            logging.debug("state.update() is now processing: {}".format(str(msg_from_server)))
             self._process_raw_state(msg_from_server)
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))
@@ -1368,7 +1368,7 @@ class GameState:
                     # self.update_map_obj(cells_x_y_g_data_only)
                     # self.update_map_obj()
                 last_key = k
-                print("k is {}".format(k))
+                logging.debug("k is {}".format(k))
                 if k == 'more':
                     if s[k]:
                         self.more_prompt = True
@@ -1504,31 +1504,31 @@ class GameState:
         #     therefore if this function is a bit expensive, it's not too bad, because an agent shouldn't
         #     be opening the menu more than once between taking actions.
         # *** ENDNOTE
-        print("About to process mutations given {}".format(html_str))
+        logging.debug("About to process mutations given {}".format(html_str))
         regex = re.compile('>.*?<', re.DOTALL)
         matches = regex.findall(html_str)
         current_mutations = set()
         # TODO - optimize this, probably a faster way to do it
         for mut_description, mut in MutationMapping.mutation_menu_messages_lookup.items():
-            print("processing mut_description: {}".format(mut_description))
+            logging.debug("processing mut_description: {}".format(mut_description))
             if len(mut_description) > 0:
                 for m in matches:
-                    print("  processing m: {}".format(m))
+                    logging.debug("  processing m: {}".format(m))
                     if mut_description in m:  # this is probably slow, since doing string contains checking
-                        print("adding mut {}".format(mut.name))
+                        logging.debug("adding mut {}".format(mut.name))
                         current_mutations.add(mut)
                         # continue
-        print("Set of mutations is now:")
+        logging.debug("Set of mutations is now:")
         for m in current_mutations:
-            print("   {}".format(m.name))
+            logging.debug("   {}".format(m.name))
 
         self.player_mutations = current_mutations
 
     def _process_items_agent_location(self, message):
         items = message.split(';')
-        print("Found {} items, they are:".format(len(items)))
+        logging.debug("Found {} items, they are:".format(len(items)))
         for i in items:
-            print("   {}".format(i))
+            logging.debug("   {}".format(i))
 
     def _process_single_spell(self, message):
         #print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
@@ -1573,10 +1573,10 @@ class GameState:
 
             # add this spell
             self.player_spells.add(spell_obj)
-            print("Added player spell {} ".format(spell_obj))
+            logging.debug("Added player spell {} ".format(spell_obj))
 
         except:
-            print("Ignoring spell processing for messzage: {}".format(message))
+            logging.debug("Ignoring spell processing for message: {}".format(message))
             pass
 
     def _process_single_ability(self, message):
@@ -1592,18 +1592,18 @@ class GameState:
         try:
             # get the name of the ability
             ability_name = AbilityNameMapping.ability_menu_messages_lookup[ability_name_regex.search(message).group()]
-            print("ability name is {}".format(ability_name))
+            logging.debug("ability name is {}".format(ability_name))
 
             # get the ability_costs
             ability_costs = []
             matches = ability_costs_regex.finditer(message)
             for m in matches:
                 ability_costs.append(m.group())
-            print("ability costs are {}".format(ability_costs))
+            logging.debug("ability costs are {}".format(ability_costs))
 
             # get the fail rate
             ability_fail_rate = int(ability_fail_rate_regex.search(message).group()[:-1]) # -1 trims off the % sign
-            print("ability fail rate is {}".format(ability_fail_rate))
+            logging.debug("ability fail rate is {}".format(ability_fail_rate))
 
             ability_obj = Ability(ability_name, ability_fail_rate, 'MP' in ability_costs, 'Piety' in ability_costs, 'Delay' in ability_costs, 'Frailty' in ability_costs)
 
@@ -1618,10 +1618,10 @@ class GameState:
 
             # add this ability
             self.player_abilities.add(ability_obj)
-            print("Added player ability {} ".format(ability_obj))
+            logging.debug("Added player ability {} ".format(ability_obj))
 
         except:
-            print("Ignoring ability processing for message: {}".format(message))
+            logging.debug("Ignoring ability processing for message: {}".format(message))
             pass
 
     def process_messages(self, data):
@@ -1676,7 +1676,7 @@ class GameState:
                 last_message_is_items_here = True
 
             if 'Unknown command.' in message_only:
-                print("Error with last command - game did not recognize it... ")
+                logging.debug("Error with last command - game did not recognize it... ")
 
             if 'Your movement speed is ' in message_only:
                 move_speed_str = message_only[len('Your movement speed is ') + message_only.index(
@@ -1715,7 +1715,7 @@ class GameState:
             elif k == 'depth':
                 self.player_depth = data[k]
                 self.get_cell_map().set_current_depth(self.player_depth)
-                print("Player is now at Depth {}".format(self.player_depth))
+                logging.debug("Player is now at Depth {}".format(self.player_depth))
 
             elif k == 'time':
                 self.game_time = data[k]
@@ -1809,7 +1809,7 @@ class GameState:
                 self.agent_y = self.player_position['y']
                 self.cellmap.set_agent_x(self.agent_x)
                 self.cellmap.set_agent_y(self.agent_y)
-                print("Player position is now x={}, y={}".format(self.agent_x, self.agent_y))
+                logging.debug("Player position is now x={}, y={}".format(self.agent_x, self.agent_y))
 
             # Todo - I don't know the difference between adjusted noise and noise
             elif k == 'adjusted_noise':
@@ -1833,11 +1833,12 @@ class GameState:
                 pass
 
             else:
-                print("****WARNING - unknown player datum: {}:{}".format(k, data[k]))
-                print("****DATA HAS DATA:")
+                print("**** WARNING - unknown player datum: {}:{}".format(k, data[k]))
+                print("**** Please use the following data to update the API and submit a pull request (thank you! -Dustin)")
+                print("**** DATA HAS DATA:")
                 for k, v in data.items():
                     print("   {}:{}".format(k, v))
-                time.sleep(20)
+                time.sleep(100)
 
     def process_player_status(self, status_list):
         current_status_effects = set()
@@ -1858,36 +1859,38 @@ class GameState:
                         current_status_effects.add(StatusEffect.ZOT_STATUS_EFFECT)
                     elif v == 'Berserk':
                         current_status_effects.add(StatusEffect.BERSERK_STATUS_EFFECT)
+                    elif v == 'Wisp':
+                        current_status_effects.add(StatusEffect.WISP_STATUS_EFFECT)
                     else:
                         print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))
                         time.sleep(100)
-                        raise Exception("Please update knowledge to support this status effect")
+                        raise Exception("Please update knowledge to support this status effect (thank you! -Dustin)")
 
         self.player_status_effects = current_status_effects
 
     def process_cursor(self, data):
-        print("processing cursor update from data: {}".format(data))
-        print("\tBEFORE: cursor_x is {}".format(self.cursor_x))
-        print("\tBEFORE: cursor_y is {}".format(self.cursor_y))
+        logging.debug("processing cursor update from data: {}".format(data))
+        logging.debug("\tBEFORE: cursor_x is {}".format(self.cursor_x))
+        logging.debug("\tBEFORE: cursor_y is {}".format(self.cursor_y))
         for k in data.keys():
             if k == 'loc':
                 self.cursor_x = data[k]["x"]
                 self.cursor_y = data[k]["y"]
 
-        print("\tAFTER: cursor_x is {}".format(self.cursor_x))
-        print("\tAFTER: cursor_y is {}".format(self.cursor_y))
+        logging.debug("\tAFTER: cursor_x is {}".format(self.cursor_x))
+        logging.debug("\tAFTER: cursor_y is {}".format(self.cursor_y))
 
     def process_describe_monster(self, data):
         """
             Process description of cells that describe monsters via the examine mode
         """
 
-        print("********* In process describe monster ***************")
+        logging.debug("********* In process describe monster ***************")
 
         re.sub("\u000a", "\n", data)
 
-        print("Doing special char substitution:\n\n")
+        logging.debug("Doing special char substitution:\n\n")
 
         monster_health = -1
         AC_level = 0
@@ -1909,18 +1912,18 @@ class GameState:
             elif 'Max HP:' in line:
                 monster_health = int(line.split(' ')[-1])
 
-            print("  {}:{}".format(i, line))
+            logging.debug("  {}:{}".format(i, line))
             i += 1
 
         # now get the monster object and add it's details to it
 
-        print("health: {}".format(monster_health))
-        print("AC: {}".format(AC_level))
-        print("EV: {}".format(EV_level))
-        print("MR: {}".format(MR_level))
-        print("danger_rating: {}".format(danger_rating))
+        logging.debug("health: {}".format(monster_health))
+        logging.debug("AC: {}".format(AC_level))
+        logging.debug("EV: {}".format(EV_level))
+        logging.debug("MR: {}".format(MR_level))
+        logging.debug("danger_rating: {}".format(danger_rating))
 
-        print("\n\ncursor_x and y is {}, {}".format(self.cursor_x, self.cursor_y))
+        logging.debug("\n\ncursor_x and y is {}, {}".format(self.cursor_x, self.cursor_y))
 
         player_x, player_y = self.get_cell_map().agent_x, self.get_cell_map().agent_y
         monster_x = player_x + self.cursor_x
@@ -1934,7 +1937,7 @@ class GameState:
         monster_at_cursor.set_mr(MR_level)
         monster_at_cursor.set_danger_rating(danger_rating)
 
-        print("The retrieved monster at {},{} is a {}".format(monster_x, monster_y, monster_at_cursor))
+        logging.debug("The retrieved monster at {},{} is a {}".format(monster_x, monster_y, monster_at_cursor))
 
     def get_pddl_current_state_player(self):
         player_object_strs = []
@@ -1960,7 +1963,7 @@ class GameState:
             for i in range(1, len(ascending_bin_labels)+1):
                 if self.player_current_hp < i * bin_size:
                     player_pddl_strs.append("(playerhealth {})".format(ascending_bin_labels[i-1]))
-                    print("Just wrote player_health to be {} because its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
+                    logging.debug("Just wrote player_health to be {} because its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
                     break
 
         player_pddl_strs.append("(playerplace {}_{})".format(self.player_place.lower().strip(), self.player_depth))
@@ -2033,7 +2036,7 @@ class GameState:
             pddl_str += "  {}\n".format(fact)
 
         # read in common knowledge facts and write to file
-        print("Current directory is {}".format(os.getcwd()))
+        logging.debug("Current directory is {}".format(os.getcwd()))
         with open(self.general_knowledge_pddl_facts_filename, 'r') as f2:
             for line in f2.readlines():
                 if not line.startswith(';'):
@@ -2046,10 +2049,10 @@ class GameState:
         pddl_str += ")\n"
         pddl_str += ")\n\n)"
 
-        print("filename is {}".format(filename))
+        logging.debug("filename is {}".format(filename))
         with open(filename.format(), 'w') as f:
             f.write(pddl_str)
-        print("wrote to file {}".format(filename))
+        logging.debug("wrote to file {}".format(filename))
 
         return True
 
@@ -2093,18 +2096,18 @@ class GameState:
                 # new item
                 inv_item = InventoryItem(inv_id, name, quantity, base_type)
                 self.inventory_by_id[inv_id] = inv_item
-                print("***** Adding new item {}".format(inv_item))
+                logging.debug("***** Adding new item {}".format(inv_item))
             else:
                 # existing item
                 inv_item = self.inventory_by_id[inv_id]
-                print("***** Updating item {}".format(inv_item))
+                logging.debug("***** Updating item {}".format(inv_item))
                 prev_quantity = inv_item.get_quantity()
                 if quantity is not None and quantity <= prev_quantity:
                     if quantity == 0:
-                        print("  **** Deleting item {} because quantity = 0".format(inv_item))
+                        logging.debug("  **** Deleting item {} because quantity = 0".format(inv_item))
                         del self.inventory_by_id[inv_id]
                     else:
-                        print(
+                        logging.debug(
                             "  **** Remaking item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
                         self.inventory_by_id[inv_id] = InventoryItem(inv_id, name, quantity, base_type)
 
@@ -2127,7 +2130,7 @@ class GameState:
             Equipping weapon inv letter d gives: {"msg":"player","time":8105,"turn":805,"equip":{"0":3}}
             """
             self.equip_slots_to_inv_id[equip_slot] = item
-            print("*******===**** adding equip slot {} with item id {}".format(equip_slot, item))
+            logging.debug("*******===**** adding equip slot {} with item id {}".format(equip_slot, item))
 
         # IMPORTANT - need to check that all items are consistent with equipped item state
         currently_equipped_items = set(self.equip_slots_to_inv_id.values())
@@ -2185,22 +2188,6 @@ class GameState:
                     pass
 
                 self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
-
-    def print_map_obj(self):
-        raise Exception("We're in an olddddd function")
-        # while self.lock:
-        #     # wait
-        #     time.sleep(0.001)
-        #
-        # self.lock = True
-        # try:
-        #     for r in self.map_obj:
-        #         print(str(r))
-        #     self.lock = False
-        # except:
-        #     raise Exception("Oh man something happened")
-        # finally:
-        #     self.lock = False
 
     def get_player_xy(self):
         return (self.map_obj_player_x, self.map_obj_player_y)
