@@ -1368,7 +1368,7 @@ class GameState:
                     # self.update_map_obj(cells_x_y_g_data_only)
                     # self.update_map_obj()
                 last_key = k
-                logging.debug("k is {}".format(k))
+                #logging.debug("k is {}".format(k))
                 if k == 'more':
                     if s[k]:
                         self.more_prompt = True
@@ -2183,9 +2183,8 @@ class GameState:
                     vals['y'] = curr_y
 
                 if 'mon' in cell_dict.keys():
-                    # print("Found a monster cell with cell_dict vals {}".format(cell_dict))
-                    # vals['mon'] = cell_dict['mon']
-                    pass
+                    print("Found a monster cell with cell_dict vals {} at location {},{}".format(cell_dict, curr_x, curr_y))
+                    vals['mon'] = cell_dict['mon']
 
                 self.cellmap.add_or_update_cell(curr_x, curr_y, vals=vals)
 

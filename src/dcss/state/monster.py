@@ -1,6 +1,7 @@
 import string
 from enum import Enum
 
+
 class Monster:
     """
 
@@ -40,6 +41,7 @@ class Monster:
         self.ac = None
         self.ev = None
         self.mr = None
+        self.avghp = None
 
     @staticmethod
     def create_or_update_monster(vals, ascii_sym):
@@ -81,6 +83,10 @@ class Monster:
 
         if 'threat' in vals.keys():
             self.threat = vals['threat']
+
+        if 'typedata' in vals.keys():
+            if 'avghp' in vals['typedata']:
+                self.avghp = vals['typedata']['avghp']
 
     def set_cell(self, cell):
         self.cell = cell

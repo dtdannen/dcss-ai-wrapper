@@ -79,9 +79,11 @@ class CellMap:
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
                                                                       self.min_x, self.max_x, self.min_y, self.max_y)
-        #print(s)
+        s += '     ' + ''.ljust(abs(self.min_x), '-') + "0" + ''.rjust(abs(self.max_x), '-') + "\n"
+
         non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
+            s += '{0:0=+3d} '.format(curr_y) + ' '
             for curr_x in range(self.min_x, self.max_x + 1):
                 if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
                     cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)]

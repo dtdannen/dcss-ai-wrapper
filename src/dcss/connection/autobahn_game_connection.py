@@ -283,7 +283,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_3_TO_DELETE_GAME = True
                         self.reset_before_next_game()
 
-            print("About to sleep for delay {}".format(config.WebserverConfig.delay))
+            #print("About to sleep for delay {}".format(config.WebserverConfig.delay))
             await asyncio.sleep(config.WebserverConfig.delay)
 
     def onMessage(self, payload, isBinary):
