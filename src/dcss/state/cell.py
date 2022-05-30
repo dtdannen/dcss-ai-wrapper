@@ -288,6 +288,7 @@ class Cell:
 
     def get_pddl_facts(self):
         pddl_facts = []
+        has_item = False
         if self.has_wall:
             pddl_facts.append('(hasterrain {} stone_wall)'.format(self.get_pddl_name()))
         if self.has_closed_door:
@@ -310,33 +311,48 @@ class Cell:
             pddl_facts.append('(hasstairsup {})'.format(self.get_pddl_name()))
         if self.has_potion:
             pddl_facts.append("(haspotion {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_scroll:
             pddl_facts.append("(hasscroll {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_orb_of_zot:
             pddl_facts.append("(hasorbofzot {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_ring:
             pddl_facts.append("(hasring {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_stave:
             pddl_facts.append("(hasstave {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_hand_weapon:
             pddl_facts.append("(hasweapon {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_armour:
             pddl_facts.append("(hasarmour {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_missile:
             # TODO - add support for this to the pddl domain file
             #pddl_facts.append("(hasmissile {})".format(self.get_pddl_name()))
             pass
         if self.has_amulet:
             pddl_facts.append("(hasamulet {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_wand:
             pddl_facts.append("(haswand {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_book:
             pddl_facts.append("(hasbook {})".format(self.get_pddl_name()))
+            has_item = True
         if self.has_gold:
             pddl_facts.append("(hasgold {})".format(self.get_pddl_name()))
+            has_item = True
         if self.monster:
             for fact_i in self.monster.get_pddl_strs(self.get_pddl_name()):
                 pddl_facts.append(fact_i)
+
+        if has_item:
+            pddl_facts.append("(hasitem_generic {})".format(self.get_pddl_name()))
+
         return pddl_facts
 
     def straight_line_distance(self, cell):

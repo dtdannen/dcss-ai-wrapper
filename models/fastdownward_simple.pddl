@@ -1393,6 +1393,7 @@
     (hasarmour ?cell - cell)
     (hasfooditem ?cell - cell)
     (hasitem ?cell - cell ?item - item)
+    (hasitem_generic ?cell - cell) ;; some items, like unidentified potions and scrolls, etc. don't have a name
     (cursed ?item - item)
     (equipped ?item - item)
     (weapon ?item - item)
@@ -1926,19 +1927,32 @@
     )
 )
 
-
 (:action pickup_item
-    :parameters (?item - item ?cell - cell)
+    :parameters (?cell - cell)
     :precondition
     (and
         (playerat ?cell)
-        (hasitem ?cell ?item)
+        (hasitem_generic ?cell)
     )
     :effect
     (and
-        (invhasitem ?item)
+        (not (hasitem_generic ?cell))
     )
 )
+
+
+;;(:action pickup_item
+;;    :parameters (?item - item ?cell - cell)
+;;    :precondition
+;;    (and
+;;        (playerat ?cell)
+;;        (hasitem ?cell ?item)
+;;    )
+;;    :effect
+;;    (and
+;;        (invhasitem ?item)
+;;    )
+;;)
 
 (:action drop_item
     :parameters (?item - item ?cell - cell)
