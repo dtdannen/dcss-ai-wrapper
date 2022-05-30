@@ -149,10 +149,26 @@ class SimpleGRAgent(BaseAgent):
         cells_with_item = []
         for f in self.pddl_state_facts:
             if 'hasitem_generic' in f:
-                cell_str =
+                matches = re.findall('cellx[_]*[0-9]+y[_]*[0-9]+', f)
+                for c in matches:
+                    cells_with_item.append(c)
 
+        cells_in_failed_goals = []
+        for g in self.failed_goals:
+            matches = re.findall('cellx[_]*[0-9]+y[_]*[0-9]+', g)
+            for c in matches:
+                cells_in_failed_goals.append(c)
+        cells_with_item = [c for c in cells_with_item if c not in cells_in_failed_goals]
+
+        if len(cells_with_item) == 0:
+            return None
+
+        item_goal_cell = random.choice(cells_with_item)
+        item_goal_str = "(not (hasitem_generic {}))".format(item_goal_cell)
+        return item_goal_str
 
     def get_first_monster_goal(self):
+        #TODO rewrite this to only use PDDL facts, not the gamestate API directly
         """
         This picks a the first available monster and chooses that monsters cell to be the goal. In the process of trying to move
         into the monsters cell, the agent should end up attacking the monster, because movement and attacking are the
@@ -328,6 +344,8 @@ class SimpleGRAgent(BaseAgent):
 
         # try to pick up items
         item_pickup_goal = self.get_item_goal()
+        if item_pickup_goal:
+            return item_pickup_goal, "item"
 
         #        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
         #            return self.get_full_health_goal(), "heal"
@@ -343,8 +361,6 @@ class SimpleGRAgent(BaseAgent):
             goal = self.get_random_nonvisited_nonwall_playerat_goal()
             selected_goal = goal
             return selected_goal, "explore"
-
-
 
     def goal_satisified(self):
         if self.current_goal:
