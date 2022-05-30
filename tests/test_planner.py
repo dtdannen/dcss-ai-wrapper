@@ -11,7 +11,8 @@ from dcss.actions.command import Command
 print("Current working directory: {}".format(os.getcwd()))
 
 plan_domain_filename = "models/fastdownward_simple.pddl"
-plan_current_pddl_state_filename = "models/fdtempfiles/state.pddl"
+#plan_current_pddl_state_filename = "models/fdtempfiles/state.pddl"
+plan_current_pddl_state_filename = "agent_temp_state/state7.pddl"
 plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
 
 fast_downward_process_call = [

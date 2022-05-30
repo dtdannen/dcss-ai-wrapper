@@ -424,7 +424,7 @@
   killer_bee_larva - monster
   killer_klown - monster
   kirke - monster
-  kobold_monster - monster
+  kobold - monster
   kobold_demonologist - monster
   komodo_dragon - monster
   kraken - monster

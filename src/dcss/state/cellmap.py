@@ -79,7 +79,20 @@ class CellMap:
 
         s = "agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
                                                                       self.min_x, self.max_x, self.min_y, self.max_y)
-        s += '     ' + ''.ljust(abs(self.min_x), '-') + "0" + ''.rjust(abs(self.max_x), '-') + "\n"
+
+        # build the x digit string at the top
+        s += '     '
+        for i in range(self.min_x, self.max_x):
+            i_digit = '-'
+            if i == 0:
+                i_digit = '0'
+            elif i % 10 == 0:
+                i_digit = str(abs(int(i / 10)))
+                if len(i_digit) > 1:
+                    i_digit = i_digit[-2]  # this handles the case where i > 100 and we want to print out tens place
+            s += i_digit
+
+        s += '\n'
 
         non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
