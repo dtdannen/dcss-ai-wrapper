@@ -1,0 +1,43 @@
+##############################################################################
+# Level 3 - Hello world, but there's an elite enemy in the room you must kill
+#			 that cannot reach you, and you have a ranged weapon.
+#
+NAME:   Level 3
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Level 3: Be able to use ranged weaponry and bypass the level 3 stat allocation pop-up.
+ORDER:  17
+ORIENT: encompass
+COLOUR: xXc = blue
+
+KITEM:  O = Orb of Zot
+KMONS:  u = Edmund hp:1 
+KITEM:  A = longbow ego:none
+KITEM: 	B = ring of flight
+KITEM: 	C = arrow q:99
+
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc...cOc...cX
+Xc...cuc...cX
+Xc...cwc...cX
+Xc...cAc...cX
+Xc...cBc...cX
+Xc...cCc...cX
+Xccccc+cccccX
+Xccccc{cccccX
+XXXXXXXXXXXXX
+ENDMAP
+
+NAME: example_subvault
+TAGS: example_subvault no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+
+KFEAT: J = altar_jiyva
+KFEAT: L = altar_lugonu
+KFEAT: M = altar_makhleb
+KFEAT: X = altar_xom
+
+MAP
+JL
+MX
+ENDMAP

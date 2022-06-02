@@ -1,0 +1,28 @@
+##############################################################################
+# Combat - Hello world, but there's a basic enemy in the room.
+#
+NAME:   Combat
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Combat: Be able to fight enemies without having the agent freeze up.
+ORDER:  11
+ORIENT: encompass
+COLOUR: xXc = blue
+
+KITEM:  O = Orb of Zot
+
+MONS:	rat
+KMONS:  u = rat
+KMONS: 	g = floating eye
+
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc....O....cX
+Xc.........cX
+Xc....1....cX
+Xc.........cX
+Xccc.......cX
+Xc{+.......cX
+XcccccccccccX
+XXXXXXXXXXXXX
+ENDMAP
