@@ -1,0 +1,28 @@
+##############################################################################
+#  Swap out of currently equipped weapon for a significantly better one to be
+#	 able to kill an elite.
+#
+NAME:   Arms Deal
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Arms Deal:  Be able to identify better weapons and equip them after pick-up.
+ORDER:  14
+ORIENT: encompass
+COLOUR: xXc = blue
+
+KITEM:  O = Orb of Zot
+KITEM:  A = dagger plus:100
+KMONS:  u = rat hp:300 name:Ratthew
+
+
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc...cOc...cX
+Xc...c.c...cX
+Xc...cuc...cX
+Xc...c.c...cX
+Xc..cc+c...cX
+Xc..cA{c...cX
+XcccccccccccX
+XXXXXXXXXXXXX
+ENDMAP

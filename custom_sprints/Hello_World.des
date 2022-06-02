@@ -1,25 +1,24 @@
 ##############################################################################
-# Hello World sprint map
+# Hello_World:Pick up zot orb and go to exit in enclosed room.
 #
-NAME:   small_test_scenario
+NAME:   Hello World
 TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
-DESC:   Custom Sprint: Small Test Scenario 1
+DESC:   Hello World: Be able to target aim for zot orb and exit.
 ORDER:  10
 ORIENT: encompass
 COLOUR: xXc = blue
-KITEM:  # = Orb of Zot
-KMONS:  u = rat
-KITEM:  $ = gold q:27
+
+KITEM:  O = Orb of Zot
 
 MAP
 XXXXXXXXXXXXX
 XcccccccccccX
-Xcccc.#.ccccX
-Xcccc...ccccX
-Xccc.....cccX
-Xccc.....cccX
-Xcccc...ccccX
-Xcccc.{.ccccX
+Xc....O....cX
+Xc.........cX
+Xc.........cX
+Xc.........cX
+Xc.........cX
+Xc....{....cX
 XcccccccccccX
 XXXXXXXXXXXXX
 ENDMAP

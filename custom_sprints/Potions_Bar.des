@@ -1,0 +1,26 @@
+##############################################################################
+# Potions Bar - Room with a bunch of unidentified potions.
+# Agent Goal: Be able to identify potions when not in danger.
+#
+NAME:   Potions Bar
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Potions Bar: Be able to identify pots when not in danger.
+ORDER:  24
+ORIENT: encompass
+COLOUR: xXc = blue
+
+KITEM:  O = Orb of Zot
+KITEM:  A = potion of flight q:2
+KITEM:  B = any potion q:2
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc$$$$O$$$$cX
+XcwwwwwwwwwcX
+XcBBBBBBBBBcX
+XcBABBBBBBBcX
+XcBBBBBBBBBcX
+XcBBBB{BBBBcX
+XcccccccccccX
+XXXXXXXXXXXXX
+ENDMAP
