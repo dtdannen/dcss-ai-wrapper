@@ -1,0 +1,28 @@
+##############################################################################
+# Proper Evocation - Hello World, but against an elite enemy and having some damage wand.
+#
+NAME:   Proper Evocation
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Proper Evocation:  Use a wand to defeat an elite enemy.
+ORDER:  20
+ORIENT: encompass
+COLOUR: xXc = blue
+
+
+KITEM:  O = Orb of Zot
+KMONS:  u = Troll hp:1000 name:Infinitroll
+KITEM:	A = wand of enslavement charges:100
+# Note: wandtypes are from the current version and they change alot. Enslavement = charm
+
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc....u....cX
+Xc....$....cX
+Xc....O....cX
+Xc.........cX
+Xccc.......cX
+XA{+.......cX
+XcccccccccccX
+XXXXXXXXXXXXX
+ENDMAP

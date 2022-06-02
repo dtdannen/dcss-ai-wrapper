@@ -1,0 +1,56 @@
+##############################################################################
+# Spell Levelling - Run Felid Summoner(so squishy), play cowardly(safe). 
+# Layout is multiple rooms of various enemies increasing in strength each room.
+# Need to access lvl 2/3 spells to win.
+#
+NAME:   Spell Levelling
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Spell Levelling: Use Felid Summoner. Agent needs to manage skill level-ups and spell memorization properly to win.
+ORDER:  19
+ORIENT: encompass
+COLOUR: xXc = blue
+
+# Commonly used glyphs:
+# X = permanent rock wall
+# x = rock wall
+# c = stone wall
+# . = floor
+# + = closed door
+# “=” = runed door
+# W = shallow water
+# w = deep water [needs no_pool_fixup TAG or might mess up]
+# l = lava
+# @ = startingpoint. 
+# }{, )(, ][ = stone stairs set 1, 2, and 3 respectively. The left-facing half of each
+# 		pair goes downstairs, right-facing goes up
+
+
+KITEM:  O = Orb of Zot
+KMONS:  A = rat
+# gets to 75% exp
+KMONS:  B = quokka
+# gets to lvl 2, 3%
+KMONS:  C = adder
+# 28% lvl 3
+KMONS:	D = gnoll
+
+KMONS:	E = Edmund
+
+KMONS:	F = troll
+
+KMONS:	G = Blork the orc
+
+MARKER: H = lua:transp_loc("return_to_start")
+MARKER: I = lua:transp_dest_loc("return_to_start")
+MAP
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccX
+Xc...AAA...+.........c....CCC..+.........c....EE...+.........c....GG...+OHcX
+Xc...AAA..ccc........c....CCC.ccc........c........ccc........c........cccccX
+Xc...AAA...c.........c.........c.........c.........c.........c.........cXXXX
+Xc.........c.........c.........c...DDD...c.........c.........c.........cX
+Xccc.......c...BBB..ccc........c...DDD..ccc........c....FF..ccc........cX
+XI{+.......c.........+.........c.........+.........c.........+.........cX
+XcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+ENDMAP

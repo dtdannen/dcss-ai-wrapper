@@ -1,0 +1,27 @@
+##############################################################################
+#  Wardrobe - Swap out of currently equipped armor for a significantly better
+#	 one to be able to kill an elite.
+#
+NAME:   Wardrobe
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Wardrobe: Be able to identify better armor and equip them after pick-up.
+ORDER:  15
+ORIENT: encompass
+COLOUR: xXc = red
+
+KITEM:  O = Orb of Zot
+KITEM:  A = ring of flight
+
+
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc...cOc...cX
+Xc...c.c...cX
+Xc...cwc...cX
+Xc...c.c...cX
+Xc..cc+c...cX
+Xc..cA{c...cX
+XcccccccccccX
+XXXXXXXXXXXXX
+ENDMAP
