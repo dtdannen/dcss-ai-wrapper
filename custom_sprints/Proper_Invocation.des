@@ -1,0 +1,26 @@
+##############################################################################
+# Proper Invocation - As a Trog Berserker, Hello World with an elite enemy
+# 	 that you need to use Berserk to kill.
+NAME:   Proper Invocation
+TAGS:   sprint no_item_gen no_trap_gen no_pool_fixup no_rotate no_hmirror no_vmirror
+DESC:   Proper Invocation:  Use Berserk to kill an enemy
+ORDER:  21
+ORIENT: encompass
+COLOUR: xXc = blue
+
+
+KITEM:  O = Orb of Zot
+KMONS:  u = Edmund hp:30 name:Powerful_Enemy
+
+MAP
+XXXXXXXXXXXXX
+XcccccccccccX
+Xc....O....cX
+Xc.........cX
+Xc....u....cX
+Xc.........cX
+Xccc.......cX
+Xc{+.......cX
+XcccccccccccX
+XXXXXXXXXXXXX
+ENDMAP
