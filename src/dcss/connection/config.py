@@ -1,5 +1,25 @@
 import autobahn.rawsocket.util
 import os
+from enum import Enum
+
+
+class GameMode(Enum):
+    FULL = 1
+    SEEDED_FULL = 2
+    TUTORIAL = 3
+    SPRINT = 4
+
+
+class GameModeMapping:
+    """
+    Assists parsing what mutations the player has from websocket data
+    """
+    game_mode_messages_lookup = {
+        GameMode.FULL : "dcss-web-trunk",
+        GameMode.SEEDED_FULL : "seeded-web-trunk",
+        GameMode.TUTORIAL : "tut-web-trunk",
+        GameMode.SPRINT : "sprint-web-trunk",
+    }
 
 
 class LocalConfig:
@@ -50,7 +70,7 @@ class WebserverConfig:
     #   'seeded-web-trunk'    - play a seeded version of the game
     #   'tut-web-trunk'       - play a tutorial
     #   'sprint-web-trunk'    - play a sprint
-    game_id = 'tut-web-trunk'
+    game_id = 'tut-web-trunk'  # TODO replace with game mode enum
 
     seed = 4675233756386659716
 

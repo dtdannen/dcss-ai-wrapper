@@ -27,6 +27,7 @@ class Goal(Enum):
     RETREAT = 3
     COLLECT_ITEMS = 4
     HEAL = 5
+    ESCAPE_DUNGEON = 6
 
 
 class SimpleGRAgent(BaseAgent):
@@ -348,14 +349,20 @@ class SimpleGRAgent(BaseAgent):
         next_action = self.get_random_simple_action()
         return next_action
 
+###################################################
+##
+## Configurations per different game modes
+##
+###################################################
 
-if __name__ == "__main__":
+
+def run_sprint_hello_world():
     my_config = WebserverConfig
 
     # set game mode to Tutorial #1
-    my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.75
-    my_config.delay = 0.05
+    my_config.game_id = 'sprint-web-trunk'
+    my_config.sprint_map_letter = 'k'
+    my_config.delay = 1.0
 
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
@@ -366,3 +373,7 @@ if __name__ == "__main__":
     # create game
     game = WebSockGame(config=my_config, agent_class=SimpleGRAgent)
     game.run()
+
+
+if __name__ == "__main__":
+    run_sprint_hello_world()

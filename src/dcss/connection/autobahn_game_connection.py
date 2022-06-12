@@ -301,25 +301,28 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_3_TO_DELETE_GAME = True
                         self.reset_before_next_game()
 
-            print("About to sleep for delay {}".format(config.WebserverConfig.delay))
+            if self.config.delay > 0:
+                print("About to sleep for delay {}".format(config.WebserverConfig.delay))
+                #self.sleep_task = asyncio.create_task(asyncio.sleep(config.WebserverConfig.delay))
+                # await self.sleep_task
+                # self.sleep_task = None
 
-            yield
+                await asyncio.sleep(self.config.delay)
 
-            # self.sleep_task = asyncio.create_task(asyncio.sleep(config.WebserverConfig.delay))
-            # await self.sleep_task
-            # self.sleep_task = None
+            else:
 
-            #await asyncio.sleep(config.WebserverConfig.delay)
+                yield
 
-            #print(str(int(time.time())) + "  return from asyncio.sleep()")
-            times.append(time.time())
-            if last_saved_time == None:
-                last_saved_time = time.time()
-            elif time.time() - last_saved_time > save_time_delay:
-                with open(time_data_save_dir / ("times" + suffix + ".pkl"), 'ab') as f:
-                    pickle.dump(times, f)
-                last_saved_time = time.time()
-                times = []
+
+                #print(str(int(time.time())) + "  return from asyncio.sleep()")
+                times.append(time.time())
+                if last_saved_time == None:
+                    last_saved_time = time.time()
+                elif time.time() - last_saved_time > save_time_delay:
+                    with open(time_data_save_dir / ("times" + suffix + ".pkl"), 'ab') as f:
+                        pickle.dump(times, f)
+                    last_saved_time = time.time()
+                    times = []
 
 
     def onMessage(self, payload, isBinary):

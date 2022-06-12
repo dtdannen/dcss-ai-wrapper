@@ -1,5 +1,6 @@
 import json
 import time
+import logging
 
 from dcss.actions.action import Action
 from dcss.actions.menuchoice import MenuChoice
