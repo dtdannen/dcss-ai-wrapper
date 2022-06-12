@@ -1,6 +1,19 @@
-import os
+import pty
+import termios
+import struct
+import resource
+import signal
 import sys
-import errno
+import os, os.path, errno, fcntl
+import time
+
+
+import config
+
+from tornado.escape import json_decode, json_encode, xhtml_escape
+from tornado.ioloop import PeriodicCallback, IOLoop
+
+
 from dcss.connection.config import LocalConfig
 
 from game_connection_base import GameConnectionBase
@@ -21,6 +34,14 @@ class GameConnectionLocal(GameConnectionBase):
 
         #self.output_callback = self._on_process_output
         self.agentResponseLoopGenerator = None
+        self.asyncio_loop = None
+
+        self._start_process()
+        try:
+            self.asyncio_loop.run_forever()
+        finally:
+            self.asyncio_loop.stop()
+            self.asyncio_loop.close()
 
     def _start_process(self):
         try:  # Unlink if necessary
@@ -71,6 +92,9 @@ class GameConnectionLocal(GameConnectionBase):
 
         # We're the parent
         os.close(errpipe_write)
+
+        self.asyncio_loop = asyncio.get_event_loop()
+
 
         # TODO: Have to first get the loop object.
         self.asyncio_loop.add_reader(self.child_fd,
