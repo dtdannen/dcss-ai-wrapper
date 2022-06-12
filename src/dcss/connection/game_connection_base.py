@@ -1,6 +1,7 @@
 import json
 import time
 import logging
+import os
 
 from dcss.actions.action import Action
 from dcss.actions.menuchoice import MenuChoice
@@ -99,6 +100,9 @@ class GameConnectionBase:
         self.previous_game_states = []
 
         self.onOpenMainLoopGenerator = None
+
+    def create_log_directory(self):
+        os.mkdir("logs")
 
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))

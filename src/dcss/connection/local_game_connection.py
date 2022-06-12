@@ -51,6 +51,15 @@ class GameConnectionLocal(GameConnectionBase):
             self.asyncio_loop.stop()
             self.asyncio_loop.close()
 
+    def get_logger(pid):
+        file_name = 'logs/child_primes_{}.log'.format(pid)
+        file_handler = logging.FileHandler(file_name)
+        name = 'child:{}'.format(pid)
+        logger = logging.getLogger(name)
+        logger.addHandler(file_handler)
+        # TODO: Add a formater here
+        return logger
+
     def _launch_crawl_process(self, errpipe_write):
         def handle_signal(signal, f):
             sys.exit(0)
@@ -141,12 +150,15 @@ class GameConnectionLocal(GameConnectionBase):
     def _handle_read(self):
         if self.we_are_parent and self.child_fd:
             BUFSIZ = 2048
-            buf = os.read(self.child_fd, BUFSIZ)  # todo find what BUFSIZ used to be
-            logging.debug("buf after os.read() = {}".format(buf))
-            if len(buf) > 0:
-                #self.write_ttyrec_chunk(buf)
-                self.output_buffer += buf
-                self._do_output_callback()
+            try:
+                buf = os.read(self.child_fd, BUFSIZ)  # todo find what BUFSIZ used to be
+                logging.debug("buf after os.read() = {}".format(buf))
+                if len(buf) > 0:
+                    #self.write_ttyrec_chunk(buf)
+                    self.output_buffer += buf
+                    self._do_output_callback()
+            except:
+                pass
 
             # JTS
             # What is being read here is from the file descriptor of the
