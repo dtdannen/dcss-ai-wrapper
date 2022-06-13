@@ -1,7 +1,9 @@
 import json
 import time
 import logging
+import logging.config
 import os
+from datetime import datetime
 
 from dcss.actions.action import Action
 from dcss.actions.menuchoice import MenuChoice
@@ -31,10 +33,15 @@ suffix = str(int(time.time()))
 
 assert time_data_save_dir.exists()
 
+
 class GameConnectionBase:
 
     def __init__(self):
         #super().__init__()
+        self.logs_folder = "logs/{}".format(datetime.now().strftime("%a_%b_%d_%Y_at_%I_%M_%p"))
+        self.create_log_directory()
+        logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename="{}/main.log".format(self.logs_folder), level=logging.DEBUG)
+
         self.game_state = GameState()
         self.config = config.WebserverConfig
         print("Loaded default config: config.WebserverConfig")
@@ -102,7 +109,11 @@ class GameConnectionBase:
         self.onOpenMainLoopGenerator = None
 
     def create_log_directory(self):
-        os.mkdir("logs")
+        if not os.path.isdir(self.logs_folder):
+            os.mkdir(self.logs_folder)
+
+
+
 
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))

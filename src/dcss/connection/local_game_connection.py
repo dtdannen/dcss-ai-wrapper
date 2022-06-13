@@ -40,12 +40,15 @@ class GameConnectionLocal(GameConnectionBase):
         self.output_buffer = b""
         self.we_are_parent = None
         self.we_are_child = None
+        self.child_already_created = None
 
         self._start_process()
 
+        logging.debug("[parent] about to run asyncio.get_event_loop()")
         self.asyncio_loop = asyncio.get_event_loop()
 
         try:
+            logging.debug("[parent] about to run asyncio_loop.run_forever()")
             self.asyncio_loop.run_forever()
         finally:
             self.asyncio_loop.stop()
@@ -92,12 +95,16 @@ class GameConnectionLocal(GameConnectionBase):
         #    os.chdir(self.game_cwd)
         try:
             # this launches crawl
-            logging.debug("Launching crawl with call: {}".format(self.call))
+            logging.debug("[child] Launching crawl with call: {}".format(self.call))
             os.execvpe(self.call[0], self.call, env)
+            logging.debug("[child] Post crawl launch")
         except OSError:
             sys.exit(1)
 
     def _start_process(self):
+        if self.child_already_created:
+            return
+
         try:  # Unlink if necessary
             os.unlink(self.socket_path)
         except OSError as e:
@@ -106,14 +113,15 @@ class GameConnectionLocal(GameConnectionBase):
 
         self.errpipe_read, errpipe_write = os.pipe()
 
-        logging.debug("About to fork into child and parent")
+        logging.debug("[parent] About to fork into child and parent")
         self.pid, self.child_fd = pty.fork()
+        self.child_already_created = True
 
         if self.pid == 0:
             # We're the child
             self.we_are_parent = False
             self.we_are_child = True
-            logging.debug("About to launch crawl on the child process")
+            logging.debug("[child] About to launch crawl on the child process")
             self._launch_crawl_process(errpipe_write)
         else:
             # We're the parent
@@ -121,10 +129,11 @@ class GameConnectionLocal(GameConnectionBase):
             self.we_are_child = False
             os.close(errpipe_write)
 
-            logging.debug("About to continue on parent process")
+            logging.debug("[parent] About to continue on parent process")
 
             self.asyncio_loop = asyncio.get_event_loop()
 
+            logging.debug("[parent] Adding reader handle_read to asyncio loop")
 
             # TODO: Have to first get the loop object.
             self.asyncio_loop.add_reader(self.child_fd,
@@ -133,6 +142,13 @@ class GameConnectionLocal(GameConnectionBase):
             # TODO come back and make sure we handle err read
             #self.asyncio_loop.add_reader(self.child_fd,
             #                             self._handle_err_read)
+
+            time.sleep(1)
+            print("About to send game play message")
+            play_game_msg = {'msg': 'play', 'game_id': 'dcss-web-trunk'}
+            #                 self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
+            self.write_input(json.dumps(play_game_msg).encode('utf-8'))
+            print("Sent send game play message")
 
             # Old code using Tornado:
             '''
@@ -151,8 +167,9 @@ class GameConnectionLocal(GameConnectionBase):
         if self.we_are_parent and self.child_fd:
             BUFSIZ = 2048
             try:
+                logging.debug("[parent] before buf = os.read()")
                 buf = os.read(self.child_fd, BUFSIZ)  # todo find what BUFSIZ used to be
-                logging.debug("buf after os.read() = {}".format(buf))
+                logging.debug("[parent] buf after os.read() = {}".format(buf))
                 if len(buf) > 0:
                     #self.write_ttyrec_chunk(buf)
                     self.output_buffer += buf
@@ -574,7 +591,7 @@ class GameConnectionLocal(GameConnectionBase):
         # self.poll() is polling to see that the process is still ongoing
         # and hasn't terminated. If it is still ongoing self.poll() will
         # return None.
-        if self.poll() is not None: return
+        #if self.poll() is not None: return
 
         while len(data) > 0:
             # JTS
@@ -591,3 +608,10 @@ class GameConnectionLocal(GameConnectionBase):
 
 if __name__ == "__main__":
     connection = GameConnectionLocal()
+    print("Created game connection")
+    time.sleep(1)
+    print("About to send game play message")
+    play_game_msg = {'msg': 'play', 'game_id': 'dcss-web-trunk'}
+    #                 self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
+    connection.write_input(json.dumps(play_game_msg).encode('utf-8'))
+    print("Sent send game play message")
