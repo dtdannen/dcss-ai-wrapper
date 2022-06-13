@@ -601,7 +601,7 @@ class GameConnectionLocal(GameConnectionBase):
             # os.execvpe()
             # So this is writing the user's input commands directly into
             # that terminal program.
-
+            logging.debug("[parent] about to write data to child_fd: {}".format(data))
             written = os.write(self.child_fd, data)
             data = data[written:]
 
