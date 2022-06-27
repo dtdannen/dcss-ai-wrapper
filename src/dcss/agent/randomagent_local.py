@@ -4,6 +4,7 @@ from dcss.actions.action import Action
 
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
+from dcss.connection.local_game_connection import GameConnectionLocal
 
 import random
 

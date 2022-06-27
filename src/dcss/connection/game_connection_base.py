@@ -112,9 +112,6 @@ class GameConnectionBase:
         if not os.path.isdir(self.logs_folder):
             os.mkdir(self.logs_folder)
 
-
-
-
     def onConnect(self, response):
         print("Server connected: {0}".format(response.peer))
         print("setting _CONNECTED = True")

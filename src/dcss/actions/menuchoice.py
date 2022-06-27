@@ -1,6 +1,7 @@
 from enum import Enum
 from dcss.state.menu import Menu
 
+
 class MenuChoice(Enum):
     """
     Menu choices are always a lower or upper case letter

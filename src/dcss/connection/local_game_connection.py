@@ -98,8 +98,10 @@ class GameConnectionLocal(GameConnectionBase):
             logging.debug("[child] Launching crawl with call: {}".format(self.call))
             os.execvpe(self.call[0], self.call, env)
             logging.debug("[child] Post crawl launch")
-        except OSError:
-            sys.exit(1)
+        except Exception as e:
+            logging.debug("[child] Error {}\n launching crawl with call: {}".format(e, self.call))
+            raise e
+            #sys.exit(1)
 
     def _start_process(self):
         if self.child_already_created:
@@ -143,12 +145,14 @@ class GameConnectionLocal(GameConnectionBase):
             #self.asyncio_loop.add_reader(self.child_fd,
             #                             self._handle_err_read)
 
-            time.sleep(1)
-            print("About to send game play message")
-            play_game_msg = {'msg': 'play', 'game_id': 'dcss-web-trunk'}
-            #                 self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
-            self.write_input(json.dumps(play_game_msg).encode('utf-8'))
-            print("Sent send game play message")
+            # THIS IS CODE TO SEND A MESSAGE
+            # time.sleep(5)
+            # print("About to send game play message")
+            # play_game_msg = {'msg': 'play', 'game_id': 'dcss-web-trunk'}
+            # #                 self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
+            # self.write_input(json.dumps(play_game_msg).encode('utf-8'))
+            # print("Sent send game play message")
+            #######################################
 
             # Old code using Tornado:
             '''
@@ -167,15 +171,16 @@ class GameConnectionLocal(GameConnectionBase):
         if self.we_are_parent and self.child_fd:
             BUFSIZ = 2048
             try:
-                logging.debug("[parent] before buf = os.read()")
+                #logging.debug("[parent] before buf = os.read()")
                 buf = os.read(self.child_fd, BUFSIZ)  # todo find what BUFSIZ used to be
                 logging.debug("[parent] buf after os.read() = {}".format(buf))
                 if len(buf) > 0:
                     #self.write_ttyrec_chunk(buf)
                     self.output_buffer += buf
                     self._do_output_callback()
-            except:
-                pass
+            except Exception as e:
+                logging.debug("[parent] error in _handle_read: {}".format(e))
+                raise e
 
             # JTS
             # What is being read here is from the file descriptor of the
