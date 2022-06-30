@@ -72,7 +72,11 @@ class MenuChoice(Enum):
     EXCLAMATION_POINT = 63
     FORWARD_SLASH = 64
     QUESTION_MARK = 65
-
+    LESS_THAN = 66
+    GREATER_THAN = 67
+    ENTER = 68
+    PERIOD = 69
+    DASH = 70
 
 class MenuChoiceMapping:
 
