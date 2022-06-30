@@ -77,11 +77,24 @@ class MenuChoice(Enum):
     ENTER = 68
     PERIOD = 69
     DASH = 70
+    CARAT = 71
+    TAB = 72
+    BACKSLASH = 73
+    UNDERSCORE = 74
+    ESCAPE = 75
 
 class MenuChoiceMapping:
 
+    # the order of letters and symbols in this string should match the order of MenuChoice enum options
+    dcss_menu_chars = list(string.ascii_lowercase + string.ascii_uppercase + '0123456789' + '*!/?<>\r.-^\t\\_\x1b')
+
     menus_to_choices = {Menu.ATTRIBUTE_INCREASE_TEXT_MENU: [MenuChoice.UPPER_S, MenuChoice.UPPER_I, MenuChoice.UPPER_D],
-                        Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N]}
+                        Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N],
+                        Menu.EXAMINE_MAP_MENU: [MenuChoice.GREATER_THAN, MenuChoice.LESS_THAN, MenuChoice.ENTER,
+                                                MenuChoice.CARAT, MenuChoice.TAB, MenuChoice.BACKSLASH,
+                                                MenuChoice.UNDERSCORE, MenuChoice.UPPER_I, MenuChoice.UPPER_O,
+                                                MenuChoice.ESCAPE
+                                                ]}
 
     @staticmethod
     def get_possible_actions_for_current_menu(menu: Menu):
@@ -94,5 +107,5 @@ class MenuChoiceMapping:
             print("Don't have choices set for Menu: {}".format(menu))
 
     @staticmethod
-    def get_menu_letter_to_menu_choice(dcss_menu_chars):
-        return {x:MenuChoice for x in dcss_menu_chars}
+    def get_menu_letter_to_menu_choice():
+        return {x:MenuChoice for x in MenuChoiceMapping.dcss_menu_chars}
