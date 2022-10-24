@@ -10,7 +10,7 @@ ACS 2022 Tutorial
 
 Introduction
 ============
-**dcss-ai-wrapper** aims to enable the Dungeon Crawl Stone Soup (DCSS) video game to be used as a new benchmark
+**dcss-ai-wrapper** aims to enable the Dungeon Crawl Stone Soup (DCSS) video game to be used as an evaluation domain
 for AI research. While more traditional planning benchmarks exist (i.e. IPC domains) and more traditional RL
 benchmarks exist (i.e. open-ai gym), it is often difficult to compare an RL agent on IPC domains or a planner
 on RL domains. DCSS-AI-Wrapper aims to provide support for both automated planning and RL in the DCSS video game.
