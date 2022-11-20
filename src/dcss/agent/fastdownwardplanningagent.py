@@ -74,7 +74,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_random_nonvisited_nonwall_playerat_goal(self):
         i = 1
         farthest_away_cells = []
-        target_cells = self.cells_not_visited
+        player_current_cell = self.current_game_state.get_cell_map().get_player_cell()
+        target_cells = [c for c in self.cells_not_visited if c != player_current_cell]
         while len(target_cells) > 1:
             farthest_away_cells = target_cells
             # remove all cells that are i distance away from other visited cells
@@ -131,7 +132,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            print("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
+            logging.info("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:
@@ -306,7 +307,7 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.4
+    my_config.delay = 0.5
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
 

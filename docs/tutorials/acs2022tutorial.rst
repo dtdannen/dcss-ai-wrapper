@@ -7,6 +7,7 @@ ACS 2022 Tutorial
     Updates:
 
     * **[October 20th]** First draft of this tutorial is posted online.
+    * **[November 20th]** The tutorial will be held online using Zoom, more details to follow. See the conference slack channel  # tutorial_2022
 
 Introduction
 ============
