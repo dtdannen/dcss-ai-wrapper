@@ -257,7 +257,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             print("Goal selection choosing next goal: {}".format(lower_place_goal))
             return lower_place_goal, "descend"
         else:
-            goal = self.get_random_nonvisited_nonwall_playerat_goal()
+            #goal = self.get_random_nonvisited_nonwall_playerat_goal()
+            goal = '(playerat {})'.format(random.choice(self.cells_not_visited).get_pddl_name())
             selected_goal = goal
             return selected_goal, "explore"
 
@@ -300,7 +301,6 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         print("warning - no plan, taking random action!")
         next_action = self.get_random_simple_action()
         return next_action
-
 
 if __name__ == "__main__":
     my_config = WebserverConfig
