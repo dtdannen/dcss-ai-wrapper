@@ -10,6 +10,7 @@ ACS 2022 Tutorial
     * **[November 20th]** The tutorial will be held online using Zoom, more details to follow. See the conference slack channel  # tutorial_2022
     * **[November 20th]** We will use the **main ACS conference Zoom** link
     * **[November 20th]** The in-person session will be in Multipurpose room 125
+    * **[November 21st]** The tutorial has been advertised on the `dcss subreddit <https://www.reddit.com/r/dcss/comments/z12ahx/im_holding_a_virtual_tutorial_tomorrow_1122_9noon/>`_, to attend virtually via Zoom please register here:  `https://docs.google.com/forms/d/e/1FAIpQLSdxlvtW95NiuozTaVz3Ie0Hbydmn-eCHnxKLGGAnPFa-alqBg/viewform <https://docs.google.com/forms/d/e/1FAIpQLSdxlvtW95NiuozTaVz3Ie0Hbydmn-eCHnxKLGGAnPFa-alqBg/viewform>`_
 
 
 Introduction
@@ -50,17 +51,15 @@ We plan for a 4 hour tutorial.
 
 **Date:** Tuesday, November 22nd, 2022
 
-**Time (UTC-4, aka EST):** TBD
-
-**Time (UTC+8):** TBD
+**Time (EST):** 8:45am to Noon
 
 **Location:** We hope to hold the tutorial as a hybrid event, both in person at the Advances in Cognitive Systems conference
-and virtually through **<online platform TBD>**.
+and virtually through the ACS 2022 conference Zoom (you will have recieved a link to this when you registered for the conference virtually - which is free).
 
 After the tutorial ends, you are more than welcome to continue the conversation and ask questions in the gitter chatroom
 for this project: `https://gitter.im/dcss-ai-wrapper/community <https://gitter.im/dcss-ai-wrapper/community>`_
 
-**Tentative** Schedule:
+Schedule:
 
 +---------------+-----------------------------------------------------------------------+
 |   Time        | Description                                                           |

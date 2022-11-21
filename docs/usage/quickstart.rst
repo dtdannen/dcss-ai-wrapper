@@ -32,7 +32,14 @@ And do a pip install of the project in develop mode so you can change files in b
 
     pip install -e .
 
-**Now open a new terminal to run the the webserver via Docker**
+
+**Using Docker to run the Webserver**
+
+There are two ways to run the webserver via docker: use a premade image (option 1) or build the webserver docker yourself (option 2).
+
+
+**(Option 1) Use a pre-made Docker iamge**
+
 
 Pull a pre-made docker image with the DCSS webserver installed (if you'd like to create your own docker or install DCSS yourself, see :ref:`installation`)::
 
@@ -54,7 +61,23 @@ Then run the webserver::
     python webserver/server.py
 
 
-Now you can leave the docker alone, as long as it keeps running agents can connect and play the game.
+**(Option 2) Build the docker image yourself**::
+
+    cd docker_webserver/
+    docker build .
+
+It will take a few minutes to compile. Once it finishes, run::
+
+    docker images
+
+to find the newly created image, and copy the **IMAGE ID** value. Then launch the docker::
+
+    docker run -p 8080:8080 <paste image_id here>
+
+
+**Register the agent on the docker webserver via the browser**
+
+Now you can leave the docker alone, as long as it keeps running, agents can connect and play the game.
 
 Open your browser to http://localhost:8080/ to the DCSS browser interface, which should look like:
 
