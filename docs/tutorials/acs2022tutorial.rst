@@ -78,9 +78,8 @@ for this project: `https://gitter.im/dcss-ai-wrapper/community <https://gitter.i
 |               |   browser                                                             |
 |               | * Exercise 2: Get fastdownward agent running and watch it play in the |
 |               |   browser                                                             |
-|               | * Exercise 3: Plot performance of random agent                        |
-|               | * Exercise 4: Plot performance of planning agent                      |
-|               | * Exercise 5: See how far down the dungeon you can go, by modifying   |
+|               | * Exercise 3: Make a custom level                                     |
+|               | * Exercise 4: See how far down the dungeon you can go, by modifying   |
 |               |   the planning agent                                                  |
 +---------------+-----------------------------------------------------------------------+
 
