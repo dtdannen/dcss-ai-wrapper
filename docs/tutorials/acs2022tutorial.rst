@@ -8,6 +8,9 @@ ACS 2022 Tutorial
 
     * **[October 20th]** First draft of this tutorial is posted online.
     * **[November 20th]** The tutorial will be held online using Zoom, more details to follow. See the conference slack channel  # tutorial_2022
+    * **[November 20th]** We will use the **main ACS conference Zoom** link
+    * **[November 20th]** The in-person session will be in Multipurpose room 125
+
 
 Introduction
 ============
@@ -62,13 +65,13 @@ for this project: `https://gitter.im/dcss-ai-wrapper/community <https://gitter.i
 +---------------+-----------------------------------------------------------------------+
 |   Time        | Description                                                           |
 +===============+=======================================================================+
-| -1hr to Start | Open session to help attendee’s with any installation issues          |
+| 8:45am - 9am  | Setup and helping attendee’s with any installation issues             |
 +---------------+-----------------------------------------------------------------------+
-| Start - 30min |  Introduction to the DCSS Game                                        |
+| 9am - 9:30am  |  Introduction to the DCSS Game                                        |
 +---------------+-----------------------------------------------------------------------+
-| 30min - 1hr   |  DCSS-AI-Wrapper API - Rationale, current status & how you can help   |
+| 9:30am - 10am |  DCSS-AI-Wrapper API - Rationale, current status & how you can help   |
 +---------------+-----------------------------------------------------------------------+
-| 1hr to End    | Excercises (organizer will be available to help guide participants    |
+| 10am to Noon  | Excercises (organizer will be available to help guide participants    |
 |               | through these excercises):                                            |
 |               |                                                                       |
 |               | * Exercise 1: Get random agent running and watch it play in the       |
@@ -80,8 +83,6 @@ for this project: `https://gitter.im/dcss-ai-wrapper/community <https://gitter.i
 |               | * Exercise 5: See how far down the dungeon you can go, by modifying   |
 |               |   the planning agent                                                  |
 +---------------+-----------------------------------------------------------------------+
-
-
 
 Preparing for the Tutorial
 ==========================
