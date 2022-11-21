@@ -1,5 +1,6 @@
 from enum import Enum
 from dcss.state.menu import Menu
+import string
 
 class MenuChoice(Enum):
     """
