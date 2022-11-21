@@ -79,8 +79,14 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
     def get_random_nonvisited_nonwall_playerat_goal(self):
         i = 1
-        farthest_away_cells = set()
-        target_cells = self.cells_not_visited[self.current_game_state.player_depth].copy()
+# <<<<<<< HEAD
+#         farthest_away_cells = set()
+#         target_cells = self.cells_not_visited[self.current_game_state.player_depth].copy()
+# =======
+        farthest_away_cells = []
+        player_current_cell = self.current_game_state.get_cell_map().get_player_cell()
+        target_cells = [c for c in self.cells_not_visited if c != player_current_cell]
+# >>>>>>> master
         while len(target_cells) > 1:
             farthest_away_cells = target_cells
             # remove all cells that are i distance away from other visited cells
@@ -145,7 +151,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            print("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
+            logging.info("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:
@@ -272,7 +278,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             print("Goal selection choosing next goal: {}".format(lower_place_goal))
             return lower_place_goal, "descend"
         else:
-            goal = self.get_random_nonvisited_nonwall_playerat_goal()
+            #goal = self.get_random_nonvisited_nonwall_playerat_goal()
+            goal = '(playerat {})'.format(random.choice(self.cells_not_visited).get_pddl_name())
             selected_goal = goal
             return selected_goal, "explore"
 
@@ -321,7 +328,6 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         print("warning - no plan, taking random action!")
         next_action = self.get_random_simple_action()
         return next_action
-
 
 if __name__ == "__main__":
     my_config = WebserverConfig

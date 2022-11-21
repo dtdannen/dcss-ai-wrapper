@@ -1531,7 +1531,7 @@ class GameState:
             print("   {}".format(i))
 
     def _process_single_spell(self, message):
-        #print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
+        logging.debug("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
 
         # define the regex terms
         spell_name_regex = re.compile(
@@ -1576,7 +1576,7 @@ class GameState:
             print("Added player spell {} ".format(spell_obj))
 
         except:
-            print("Ignoring spell processing for messzage: {}".format(message))
+            logging.info("Ignoring spell processing for messzage: {}".format(message))
             pass
 
     def _process_single_ability(self, message):
@@ -1621,7 +1621,7 @@ class GameState:
             print("Added player ability {} ".format(ability_obj))
 
         except:
-            print("Ignoring ability processing for message: {}".format(message))
+            logging.info("Ignoring ability processing for message: {}".format(message))
             pass
 
     def process_messages(self, data):
@@ -1809,7 +1809,7 @@ class GameState:
                 self.agent_y = self.player_position['y']
                 self.cellmap.set_agent_x(self.agent_x)
                 self.cellmap.set_agent_y(self.agent_y)
-                print("Player position is now x={}, y={}".format(self.agent_x, self.agent_y))
+                logging.debug("Player position is now x={}, y={}".format(self.agent_x, self.agent_y))
 
             # Todo - I don't know the difference between adjusted noise and noise
             elif k == 'adjusted_noise':
@@ -1960,7 +1960,7 @@ class GameState:
             for i in range(1, len(ascending_bin_labels)+1):
                 if self.player_current_hp < i * bin_size:
                     player_pddl_strs.append("(playerhealth {})".format(ascending_bin_labels[i-1]))
-                    print("Just wrote player_health to be {} because its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
+                    logging.debug("Just wrote player_health to be {} because its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
                     break
 
         player_pddl_strs.append("(playerplace {}_{})".format(self.player_place.lower().strip(), self.player_depth))
@@ -2033,7 +2033,7 @@ class GameState:
             pddl_str += "  {}\n".format(fact)
 
         # read in common knowledge facts and write to file
-        print("Current directory is {}".format(os.getcwd()))
+        logging.debug("Current directory is {}".format(os.getcwd()))
         with open(self.general_knowledge_pddl_facts_filename, 'r') as f2:
             for line in f2.readlines():
                 if not line.startswith(';'):
@@ -2046,10 +2046,10 @@ class GameState:
         pddl_str += ")\n"
         pddl_str += ")\n\n)"
 
-        print("filename is {}".format(filename))
+        logging.debug("filename is {}".format(filename))
         with open(filename.format(), 'w') as f:
             f.write(pddl_str)
-        print("wrote to file {}".format(filename))
+        print("Current state written to file {}".format(filename))
 
         return True
 
@@ -2093,7 +2093,7 @@ class GameState:
                 # new item
                 inv_item = InventoryItem(inv_id, name, quantity, base_type)
                 self.inventory_by_id[inv_id] = inv_item
-                print("***** Adding new item {}".format(inv_item))
+                print("***** Adding new item to player inventory {}".format(inv_item))
             else:
                 # existing item
                 inv_item = self.inventory_by_id[inv_id]
