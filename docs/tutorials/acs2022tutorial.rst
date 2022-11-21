@@ -45,9 +45,9 @@ using the FastDownward planner.
 Schedule
 ========
 The main objective of this tutorial is to provide a hands-on tutorial of the software. By the end of the tutorial,
-the attendees will be able to install the game / API wrapper, understand various API functionalities,
-be able to run sample Automated Planning agents, and understand the experimental metrics that can be used.
-We plan for a 4 hour tutorial.
+the attendees will be able to install the game / API wrapper, understand various API functionalities, and
+be able to run sample Automated Planning agents.
+We plan for a 3 hour tutorial.
 
 **Date:** Tuesday, November 22nd, 2022
 
