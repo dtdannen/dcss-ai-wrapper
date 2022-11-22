@@ -430,6 +430,12 @@ class DCSSProtocol(WebSocketClientProtocol):
             print("ACTION LIMIT REACHED! setting _BEGIN_DELETING_GAME = True")
             self._BEGIN_DELETING_GAME = True
 
+        if self.check_for_attribute_increase(json_msg):
+            print("AGENT HAS CHOICE OF ATTRIBUTE INCREASE")
+            self._IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU
+            self.attribute_increase_menu_options = self.get_ability_menu_options(json_msg)
+            print("setting _IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU")
+
         if self.check_agent_wants_to_start_next_game():
             print("AGENT WANTS TO START A NEW GAME")
             self._BEGIN_DELETING_GAME = True
@@ -558,6 +564,12 @@ class DCSSProtocol(WebSocketClientProtocol):
     def get_skill_menu_options(self, json_msg):
         # TODO: get something like the following to work
         pass
+
+    def check_for_attribute_increase(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            if "Increase (S)trength, (I)ntelligence, or (D)exterity?" in v:
+                return True
+        return False
 
     def check_for_ability_menu(self, json_msg):
         input_mode_found = False

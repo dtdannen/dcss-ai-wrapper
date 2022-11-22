@@ -9,6 +9,7 @@ from dcss.connection.config import WebserverConfig
 from dcss.agent.base import BaseAgent
 from dcss.actions.command import Command
 from dcss.state.game import GameState
+from dcss.actions.menuchoice import MenuChoice, MenuChoiceMapping
 
 import logging
 logging.basicConfig(level=logging.WARNING)
@@ -47,6 +48,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.inventory_full = False
 
     def process_gamestate_via_cells(self):
+        self.cells_not_visited = []
+        self.closed_door_cells = []
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.has_player_visited:
                 self.cells_visited.append(cell)
@@ -64,15 +67,6 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
                 print("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
         self.num_cells_visited = len(self.cells_visited)
-
-        new_closed_door_cells = []
-        for cell in self.closed_door_cells:
-            if cell.has_open_door:
-                pass
-            else:
-                new_closed_door_cells.append(cell)
-        self.closed_door_cells = new_closed_door_cells
-
 
     def get_full_health_goal(self):
         return "(playerfullhealth)"
@@ -270,7 +264,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
             # sometimes try random closed doors
             if random.choice([True, False]):
-                if len(self.closed_door_cells) > 2:
+                if len(self.closed_door_cells) > 0:
                     goal = '(playerat {})'.format(random.choice(self.closed_door_cells).get_pddl_name())
                     return goal, "explore"
             # if didn't choose closed door, pick random location
@@ -291,6 +285,12 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_action(self, gamestate: GameState):
         self.current_game_state = gamestate
         self.process_gamestate_via_cells()
+
+        available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(
+            self.current_game_state.get_current_menu())
+        print("available_menu_choices = {}".format(available_menu_choices))
+        if available_menu_choices:
+            return available_menu_choices[0]
 
         self.new_goal, self.new_goal_type = self.goal_selection()
         print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
@@ -325,6 +325,7 @@ if __name__ == "__main__":
     my_config.delay = 0.25
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
+    #my_config.max_actions = 500
 
     my_config.auto_start_new_game = True
     my_config.always_start_new_game = True

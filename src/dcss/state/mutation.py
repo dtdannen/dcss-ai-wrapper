@@ -135,6 +135,73 @@ class MutationMapping:
     }
 
 
+class MutationPDDLMapping:
+
+    """
+    Assists writing pddl what mutation the player has
+    """
+
+    mutation_pddl_lookup = {
+        Mutation.ACUTE_VISION_MUTATION: "acute_vision",
+        Mutation.ANTENNAE_MUTATION: "antennae",
+        Mutation.BEAK_MUTATION: "beak",
+        Mutation.BIG_WINGS_MUTATION: "big_wings",
+        Mutation.BLINK_MUTATION: "blink",
+        Mutation.CAMOUFLAGE_MUTATION: "camouflage",
+        Mutation.CLARITY_MUTATION: "clarity",
+        Mutation.CLAWS_MUTATION: "claws",
+        Mutation.COLD_RESISTANCE_MUTATION: "cold_resistance",
+        Mutation.ELECTRICITY_RESISTANCE_MUTATION: "electricity_resistance",
+        Mutation.EVOLUTION_MUTATION: "evolution",
+        Mutation.FANGS_MUTATION: "fangs",
+        Mutation.FIRE_RESISTANCE_MUTATION: "fire_resistance",
+        Mutation.HIGH_MP_MUTATION: "high_mp",
+        Mutation.HOOVES_MUTATION: "hooves",
+        Mutation.HORNS_MUTATION: "horns",
+        Mutation.ICY_BLUE_SCALES_MUTATION: "icy_blue_scales",
+        Mutation.IMPROVED_ATTRIBUTES_MUTATION: "improved_attributes",
+        Mutation.IRIDESCENT_SCALES_MUTATION: "iridescent_scales",
+        Mutation.LARGE_BONE_PLATES_MUTATION: "large_bone_plates",
+        Mutation.MAGIC_RESISTANCE_MUTATION: "magic_resistance",
+        Mutation.MOLTEN_SCALES_MUTATION: "molten_scales",
+        Mutation.MUTATION_RESISTANCE_MUTATION: "mutation_resistance",
+        Mutation.PASSIVE_MAPPING_MUTATION: "passive_mapping",
+        Mutation.POISON_BREATH_MUTATION: "poison_breath",
+        Mutation.POISON_RESISTANCE_MUTATION: "poison_resistance",
+        Mutation.REGENERATION_MUTATION: "regeneration",
+        Mutation.REPULSION_FIELD_MUTATION: "repulsion_field",
+        Mutation.ROBUST_MUTATION: "robust",
+        Mutation.RUGGED_BROWN_SCALES_MUTATION: "rugged_brown_scales",
+        Mutation.SHAGGY_FUR_MUTATION: "shaggy_fur",
+        Mutation.SLIMY_GREEN_SCALES_MUTATION: "slimy_green_scales",
+        Mutation.STINGER_MUTATION: "stinger",
+        Mutation.STRONG_LEGS_MUTATION: "strong_legs",
+        Mutation.TALONS_MUTATION: "talons",
+        Mutation.TENTACLE_SPIKE_MUTATION: "tentacle_spike",
+        Mutation.THIN_METALLIC_SCALES_MUTATION: "thin_metallic_scales",
+        Mutation.THIN_SKELETAL_STRUCTURE_MUTATION: "thin_skeletal_structure",
+        Mutation.TOUGH_SKIN_MUTATION: "tough_skin",
+        Mutation.WILD_MAGIC_MUTATION: "wild_magic",
+        Mutation.YELLOW_SCALES_MUTATION: "yellow_scales",
+        Mutation.OFFHAND_PUNCH_AUX_ATK_MUTATION: "offhand_punch_aux_atk",
+        Mutation.OFFHAND_PUNCH_W_CLAWS_AUX_ATK_MUTATION: "offhand_punch_w_claws_aux_atk",
+        Mutation.OFFHAND_PUNCH_W__BLADE_HANDS_AUX_ATK_MUTATION: "offhand_punch_w__blade_hands_aux_atk",
+        Mutation.HEADBUTT_AUX_ATK_MUTATION: "headbutt_aux_atk",
+        Mutation.PECK_AUX_ATK_MUTATION: "peck_aux_atk",
+        Mutation.KICK_W_HOOVES_AUX_ATK_MUTATION: "kick_w_hooves_aux_atk",
+        Mutation.KICK_W_TALONS_AUX_ATK_MUTATION: "kick_w_talons_aux_atk",
+        Mutation.TAIL_SLAP_AUX_ATK_MUTATION: "tail_slap_aux_atk",
+        Mutation.TAIL_SLAP_W_STINGER_AUX_ATK_MUTATION: "tail_slap_w_stinger_aux_atk",
+        Mutation.BITE_W_FANGS_AUX_ATK_MUTATION: "bite_w_fangs_aux_atk",
+        Mutation.BITE_W_ACIDIC_BITE_AUX_ATK_MUTATION: "bite_w_acidic_bite_aux_atk",
+        Mutation.BITE_W_ANTI_MAGIC_BITE_AUX_ATK_MUTATION: "bite_w_anti_magic_bite_aux_atk",
+        Mutation.PSEUDOPODS_AUX_ATK_MUTATION: "pseudopods_aux_atk",
+        Mutation.TENTACLE_SPIKE_AUX_ATK_MUTATION: "tentacle_spike_aux_atk",
+        Mutation.TENTACLE_SLAP_AUX_ATK_MUTATION: "tentacle_slap_aux_atk",
+        Mutation.TENTACLES_SQUEEZE_AUX_ATK_MUTATION: "tentacles_squeeze_aux_atk",
+        Mutation.CONSTRICTION_AUX_ATK_MUTATION: "constriction_aux_atk",
+    }
+
 
 
 

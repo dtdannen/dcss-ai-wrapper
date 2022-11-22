@@ -199,94 +199,104 @@ class StatusEffectMapping:
     "": StatusEffect.WATER_STATUS_EFFECT,
     "": StatusEffect.WEAK_STATUS_EFFECT,
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
+
+class StatusEffectPDDLMapping:
+    """
+    Assists writing pddl what status effect the player has
+    """
+
+    status_effect_pddl_lookup = {
+
+        StatusEffect.AGILE_STATUS_EFFECT: 'agile_status',
+        StatusEffect.ANTIMAGIC_STATUS_EFFECT: 'antimagic_status',
+        StatusEffect.AUGMENTATION_STATUS_EFFECT: 'augmentation_status',
+        StatusEffect.BAD_FORMS_STATUS_EFFECT: 'bad_forms_status',
+        StatusEffect.BERSERK_STATUS_EFFECT: 'berserk_status',
+        StatusEffect.BLACK_MARK_STATUS_EFFECT: 'black_mark_status',
+        StatusEffect.BLIND_STATUS_EFFECT: 'blind_status',
+        StatusEffect.BRILLIANT_STATUS_EFFECT: 'brilliant_status',
+        StatusEffect.CHARM_STATUS_EFFECT: 'charm_status',
+        StatusEffect.CONFUSING_TOUCH_STATUS_EFFECT: 'confusing_touch_status',
+        StatusEffect.CONFUSION_STATUS_EFFECT: 'confusion_status',
+        StatusEffect.CONSTRICTION_STATUS_EFFECT: 'constriction_status',
+        StatusEffect.COOLDOWNS_STATUS_EFFECT: 'cooldowns_status',
+        StatusEffect.CORONA_STATUS_EFFECT: 'corona_status',
+        StatusEffect.CORROSION_STATUS_EFFECT: 'corrosion_status',
+        StatusEffect.DARKNESS_STATUS_EFFECT: 'darkness_status',
+        StatusEffect.DAZED_STATUS_EFFECT: 'dazed_status',
+        StatusEffect.DEATH_CHANNEL_STATUS_EFFECT: 'death_channel_status',
+        StatusEffect.DEATHS_DOOR_STATUS_EFFECT: 'deaths_door_status',
+        StatusEffect.DEFLECT_MISSILES_STATUS_EFFECT: 'deflect_missiles_status',
+        StatusEffect.DISJUNCTION_STATUS_EFFECT: 'disjunction_status',
+        StatusEffect.DIVINE_PROTECTION_STATUS_EFFECT: 'divine_protection_status',
+        StatusEffect.DIVINE_SHIELD_STATUS_EFFECT: 'divine_shield_status',
+        StatusEffect.DOOM_HOWL_STATUS_EFFECT: 'doom_howl_status',
+        StatusEffect.DRAIN_STATUS_EFFECT: 'drain_status',
+        StatusEffect.ENGORGED_STATUS_EFFECT: 'engorged_status',
+        StatusEffect.ENGULF_STATUS_EFFECT: 'engulf_status',
+        StatusEffect.FAST_SLOW_STATUS_EFFECT: 'fast_slow_status',
+        StatusEffect.FEAR_STATUS_EFFECT: 'fear_status',
+        StatusEffect.FINESSE_STATUS_EFFECT: 'finesse_status',
+        StatusEffect.FIRE_VULNERABLE_STATUS_EFFECT: 'fire_vulnerable_status',
+        StatusEffect.FLAYED_STATUS_EFFECT: 'flayed_status',
+        StatusEffect.FLIGHT_STATUS_EFFECT: 'flight_status',
+        StatusEffect.FROZEN_STATUS_EFFECT: 'frozen_status',
+        StatusEffect.HASTE_STATUS_EFFECT: 'haste_status',
+        StatusEffect.HEAVENLY_STORM_STATUS_EFFECT: 'heavenly_storm_status',
+        StatusEffect.HELD_STATUS_EFFECT: 'held_status',
+        StatusEffect.HEROISM_STATUS_EFFECT: 'heroism_status',
+        StatusEffect.HORRIFIED_STATUS_EFFECT: 'horrified_status',
+        StatusEffect.INNER_FLAME_STATUS_EFFECT: 'inner_flame_status',
+        StatusEffect.INVISIBILITY_STATUS_EFFECT: 'invisibility_status',
+        StatusEffect.LAVA_STATUS_EFFECT: 'in_lava_status',
+        StatusEffect.LEDAS_LIQUEFACTION_STATUS_EFFECT: 'ledas_liquefaction_status',
+        StatusEffect.MAGIC_CONTAMINATION_STATUS_EFFECT: 'magic_contamination_status',
+        StatusEffect.MARK_STATUS_EFFECT: 'mark_status',
+        StatusEffect.MESMERISED_STATUS_EFFECT: 'mesmerised_status',
+        StatusEffect.MIGHT_STATUS_EFFECT: 'might_status',
+        StatusEffect.MIRROR_DAMAGE_STATUS_EFFECT: 'mirror_damage_status',
+        StatusEffect.NO_POTIONS_STATUS_EFFECT: 'no_potions_status',
+        StatusEffect.NO_SCROLLS_STATUS_EFFECT: 'no_scrolls_status',
+        StatusEffect.OLGREBS_TOXIC_RADIANCE_STATUS_EFFECT: 'olgrebs_toxic_radiance_status',
+        StatusEffect.ORB_STATUS_EFFECT: 'orb_status',
+        StatusEffect.OZOCUBUS_ARMOUR_STATUS_EFFECT: 'ozocubus_armour_status',
+        StatusEffect.PARALYSIS_STATUS_EFFECT: 'paralysis_status',
+        StatusEffect.PETRIFYING_STATUS_EFFECT: 'petrifying_status',
+        StatusEffect.PETRIFIED_STATUS_EFFECT: 'petrified_status',
+        StatusEffect.POISON_STATUS_EFFECT: 'poison_status',
+        StatusEffect.POWERED_BY_DEATH_STATUS_EFFECT: 'powered_by_death_status',
+        StatusEffect.QUAD_DAMAGE_STATUS_EFFECT: 'quad_damage_status',
+        StatusEffect.RECALL_STATUS_EFFECT: 'recall_status',
+        StatusEffect.REGENERATING_STATUS_EFFECT: 'regenerating_status',
+        StatusEffect.REPEL_MISSILES_STATUS_EFFECT: 'repel_missiles_status',
+        StatusEffect.RESISTANCE_STATUS_EFFECT: 'resistance_status_effect_status',
+        StatusEffect.RING_OF_FLAMES_STATUS_EFFECT: 'ring_of_flames_status',
+        StatusEffect.SAPPED_MAGIC_STATUS_EFFECT: 'sapped_magic_status',
+        StatusEffect.SCRYING_STATUS_EFFECT: 'scrying_status',
+        StatusEffect.SEARING_RAY_STATUS_EFFECT: 'searing_ray_status',
+        StatusEffect.SERPENTS_LASH_STATUS_EFFECT: 'serpents_lash_status',
+        StatusEffect.SHROUD_OF_GOLUBRIA_STATUS_EFFECT: 'shroud_of_golubria_status',
+        StatusEffect.SICKNESS_STATUS_EFFECT: 'sickness_status',
+        StatusEffect.SILENCE_STATUS_EFFECT: 'silence_status',
+        StatusEffect.SLEEP_STATUS_EFFECT: 'sleep_status',
+        StatusEffect.SLIMIFY_STATUS_EFFECT: 'slimify_status',
+        StatusEffect.SLOW_STATUS_EFFECT: 'slow_status',
+        StatusEffect.SLUGGISH_STATUS_EFFECT: 'sluggish_status',
+        StatusEffect.STARVING_STATUS_EFFECT: 'starving_status',
+        StatusEffect.STAT_ZERO_STATUS_EFFECT: 'stat_zero_status',
+        StatusEffect.STICKY_FLAME_STATUS_EFFECT: 'sticky_flame_status',
+        StatusEffect.STILL_WINDS_STATUS_EFFECT: 'still_winds_status',
+        StatusEffect.SWIFTNESS_STATUS_EFFECT: 'swiftness_status',
+        StatusEffect.TELEPORT_PREVENTION_STATUS_EFFECT: 'teleport_status',
+        StatusEffect.TELEPORT_STATUS_EFFECT: 'teleport_prevention_status',
+        StatusEffect.TORNADO_STATUS_EFFECT: 'tornado_status',
+        StatusEffect.TRANSMUTATIONS_STATUS_EFFECT: 'transmutations_status',
+        StatusEffect.UMBRA_STATUS_EFFECT: 'umbra_status',
+        StatusEffect.VITALISATION_STATUS_EFFECT: 'vitalisation_status',
+        StatusEffect.VULNERABLE_STATUS_EFFECT: 'vulnerable_status',
+        StatusEffect.WATER_STATUS_EFFECT: 'water_status',
+        StatusEffect.WEAK_STATUS_EFFECT: 'weak_status',
+
+    }
