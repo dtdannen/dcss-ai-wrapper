@@ -55,6 +55,7 @@ class Cell:
         self.has_wand = False
         self.has_book = False
         self.has_misc_items = False
+        self.has_flame_cloud = False
 
         self.has_magical_condensation_cloud = False
 
@@ -202,6 +203,9 @@ class Cell:
             elif self.g == '0':
                 self.has_orb_of_zot = True
 
+            elif self.g == '☼':
+                self.has_flame_cloud = True
+
             else:
                 print("Found an unknown g value: {}".format(self.g))
                 #time.sleep(20)
@@ -231,6 +235,7 @@ class Cell:
     def remove_all_items(self):
         self.has_plant = False
         self.has_smoke = False
+        self.has_flame_cloud = False
         self.has_potion = False
         self.has_scroll = False
         self.has_gold = False
@@ -275,16 +280,18 @@ class Cell:
                 +--------------+---------------------------------------+------------------------+
                 |   26         |       Has Gold                        |     Boolean            |
                 +--------------+---------------------------------------+------------------------+
-                |   27         |       Has Smoke /Fog                  |     Boolean            |
+                |   27         |       Has Smoke / Fog                 |     Boolean            |
                 +--------------+---------------------------------------+------------------------+
-                |   30         |   (TODO)    Has Rune                  |      Int repr. type ID |
+                |   28         |       Has Flame Cloud                 |     Boolean            |
                 +--------------+---------------------------------------+------------------------+
-                |   31         |   Has Orb of Zot                      |     Boolean            |
+                |   29         |   (TODO)    Has Rune                  |      Int repr. type ID |
+                +--------------+---------------------------------------+------------------------+
+                |   30         |   Has Orb of Zot                      |     Boolean            |
                 +--------------+---------------------------------------+------------------------+
 
         """
 
-        return self.monster.get_cell_vector() + [self.terrain, self.has_potion, self.has_scroll, self.has_armour, self.has_hand_weapon, self.has_missile, self.has_gold, self.has_smoke, self.has_orb_of_zot]
+        return self.monster.get_cell_vector() + [self.terrain, self.has_potion, self.has_scroll, self.has_armour, self.has_hand_weapon, self.has_missile, self.has_gold, self.has_smoke, self.has_flame_cloud, self.has_orb_of_zot]
 
     def get_pddl_facts(self):
         pddl_facts = []
@@ -339,6 +346,7 @@ class Cell:
         if self.monster:
             for fact_i in self.monster.get_pddl_strs(self.get_pddl_name()):
                 pddl_facts.append(fact_i)
+        # TODO add smoke and cloud flame pddl facts
         return pddl_facts
 
     def straight_line_distance(self, cell):

@@ -9,11 +9,11 @@ six==1.15.0
 txaio==21.2.1
 websockets
 numpy
-matplotlib
-readchar
-sphinx-rtd-theme
-sphinx-autoapi
-scipy
-networkx
+matplotlib # optional, only needed for graphing data
+sphinx-rtd-theme # optional, needed for generating docs
+sphinx-autoapi # optional, needed for generating docs
+scipy # optional, needed for generating dungeons (see custom_sprints/dungeon_generator)
+networkx # optional, needed for generating dungeons (see custom_sprints/dungeon_generator)
+keyboard # optional, needed for running human interface agents
 
 
