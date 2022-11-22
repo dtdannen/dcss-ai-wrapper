@@ -11,6 +11,7 @@ ACS 2022 Tutorial
     * **[November 20th]** We will use the **main ACS conference Zoom** link
     * **[November 20th]** The in-person session will be in Multipurpose room 125
     * **[November 21st]** The tutorial has been advertised on the `dcss subreddit <https://www.reddit.com/r/dcss/comments/z12ahx/im_holding_a_virtual_tutorial_tomorrow_1122_9noon/>`_, to attend virtually via Zoom please register here:  `https://docs.google.com/forms/d/e/1FAIpQLSdxlvtW95NiuozTaVz3Ie0Hbydmn-eCHnxKLGGAnPFa-alqBg/viewform <https://docs.google.com/forms/d/e/1FAIpQLSdxlvtW95NiuozTaVz3Ie0Hbydmn-eCHnxKLGGAnPFa-alqBg/viewform>`_
+    * **[November 22nd]** A few quality-of-life code updates have been pushed to the master branch, you may wish to re-pull the master branch when the tutorial starts if you set up everything more than ~10 hours before the tutorial started.
 
 
 Introduction
@@ -78,7 +79,8 @@ Schedule:
 |               | * Exercise 2: Get fastdownward agent running and watch it play in the |
 |               |   browser                                                             |
 |               | * Exercise 3: Make a custom level                                     |
-|               | * Exercise 4: See how far down the dungeon you can go, by modifying   |
+|               | * Exercise 4: Run the human interface agent to play the game manually |
+|               | * Exercise 5: See how far down the dungeon you can go, by modifying   |
 |               |   the planning agent                                                  |
 +---------------+-----------------------------------------------------------------------+
 
