@@ -65,6 +65,15 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
         self.num_cells_visited = len(self.cells_visited)
 
+        new_closed_door_cells = []
+        for cell in self.closed_door_cells:
+            if cell.has_open_door:
+                pass
+            else:
+                new_closed_door_cells.append(cell)
+        self.closed_door_cells = new_closed_door_cells
+
+
     def get_full_health_goal(self):
         return "(playerfullhealth)"
 
@@ -258,9 +267,15 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             return lower_place_goal, "descend"
         else:
             #goal = self.get_random_nonvisited_nonwall_playerat_goal()
+
+            # sometimes try random closed doors
+            if random.choice([True, False]):
+                if len(self.closed_door_cells) > 2:
+                    goal = '(playerat {})'.format(random.choice(self.closed_door_cells).get_pddl_name())
+                    return goal, "explore"
+            # if didn't choose closed door, pick random location
             goal = '(playerat {})'.format(random.choice(self.cells_not_visited).get_pddl_name())
-            selected_goal = goal
-            return selected_goal, "explore"
+            return goal, "explore"
 
     def get_random_simple_action(self):
         simple_commands = [Command.MOVE_OR_ATTACK_N,
@@ -307,7 +322,7 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.5
+    my_config.delay = 0.25
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
 
