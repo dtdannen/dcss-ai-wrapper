@@ -1,5 +1,5 @@
 [![Documentation Status](https://readthedocs.org/projects/dcss-ai-wrapper/badge/?version=latest)](https://dcss-ai-wrapper.readthedocs.io/en/latest/?badge=latest)
-
+[![Gitter](https://badges.gitter.im/dcss-ai-wrapper/community.svg)](https://gitter.im/dcss-ai-wrapper/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 # AI Wrapper for Dungeon Crawl Stone Soup
 
 ![](contribute/docker_web_browser_demo.gif)

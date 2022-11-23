@@ -37,8 +37,22 @@ And do a pip install of the project in develop mode so you can change files in b
 
 There are two ways to run the webserver via docker: use a premade image (option 1) or build the webserver docker yourself (option 2).
 
+**(Option 1) Build the docker image yourself**::
 
-**(Option 1) Use a pre-made Docker iamge**
+    cd docker_webserver/
+    docker build .
+
+It will take a few minutes to compile. Once it finishes, run::
+
+    docker images
+
+to find the newly created image, and copy the **IMAGE ID** value. Then launch the docker::
+
+    docker run -p 8080:8080 <paste image_id here>
+
+
+
+**(Option 2) Use a pre-made Docker image**
 
 
 Pull a pre-made docker image with the DCSS webserver installed (if you'd like to create your own docker or install DCSS yourself, see :ref:`installation`)::
@@ -60,19 +74,6 @@ Then run the webserver::
     cd ..
     python webserver/server.py
 
-
-**(Option 2) Build the docker image yourself**::
-
-    cd docker_webserver/
-    docker build .
-
-It will take a few minutes to compile. Once it finishes, run::
-
-    docker images
-
-to find the newly created image, and copy the **IMAGE ID** value. Then launch the docker::
-
-    docker run -p 8080:8080 <paste image_id here>
 
 
 **Register the agent on the docker webserver via the browser**
