@@ -58,7 +58,7 @@ class SkillMapping:
         "Maces & Flails": SkillName.MACES_FLAILS,
         "Polearms": SkillName.POLEARMS,
         "Staves": SkillName.STAVES,
-        "Unarmed Combat*": SkillName.UNARMED_COMBAT,
+        "Unarmed Combat": SkillName.UNARMED_COMBAT,
         "Bows": SkillName.BOWS,
         "Crossbows": SkillName.CROSSBOWS,
         "Throwing": SkillName.THROWING,
@@ -83,6 +83,39 @@ class SkillMapping:
         "Evocations": SkillName.EVOCATIONS,
         "Stealth": SkillName.STEALTH}
 
+    skill_name_to_pddl_obj = {
+        SkillName.FIGHTING:"fighting",
+        SkillName.LONG_BLADES:"long_blades",
+        SkillName.SHORT_BLADES:"short_blades",
+        SkillName.AXES:"axes",
+        SkillName.MACES_FLAILS:"maces_&_flails",
+        SkillName.POLEARMS:"polearms",
+        SkillName.STAVES:"staves",
+        SkillName.UNARMED_COMBAT:"unarmed_combat",
+        SkillName.BOWS:"bows",
+        SkillName.CROSSBOWS:"crossbows",
+        SkillName.THROWING:"throwing",
+        SkillName.SLINGS:"slings",
+        SkillName.ARMOUR:"armour",
+        SkillName.DODGING:"dodging",
+        SkillName.SHIELDS:"shields",
+        SkillName.SPELLCASTING:"spellcasting",
+        SkillName.CONJURATIONS:"conjurations",
+        SkillName.HEXES:"hexes",
+        SkillName.CHARMS:"charms",
+        SkillName.SUMMONINGS:"summonings",
+        SkillName.NECROMANCY:"necromancy",
+        SkillName.TRANSLOCATIONS:"translocations",
+        SkillName.TRANSMUTATION:"transmutation",
+        SkillName.FIRE_MAGIC:"fire_magic",
+        SkillName.ICE_MAGIC:"ice_magic",
+        SkillName.AIR_MAGIC:"air_magic",
+        SkillName.EARTH_MAGIC:"earth_magic",
+        SkillName.POISON_MAGIC:"poison_magic",
+        SkillName.INVOCATIONS:"invocations",
+        SkillName.EVOCATIONS:"evocations",
+        SkillName.STEALTH:"stealth"}
+
 
 class Skill:
     """
@@ -102,8 +135,40 @@ class Skill:
         return [self.skillname, self.level, self.percent_training, self.aptitude]
 
     def get_skill_pddl(self):
-        # TODO
-        pass
+        """
+            Returns predicates about this skill consisting of:
+
+                (training_off ?skill - skill)
+                (training_low ?skill - skill)
+                (training_high ?skill - skill)
+                (player_skill_level ?skill - skill ?amount - qualitative_quantity)
+        """
+        print("Generating PDDL for Skill {}".format(self.skillname.name))
+        print("   Level is {}".format(self.level))
+        print("   % Training is {}".format(self.percent_training))
+        print("   Aptitude is {}".format(self.percent_training))
+        pddl_skill_facts = []
+        if self.percent_training and self.percent_training > 0:
+            if self.percent_training >= 50:
+                pddl_skill_facts.append("(training_high {})".format(SkillMapping.skill_name_to_pddl_obj[self.skillname]))
+            elif 0 < self.percent_training < 50:
+                pddl_skill_facts.append("(training_low {})".format(SkillMapping.skill_name_to_pddl_obj[self.skillname]))
+        else:
+            pddl_skill_facts.append("(training_off {})".format(SkillMapping.skill_name_to_pddl_obj[self.skillname]))
+
+        quantitative_choices = ['low', 'medium_low', 'medium', 'medium_high', 'high', 'maxed']
+
+        skill_level_index = 0
+        if self.level > 0:
+            max_skill_level = 27  # from the game
+            skill_level_index = int((self.level / max_skill_level) * len(quantitative_choices))
+            pddl_skill_facts.append("(player_skill_level {} {})".format(SkillMapping.skill_name_to_pddl_obj[self.skillname], quantitative_choices[skill_level_index]))
+        else:
+            pddl_skill_facts.append("(player_skill_level {} {})".format(SkillMapping.skill_name_to_pddl_obj[self.skillname],
+                                                                    'none'))
+
+        return pddl_skill_facts
+
 
 
 

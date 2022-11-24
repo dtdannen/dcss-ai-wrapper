@@ -1,12 +1,14 @@
 from dcss.agent.base import BaseAgent
 from dcss.state.game import GameState
 from dcss.actions.action import Action
-from dcss.actions.command import Command
+
 from dcss.websockgame import WebSockGame
-from dcss.connection.config import WebserverConfig
+from dcss.connection.config import WebserverConfig, LocalConfig
 
 import random
+import os
 import logging
+
 
 class MyAgent(BaseAgent):
 
@@ -14,32 +16,25 @@ class MyAgent(BaseAgent):
         super().__init__()
         self.gamestate = None
 
-    def action_sequence(self):
-        actions = [Command.MOVE_OR_ATTACK_E,
-                   Command.CHARACTER_OVERVIEW]
-        return actions
-
     def get_action(self, gamestate: GameState):
         self.gamestate = gamestate
         # get all possible actions
         actions = Action.get_all_move_commands()
         # pick an action at random
-        print(self.gamestate.get_player_stats_vector(verbose=True))
-        return random.choice(self.action_sequence())
+        return random.choice(actions)
 
 
 if __name__ == "__main__":
-    my_config = WebserverConfig
+    my_config = LocalConfig
 
-    # set game mode to Tutorial #1
-    my_config.game_id = 'dcss-web-trunk'
-    my_config.always_start_new_game = False
-    my_config.auto_start_new_game = False
+    # wrap unix socket in a webserver socket
+    my_config.construct_server_uri()
 
     # set the logging level you want
     logger = logging.getLogger('dcss-ai-wrapper')
     logger.setLevel(logging.WARNING)
 
+
     # create game
     game = WebSockGame(config=my_config, agent_class=MyAgent)
-    game.run()
+    game.run(local=True)

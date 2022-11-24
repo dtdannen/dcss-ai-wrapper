@@ -10,7 +10,6 @@ Make sure to run crawl before running this demo, see:
 from dcss.connection.autobahn_game_connection import DCSSProtocol
 from dcss.connection import config
 import asyncio
-import logging
 import random
 import threading
 from autobahn.asyncio.websocket import WebSocketClientFactory
@@ -19,7 +18,8 @@ from dcss.actions.action import Action
 from dcss.state.game import GameState
 import time
 
-logging.basicConfig(level=logging.WARNING)
+import logging
+logger = logging.getLogger("dcss-ai-wrapper")
 
 
 class WebSockGame:

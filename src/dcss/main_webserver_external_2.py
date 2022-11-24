@@ -11,11 +11,11 @@ from dcss.connection.autobahn_game_connection import DCSSProtocol
 from dcss.connection import config
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
-import logging
 from autobahn.asyncio.websocket import WebSocketClientFactory
 import datetime
 
-logging.basicConfig(level=logging.WARNING)
+import logging
+logger = logging.getLogger("dcss-ai-wrapper")
 
 
 def main():

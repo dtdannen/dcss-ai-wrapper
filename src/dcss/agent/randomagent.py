@@ -6,6 +6,7 @@ from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
 
 import random
+import logging
 
 
 class MyAgent(BaseAgent):
@@ -27,7 +28,11 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.1
+    my_config.delay = 0.4
+
+    # set the logging level you want
+    logger = logging.getLogger('dcss-ai-wrapper')
+    logger.setLevel(logging.WARNING)
 
     # create game
     game = WebSockGame(config=my_config, agent_class=MyAgent)

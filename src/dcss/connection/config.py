@@ -1,11 +1,30 @@
+import autobahn.rawsocket.util
+import os
+
+
 class LocalConfig:
     """
         This configuration should be used when running DCSS in the terminal locally on the machine. Currently this
         has only been tested in Linux. It should work for Mac. Windows support is unknown.
     """
-    socketpath = '/var/tmp/crawl_socket'
-    agent_name = 'aiagent'
-    crawl_socketpath = 'crawl/crawl-ref/source/rcs/' + agent_name + ':test.sock'
+    socketpath = '127.0.0.1'  # do not change this
+    server_ip = '127.0.0.1'
+    server_port = '80'
+    server_uri = None
+    agent_name = 'midca'
+    crawl_socketpath = '/home/dustin/Projects/crawl/crawl-ref/source/rcs/' + agent_name + ':crawl.sock'
+
+
+    @staticmethod
+    def construct_server_uri():
+        print("Looking for path: {}".format(LocalConfig.crawl_socketpath))
+        if not os.path.exists(LocalConfig.crawl_socketpath):
+            print("Could not find socket")
+        else:
+            print("  Found!")
+
+        #LocalConfig.server_uri = autobahn.rawsocket.util.create_url(hostname="unix", port=LocalConfig.crawl_socketpath)
+        LocalConfig.server_uri = LocalConfig.crawl_socketpath
 
 
 class WebserverConfig:

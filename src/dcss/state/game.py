@@ -10,8 +10,8 @@ from dcss.state.cellrawstrdatum import CellRawStrDatum
 from dcss.state.inventoryitem import InventoryItem
 from dcss.state.player import MovementSpeed, AttackSpeed
 from dcss.state.menu import Menu
-from dcss.state.mutation import MutationMapping, Mutation
-from dcss.state.statuseffect import StatusEffect
+from dcss.state.mutation import MutationMapping, Mutation, MutationPDDLMapping
+from dcss.state.statuseffect import StatusEffect, StatusEffectPDDLMapping
 from dcss.state.skill import SkillMapping, SkillName, Skill
 from dcss.state.spell import Spell, SpellNameMapping
 from dcss.state.ability import Ability, AbilityName, AbilityNameMapping
@@ -49,6 +49,7 @@ class GameState:
         self.cellmap = CellMap()
 
         self.inventory_by_id = {}
+        self.equip_slots_to_inv_id = {}  # values are "0", "1", etc. that are set by the game
 
         self.last_recorded_movement = ''
 
@@ -121,22 +122,22 @@ class GameState:
         self.player_progress = None
         self.player_gold = 0
 
-        self.player_rFire = -1
-        self.player_rCold = -1
-        self.player_rCorr = -1
-        self.player_rNeg = -1
-        self.player_rElec = -1
-        self.player_rPois = -1
+        self.player_rFire = 0
+        self.player_rCold = 0
+        self.player_rCorr = 0
+        self.player_rNeg = 0
+        self.player_rElec = 0
+        self.player_rPois = 0
         self.player_faith_status = False
         self.player_reflect_status = False
         self.player_spirit_status = False
         self.player_harm_status = False
         self.player_rampage_status = False
-        self.player_stealth = -1
-        self.player_willpower = -1
+        self.player_stealth = 0
+        self.player_willpower = 0
         self.player_hp_regen = 0.00
         self.player_mp_regen = 0.00
-        self.player_spell_slots_left = -1
+        self.player_spell_slots_left = 0
         self.player_see_invis = None
 
         self.player_attack_speed = AttackSpeed.UNKNOWN
@@ -160,6 +161,8 @@ class GameState:
         GameState.ID += 1
 
         self._in_menu = Menu.NO_MENU
+        self.cursor_x = 0
+        self.cursor_y = 0
 
     def update(self, msg_from_server):
         """
@@ -963,7 +966,7 @@ class GameState:
         """
         inv_vector = []
         for inv_item in sorted(self.inventory_by_id.values(), key=lambda i: i.get_num_id()):
-            inv_vector.append(inv_item)
+            inv_vector.append(inv_item.get_item_vector())
 
         for i in range(len(inv_vector)+1, 52):
             inv_vector.append(InventoryItem.NULL_ITEM_VECTOR)
@@ -981,11 +984,11 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 0            |     Spell ID.                         |    Int repr. spell ID  |
                 +--------------+---------------------------------------+------------------------+
-                | 1            |     Spell SkillName                       |   Int repr. skill ID   |
+                | 1            |     Spell SkillName                   |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 2            |     Spell SkillName #2                    |   Int repr. skill ID   |
+                | 2            |     Spell SkillName #2                |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
-                | 3            |     Spell SkillName #3                    |   Int repr. skill ID   |
+                | 3            |     Spell SkillName #3                |   Int repr. skill ID   |
                 +--------------+---------------------------------------+------------------------+
                 | 4            |     Failure Likelihood                |    Int 0-100           |
                 +--------------+---------------------------------------+------------------------+
@@ -1128,220 +1131,170 @@ class GameState:
         pass
 
     def get_player_stats_pddl(self):
-        """ Returns a list of PDDL facts representing player stats
+        """
+        Returns PDDL 2.2 level 1 which DOES NOT include all aspects of numeric planning.
+
+        PDDL predicates that are provided via this function:
+
+        * playerhealth
+        * playermagicpoints
+        * player_worshipping
+        * player_piety
+        * player_has_available_spell_slot
+        * player_resist_fire
+        * player_resist_cold
+        * player_resist_neg
+        * player_resist_pois
+        * player_resist_elec
+        * player_resist_corr
+        * player_willpower
+        * player_stealth
+        * player_see_invis
+        * player_faith_status
+        * player_spirit_status
+        * player_reflect_status
+        * player_harm_status
+        * player_movement_speed
+        * player_attack_speed
+        * playerplace
+        * player_has_status_effect
+        * player_has_mutation
+
+        Therefore the following player stats aren't available.
+
+        +--------------+---------------------------------------+------------------------+
+        | Player Stat  | Description of Data                   | Why not included?      |
+        +==============+=======================================+========================+
+        +--------------+---------------------------------------+------------------------+
+        |     AC       |        Represents Armour              | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+        |    EV        |        Represents Evasion             |  Non-relative Int      |
+        +--------------+---------------------------------------+------------------------+
+        |    SH        |        Represents Shelf               |  Non-relative Int      |
+        +--------------+---------------------------------------+------------------------+
+        |  Strength    |        Current value                  | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+        | Intelligence |        Training Percentage            | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+        | Dexterity    |        Aptitude                       | Non-relative Int       |
+        +--------------+---------------------------------------+------------------------+
+
+        Returns a list of PDDL facts representing player stats
         """
         player_stats_pddl = []
 
         quantitative_choices = ['none', 'low', 'medium_low', 'medium', 'medium_high', 'high', 'maxed']
 
-        health_index = int((self.player_current_hp / self.player_hp_max) * len(quantitative_choices))
-        player_stats_pddl.append('(playerhealth {})'.format(quantitative_choices[health_index]))
-        magicpoints_index = int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices))
+        health_index = int((self.player_current_hp / self.player_hp_max) * len(quantitative_choices)) - 1
+        player_stats_pddl.append('(playerhealth {})'.format(quantitative_choices[health_index-1]))
+
+        magicpoints_index = 0
+        if self.player_mp_max > 0:
+            magicpoints_index = int((self.player_current_mp / self.player_mp_max) * len(quantitative_choices)) - 1
         player_stats_pddl.append('(playermagicpoints {})'.format(quantitative_choices[magicpoints_index]))
 
-        # TODO - finish turning these into PDDL
-        player_stats = [
-            self.player_ac,
-            self.player_ev,
-            self.player_sh,
-            self.player_strength,
-            self.player_strength_max,
-            self.player_int,
-            self.player_int_max,
-            self.player_dex,
-            self.player_dex_max,
-            self.player_level,
-            self.player_progress,
-            self.player_god,
-            self.player_piety_rank,
-            self.player_spell_slots_left,
-            self.player_gold,
-            self.player_rFire,
-            self.player_rCold,
-            self.player_rNeg,
-            self.player_rPois,
-            self.player_rElec,
-            self.player_rCorr,
-            self.player_willpower,
-            self.player_stealth,
-            self.player_hp_regen,
-            self.player_mp_regen,
-            self.player_see_invis,
-            self.player_faith_status,
-            self.player_spirit_status,
-            self.player_reflect_status,
-            self.player_harm_status,
-            self.game_turn,
-            self.game_time,
-            self.player_movement_speed.value,
-            self.player_attack_speed.value,
-            self.player_place,
+        player_stats_pddl.append('(player_worshipping {})'.format(self.player_god))
+        player_stats_pddl.append('(player_piety {})'.format(quantitative_choices[self.player_piety_rank]))
 
-            StatusEffect.AGILE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ALIVE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ANTIMAGIC_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.AUGMENTATION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BAD_FORMS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BERSERK_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BLACK_MARK_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BLIND_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BLOODLESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.BRILLIANT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CHARM_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CONFUSING_TOUCH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CONFUSION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CONSTRICTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.COOLDOWNS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CORONA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.CORROSION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DARKNESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DAZED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DEATH_CHANNEL_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DEATHS_DOOR_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DEFLECT_MISSILES_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DISJUNCTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DIVINE_PROTECTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DIVINE_SHIELD_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DOOM_HOWL_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.DRAIN_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ENGORGED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ENGULF_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FAST_SLOW_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FEAR_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FINESSE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FIRE_VULNERABLE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FLAYED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FLIGHT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.FROZEN_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HASTE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HEAVENLY_STORM_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HELD_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HEROISM_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.HORRIFIED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.INNER_FLAME_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.INVISIBILITY_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.LAVA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.LEDAS_LIQUEFACTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MAGIC_CONTAMINATION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MARK_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MESMERISED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MIGHT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.MIRROR_DAMAGE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.NO_POTIONS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.NO_SCROLLS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.OLGREBS_TOXIC_RADIANCE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.ORB_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.OZOCUBUS_ARMOUR_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.PARALYSIS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.PETRIFYING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.PETRIFIED_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.POISON_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.POWERED_BY_DEATH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.QUAD_DAMAGE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.RECALL_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.REGENERATING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.REPEL_MISSILES_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.RESISTANCE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.RING_OF_FLAMES_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SAPPED_MAGIC_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SCRYING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SEARING_RAY_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SERPENTS_LASH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SHROUD_OF_GOLUBRIA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SICKNESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SILENCE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLEEP_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLIMIFY_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLOW_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SLUGGISH_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STARVING_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STAT_ZERO_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STICKY_FLAME_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.STILL_WINDS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.SWIFTNESS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TELEPORT_PREVENTION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TELEPORT_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TORNADO_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.TRANSMUTATIONS_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.UMBRA_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.VITALISATION_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.VULNERABLE_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.WATER_STATUS_EFFECT in self.player_status_effects,
-            StatusEffect.WEAK_STATUS_EFFECT in self.player_status_effects,
+        if self.player_spell_slots_left > 0:
+            player_stats_pddl.append('(player_has_available_spell_slot)')
 
-            Mutation.ACUTE_VISION_MUTATION in self.player_mutations,
-            Mutation.ANTENNAE_MUTATION in self.player_mutations,
-            Mutation.BEAK_MUTATION in self.player_mutations,
-            Mutation.BIG_WINGS_MUTATION in self.player_mutations,
-            Mutation.BLINK_MUTATION in self.player_mutations,
-            Mutation.CAMOUFLAGE_MUTATION in self.player_mutations,
-            Mutation.CLARITY_MUTATION in self.player_mutations,
-            Mutation.CLAWS_MUTATION in self.player_mutations,
-            Mutation.COLD_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.ELECTRICITY_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.EVOLUTION_MUTATION in self.player_mutations,
-            Mutation.FANGS_MUTATION in self.player_mutations,
-            Mutation.FIRE_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.HIGH_MP_MUTATION in self.player_mutations,
-            Mutation.HOOVES_MUTATION in self.player_mutations,
-            Mutation.HORNS_MUTATION in self.player_mutations,
-            Mutation.ICY_BLUE_SCALES_MUTATION in self.player_mutations,
-            Mutation.IMPROVED_ATTRIBUTES_MUTATION in self.player_mutations,
-            Mutation.IRIDESCENT_SCALES_MUTATION in self.player_mutations,
-            Mutation.LARGE_BONE_PLATES_MUTATION in self.player_mutations,
-            Mutation.MAGIC_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.MOLTEN_SCALES_MUTATION in self.player_mutations,
-            Mutation.MUTATION_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.PASSIVE_MAPPING_MUTATION in self.player_mutations,
-            Mutation.POISON_BREATH_MUTATION in self.player_mutations,
-            Mutation.POISON_RESISTANCE_MUTATION in self.player_mutations,
-            Mutation.REGENERATION_MUTATION in self.player_mutations,
-            Mutation.REPULSION_FIELD_MUTATION in self.player_mutations,
-            Mutation.ROBUST_MUTATION in self.player_mutations,
-            Mutation.RUGGED_BROWN_SCALES_MUTATION in self.player_mutations,
-            Mutation.SHAGGY_FUR_MUTATION in self.player_mutations,
-            Mutation.SLIMY_GREEN_SCALES_MUTATION in self.player_mutations,
-            Mutation.STINGER_MUTATION in self.player_mutations,
-            Mutation.STRONG_LEGS_MUTATION in self.player_mutations,
-            Mutation.TALONS_MUTATION in self.player_mutations,
-            Mutation.TENTACLE_SPIKE_MUTATION in self.player_mutations,
-            Mutation.THIN_METALLIC_SCALES_MUTATION in self.player_mutations,
-            Mutation.THIN_SKELETAL_STRUCTURE_MUTATION in self.player_mutations,
-            Mutation.TOUGH_SKIN_MUTATION in self.player_mutations,
-            Mutation.WILD_MAGIC_MUTATION in self.player_mutations,
-            Mutation.YELLOW_SCALES_MUTATION in self.player_mutations,
-            Mutation.OFFHAND_PUNCH_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.OFFHAND_PUNCH_W_CLAWS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.OFFHAND_PUNCH_W__BLADE_HANDS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.HEADBUTT_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.PECK_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.KICK_W_HOOVES_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.KICK_W_TALONS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TAIL_SLAP_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TAIL_SLAP_W_STINGER_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.BITE_W_FANGS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.BITE_W_ACIDIC_BITE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.BITE_W_ANTI_MAGIC_BITE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.PSEUDOPODS_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TENTACLE_SPIKE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TENTACLE_SLAP_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.TENTACLES_SQUEEZE_AUX_ATK_MUTATION in self.player_mutations,
-            Mutation.CONSTRICTION_AUX_ATK_MUTATION in self.player_mutations,
-        ]
+        player_stats_pddl.append('(player_resist_fire {})'.format(quantitative_choices[self.player_rFire]))
+        player_stats_pddl.append('(player_resist_cold {})'.format(quantitative_choices[self.player_rCold]))
+        player_stats_pddl.append('(player_resist_neg {})'.format(quantitative_choices[self.player_rNeg]))
+        player_stats_pddl.append('(player_resist_pois {})'.format(quantitative_choices[self.player_rPois]))
+        player_stats_pddl.append('(player_resist_elec {})'.format(quantitative_choices[self.player_rElec]))
+        player_stats_pddl.append('(player_resist_corr {})'.format(quantitative_choices[self.player_rCorr]))
+        player_stats_pddl.append('(player_willpower {})'.format(quantitative_choices[self.player_willpower]))
 
-        pass
+        stealth_index = 0
+        if self.player_stealth > 0:
+            max_stealth = 11 # from the game
+            stealth_index = int((self.player_stealth / max_stealth) * len(quantitative_choices))
+
+        player_stats_pddl.append('(player_stealth {})'.format(quantitative_choices[stealth_index]))
+
+        if self.player_see_invis:
+            player_stats_pddl.append('(player_see_invis)')
+        if self.player_faith_status:
+            player_stats_pddl.append('(player_faith_status)')
+        if self.player_spirit_status:
+            player_stats_pddl.append('(player_spirit_status)')
+        if self.player_reflect_status:
+            player_stats_pddl.append('(player_reflect_status)')
+        if self.player_harm_status:
+            player_stats_pddl.append('(player_harm_status)')
+
+        player_stats_pddl.append('(player_movement_speed {})'.format(quantitative_choices[self.player_movement_speed.value]))
+
+        attack_speed_quantitative_choice_i = 0  # UNKNOWN case gets 'none' by default
+        if self.player_attack_speed.value in [AttackSpeed.EXTREMELY_SLOW, AttackSpeed.VERY_SLOW]:
+            attack_speed_quantitative_choice_i = 1
+        elif self.player_attack_speed.value in [AttackSpeed.QUITE_SLOW, AttackSpeed.BELOW_AVERAGE]:
+            attack_speed_quantitative_choice_i = 2
+        elif self.player_attack_speed.value in [AttackSpeed.AVERAGE, AttackSpeed.ABOVE_AVERAGE]:
+            attack_speed_quantitative_choice_i = 3
+        elif self.player_attack_speed.value in [AttackSpeed.QUITE_FAST, AttackSpeed.VERY_FAST]:
+            attack_speed_quantitative_choice_i = 4
+        elif self.player_attack_speed.value in [AttackSpeed.EXTREMELY_FAST, AttackSpeed.BLINDINGLY_FAST]:
+            attack_speed_quantitative_choice_i = 5
+
+        player_stats_pddl.append('(player_attack_speed {})'.format(quantitative_choices[attack_speed_quantitative_choice_i]))
+
+        player_stats_pddl.append('(playerplace {}_{})'.format(self.player_place.lower().strip(), self.player_depth))
+
+        # TODO - better option for player place is to seperate player place and depth,
+        # TODO - will need to update both planning model and game PDDL API
+        #player_stats_pddl.append('(playerplace {})'.format(self.player_place))
+
+        for status_effect in self.player_status_effects:
+            player_stats_pddl.append('(player_has_status_effect {})'.format(StatusEffectPDDLMapping.status_effect_pddl_lookup[status_effect]))
+
+        for mutation in self.player_mutations:
+            player_stats_pddl.append('(player_has_mutation {})'.format(MutationPDDLMapping.mutation_pddl_lookup[mutation]))
+
+        return player_stats_pddl
 
     def get_player_inventory_pddl(self):
-        """ Returns a list of PDDL facts representing the player's inventory
         """
-        # TODO write code
-        pass
+            Returns a simple PDDL representation for inventory items that will describe items with the following
+            predicates. Note that this function returns two data objects, first is a list of inventory object names and
+            the second is a list of the pddl facts, as strings, about those objects.
+
+            Predicates currently supported:
+            * equipped
+            * cursed
+            * item_bonus (refers to the +3 kinds of bonuses on items)
+            * weapon, scroll, ammunition, potion, or armour (others may be discovered and then must be added here)
+            * only_one_left or more_than_one_remaining
+        """
+
+        inv_obj_names = []
+        inv_pddl_facts = []
+
+        for inv_item in self.inventory_by_id.values():
+            name, facts = inv_item.get_item_pddl()
+            inv_obj_names.append(name)
+            inv_pddl_facts += facts
+
+        return inv_obj_names, inv_pddl_facts
 
     def get_player_skills_pddl(self):
-        """ Returns a list of PDDL facts representing the player's skills
         """
-        # TODO write code
-        pass
+            Skill names as objects are already provided in the PDDL domain file since they are constant across
+            all characters and game modes.
+
+            Only PDDL facts about whether each skill has training off, low, or high is returned, and the current value
+            of said skill using qualitative quantifiers of: 'none', 'low', 'medium_low', 'medium', 'medium_high', 'high', 'maxed'
+
+        """
+        pddl_facts = []
+        for skill_name in SkillName:
+            skill_obj = self.player_skills[skill_name]
+            if skill_obj:
+                pddl_facts += skill_obj.get_skill_pddl()
+
+        return pddl_facts
 
     def get_egocentric_LOS_map_data_pddl(self, radius=7):
         """ Returns a list of PDDL facts representing the tiles around the player for the given radius.
@@ -1350,18 +1303,19 @@ class GameState:
         # TODO write code
         pass
 
-    def get_egocentric_level_map_data_pddl(self):
+    def get_current_level_map_data_pddl(self):
         """ Returns a list of PDDL facts representing the tiles in player's current level.
             Information about tiles outside of the current level is not returned.
         """
-        # TODO write code
+        # TODO
         pass
 
     def get_all_map_data_pddl(self):
         """ Returns a list of PDDL facts for every tile encountered by the player thus far.
         """
-        # TODO write code
-        pass
+        tile_objects_pddl, tile_facts_pddl = self.cellmap.get_cell_map_pddl_global()
+
+        return tile_objects_pddl, tile_facts_pddl
 
     def get_background_pddl(self):
         """ Returns a static list of pddl facts, including all type instances
@@ -1414,7 +1368,7 @@ class GameState:
                     # self.update_map_obj(cells_x_y_g_data_only)
                     # self.update_map_obj()
                 last_key = k
-
+                print("k is {}".format(k))
                 if k == 'more':
                     if s[k]:
                         self.more_prompt = True
@@ -1436,6 +1390,14 @@ class GameState:
                 if k == 'msg' and s[k] == 'player':
                     self.process_player(s)
 
+                if k == 'msg' and s[k] == 'cursor':
+                    self.process_cursor(s)
+
+                if k == 'type' and s[k] == 'describe-monster':
+                    if 'body' in s.keys():
+                        self.process_describe_monster(s['body'])
+                    else:
+                        print("We're in a describe monster message but not 'body' key found in s, which is:\n\t{}".format(s))
                 if k == 'mutations':
                     self._process_mutations(s[k])
 
@@ -1569,7 +1531,11 @@ class GameState:
             print("   {}".format(i))
 
     def _process_single_spell(self, message):
+<<<<<<< HEAD
         logging.debug("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
+=======
+        #print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
+>>>>>>> dev
 
         # define the regex terms
         spell_name_regex = re.compile(
@@ -1661,9 +1627,6 @@ class GameState:
         except:
             logging.info("Ignoring ability processing for message: {}".format(message))
             pass
-
-
-
 
     def process_messages(self, data):
         # begin: this is just for html stripping
@@ -1897,7 +1860,8 @@ class GameState:
                         current_status_effects.add(StatusEffect.CONSTRICTION_STATUS_EFFECT)
                     elif v == 'Zot':
                         current_status_effects.add(StatusEffect.ZOT_STATUS_EFFECT)
-
+                    elif v == 'Berserk':
+                        current_status_effects.add(StatusEffect.BERSERK_STATUS_EFFECT)
                     else:
                         print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))
@@ -1905,6 +1869,76 @@ class GameState:
                         raise Exception("Please update knowledge to support this status effect")
 
         self.player_status_effects = current_status_effects
+
+    def process_cursor(self, data):
+        print("processing cursor update from data: {}".format(data))
+        print("\tBEFORE: cursor_x is {}".format(self.cursor_x))
+        print("\tBEFORE: cursor_y is {}".format(self.cursor_y))
+        for k in data.keys():
+            if k == 'loc':
+                self.cursor_x = data[k]["x"]
+                self.cursor_y = data[k]["y"]
+
+        print("\tAFTER: cursor_x is {}".format(self.cursor_x))
+        print("\tAFTER: cursor_y is {}".format(self.cursor_y))
+
+    def process_describe_monster(self, data):
+        """
+            Process description of cells that describe monsters via the examine mode
+        """
+
+        print("********* In process describe monster ***************")
+
+        re.sub("\u000a", "\n", data)
+
+        print("Doing special char substitution:\n\n")
+
+        monster_health = -1
+        AC_level = 0
+        EV_level = 0
+        MR_level = 0
+
+        danger_rating = "error"
+
+        i = 0
+        for line in data.split('\n'):
+            if 'AC' in line:
+                AC_level = line.split(' ')[1].count('+')
+            elif 'EV' in line:
+                EV_level = line.split(' ')[1].count('+')
+            elif 'MR' in line:
+                MR_level = line.split(' ')[1].count('+')
+            elif 'looks' in line:
+                danger_rating = line.split(' ')[-1]
+            elif 'Max HP:' in line:
+                monster_health = int(line.split(' ')[-1])
+
+            print("  {}:{}".format(i, line))
+            i += 1
+
+        # now get the monster object and add it's details to it
+
+        print("health: {}".format(monster_health))
+        print("AC: {}".format(AC_level))
+        print("EV: {}".format(EV_level))
+        print("MR: {}".format(MR_level))
+        print("danger_rating: {}".format(danger_rating))
+
+        print("\n\ncursor_x and y is {}, {}".format(self.cursor_x, self.cursor_y))
+
+        player_x, player_y = self.get_cell_map().agent_x, self.get_cell_map().agent_y
+        monster_x = player_x + self.cursor_x
+        monster_y = player_y + self.cursor_y
+        monster_at_cursor_cell = self.cellmap.get_xy_to_cells_dict()[monster_x, monster_y]
+        monster_at_cursor = monster_at_cursor_cell.monster
+
+        monster_at_cursor.set_health(monster_health)
+        monster_at_cursor.set_ac(AC_level)
+        monster_at_cursor.set_ev(EV_level)
+        monster_at_cursor.set_mr(MR_level)
+        monster_at_cursor.set_danger_rating(danger_rating)
+
+        print("The retrieved monster at {},{} is a {}".format(monster_x, monster_y, monster_at_cursor))
 
     def get_pddl_current_state_player(self):
         player_object_strs = []
@@ -1937,7 +1971,7 @@ class GameState:
 
         return player_pddl_strs
 
-    def get_pddl_current_state_cellmap(self, radius=8):
+    def get_pddl_current_state_cellmap(self, radius=10):
         if radius >= 0:
             object_strs, fact_strs = self.cellmap.get_cell_map_pddl_radius(radius=radius)
         else:
@@ -1959,6 +1993,14 @@ class GameState:
         cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap(radius=-1)
         fact_strs = cell_map_fact_strs + self.get_pddl_player_info()
         return fact_strs
+
+    def get_all_map_objects_in_pddl(self):
+        cell_map_object_strs, cell_map_fact_strs = self.get_pddl_current_state_cellmap()
+
+        # add type 'cell' to cell_map_object_strs
+        cell_map_object_strs = [cell_str + ' - cell' for cell_str in cell_map_object_strs]
+
+        return cell_map_object_strs, cell_map_fact_strs
 
     def write_pddl_current_state_to_file(self, filename, goals):
         """Filename is assumed to be a relevant filename from the folder that the main script is running"""
@@ -2067,20 +2109,37 @@ class GameState:
                         del self.inventory_by_id[inv_id]
                     else:
                         print(
-                            "  **** Reducing item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
-                        self.inventory_by_id[inv_id].set_quantity(quantity)
+                            "  **** Remaking item {} quantity from {} to {}".format(inv_item, prev_quantity, quantity))
+                        self.inventory_by_id[inv_id] = InventoryItem(inv_id, name, quantity, base_type)
+
+        # IMPORTANT - need to check that all items are consistent with equipped item state
+        currently_equipped_items = set(self.equip_slots_to_inv_id.values())
+        for inv_item_id, inv_item in self.inventory_by_id.items():
+            if int(inv_item_id) in currently_equipped_items:
+                inv_item.equip()
+            else:
+                inv_item.unequip()
 
     def process_equip(self, data):
         """
-        This function should probably always come after process_inv.
         """
 
-        for equip_slot, equip_item in data.items():
-            # TODO parse what the player has equipped
-            # print("equip slot {} has value {}".format(equip_slot, equip_item))
-            pass
+        for equip_slot, item in data.items():
+            """
+            Unequipping weapon gives: {"msg":"player","time":8100,"turn":804,"equip":{"0":-1}}
+            Equipping weapon inv letter a gives: {"msg":"player","time":8105,"turn":805,"equip":{"0":0}}
+            Equipping weapon inv letter d gives: {"msg":"player","time":8105,"turn":805,"equip":{"0":3}}
+            """
+            self.equip_slots_to_inv_id[equip_slot] = item
+            print("*******===**** adding equip slot {} with item id {}".format(equip_slot, item))
 
-        # Todo - if an item is equipped, find the item in the inventory, and update the is_equipped flag
+        # IMPORTANT - need to check that all items are consistent with equipped item state
+        currently_equipped_items = set(self.equip_slots_to_inv_id.values())
+        for inv_item_id, inv_item in self.inventory_by_id.items():
+            if int(inv_item_id) in currently_equipped_items:
+                inv_item.equip()
+            else:
+                inv_item.unequip()
 
     def process_quiver_item(self, data):
         # Todo - update the inventory quiver item to be this item
@@ -2314,7 +2373,7 @@ class GameState:
 
     def _process_skill_lines(self, skill_lines):
         entire_skill_regex = re.compile(
-            '[0-9a-z] \+ (Fighting|Short Blades|Long Blades|Maces &amp; Flails|Axes|Polearms|Staves|Unarmed Combat|Bows|Crossbows|Throwing|Slings|Armour|Dodging|Shields|Spellcasting|Conjurations|Hexes|Summonings|Necromancy|Translocations|Transmutations|Fire Mgaic|Ice Magic|Air Magic|Earth Magic|Poison Magic|Invocations|Evocations|Stealth)\\s*[0-9]+.[0-9]\\s*([0-9]{1,3}%){0,1}\\s*(-|\+){0,1}[0-9]+')  # (-|\+)+[0-9]\\s*</span>
+            '[0-9a-z] (-|\+|\*) (Fighting|Short Blades|Long Blades|Maces &amp; Flails|Axes|Polearms|Staves|Unarmed Combat|Bows|Crossbows|Throwing|Slings|Armour|Dodging|Shields|Spellcasting|Conjurations|Hexes|Summonings|Necromancy|Translocations|Transmutations|Fire Magic|Ice Magic|Air Magic|Earth Magic|Poison Magic|Invocations|Evocations|Stealth)\\s*[0-9]+.[0-9]\\s*([0-9]{1,3}%){0,1}\\s*(-|\+){0,1}[0-9]+')  # (-|\+)+[0-9]\\s*</span>
 
         for line_id, line in skill_lines.items():
             cleaner_line = re.sub('</span>|<span class="[\sa-z0-9]*">', '', line)
@@ -2322,24 +2381,35 @@ class GameState:
             matches = entire_skill_regex.finditer(cleaner_line)
             for m in matches:
                 m_tokens = m.group().split(' ')
-                menu_letter = m_tokens[0]
-                # note: we skip m_tokens[1] because it's not needed and regex doesn't remove it (it's an extra '+')
-                raw_skill_name = m_tokens[2]
-                raw_skill_level = m_tokens[3]
+                print("m_tokens is {}".format(m_tokens))
+                menu_letter = m_tokens.pop(0)
+
+                m_tokens.pop(0) # note: we skip m_tokens[1] because it's not needed and regex doesn't remove it (it's an extra '+')
+
+                raw_skill_name = m_tokens.pop(0)
+                if raw_skill_name in ['Short', 'Long', 'Unarmed','Ice','Fire','Air','Earth','Poison']: # handle 2-word skills with an extra pop
+                    raw_skill_name+= ' ' + m_tokens.pop(0)
+                elif raw_skill_name in ['Maces']:  # handle 3-word skills with a third extra pop
+                    m_tokens.pop(0)  # m_tokens.pop(0) should equal '&amp;', let's throw it out
+                    raw_skill_name += ' &'  # and replace with this '&' instead
+                    raw_skill_name += ' ' + m_tokens.pop(0)
+
+                raw_skill_level = m_tokens.pop(0)
 
                 # set defaults in case there is NOT training percentage
                 raw_training_percent = 0
-                raw_aptitude = m_tokens[4]
-                if '%' in m_tokens[4]: # check for training percentage and adjust accordingly
-                    raw_training_percent = m_tokens[4][:-1]  # trim off the trailing % sign
-                    raw_aptitude = m_tokens[5]
+                raw_aptitude = m_tokens.pop(0)
+                if '%' in raw_aptitude:  # check for training percentage and adjust accordingly
+                    raw_training_percent = raw_aptitude[:-1]  # trim off the trailing % sign
+                    raw_aptitude = m_tokens.pop(0)
 
-                skill_menu_choice = MenuChoice(Action.dcss_menu_chars.indexof(menu_letter))
+                skill_menu_choice = MenuChoice(Action.dcss_menu_chars.index(menu_letter))
                 skill_name = SkillMapping.skill_game_text_lookup[raw_skill_name]
                 skill_level = float(raw_skill_level)
                 training_percent = int(raw_training_percent)
                 aptitude = int(raw_aptitude)
 
+                print("Adding skill {} to player with {}, {}, {}, {}".format(skill_name, skill_menu_choice,skill_level,training_percent,aptitude))
                 new_skill = Skill(skill_name, skill_menu_choice,skill_level,training_percent,aptitude)
                 self.player_skills[skill_name] = new_skill
 
@@ -2350,3 +2420,4 @@ class GameState:
             matches = entire_skill_regex.finditer(cleaner_line)
             for m in matches:
                 print("Found {}".format(m.group()))
+

@@ -10,15 +10,25 @@ from dcss.agent.base import BaseAgent
 from dcss.actions.command import Command
 from dcss.actions.menuchoice import MenuChoiceMapping
 from dcss.state.game import GameState
+from dcss.state.menu import Menu
+from enum import Enum
+import dcss.state.pddl as pddl
 
-from dcss.actions.menuchoice import Menu, MenuChoice, MenuChoiceMapping
 from time import time
 
 import logging
+logger = logging.getLogger("dcss-ai-wrapper")
 
 
+class Goal(Enum):
+    EXPLORE = 1
+    ATTACK = 2
+    RETREAT = 3
+    COLLECT_ITEMS = 4
+    HEAL = 5
 
-class FastDownwardPlanningBaseAgent(BaseAgent):
+
+class SimpleGRAgent(BaseAgent):
     """
     Agent that uses fast downward to solve planning problems to explore a floor.
     """
@@ -30,7 +40,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.current_game_state = None
         self.next_command_id = 1
         self.plan_domain_filename = "models/fastdownward_simple.pddl"
-        self.plan_current_pddl_state_filename = "models/fdtempfiles/state.pddl"
+        self._pddl_state_counter = 0
+        self._pddl_state_filename = self.get_pddl_state_filename()
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
         self.actions_taken_so_far = 0
@@ -41,20 +52,22 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.new_goal_type = None
         self.current_goal_type = None
         self.num_cells_visited = 0
-        self.player_has_seen_stairs_down = {x: False for x in range(0,50)}  # key is depth, value is whether seen stairs down
+        self.player_has_seen_stairs_down = {x: False for x in
+                                            range(0, 50)}  # key is depth, value is whether seen stairs down
 
-        self.cells_not_visited = {x: set() for x in range(0,50)}  # key is depth
-        self.cells_visited = {x: set() for x in range(0,50)}  # key is depth
-        self.closed_door_cells = {x: set() for x in range(0,50)}  # key is depth
+        self.cells_not_visited = {x: set() for x in range(0, 50)}  # key is depth
+        self.cells_visited = {x: set() for x in range(0, 50)}  # key is depth
+        self.closed_door_cells = {x: set() for x in range(0, 50)}  # key is depth
 
         self.found_item = None  # if not None, this will be a cell
         self.inventory_full = False
 
         self.failed_goals = []
 
+    def get_pddl_state_filename(self):
+        return "agent_temp_state/state{}.pddl".format(self._pddl_state_counter)
+
     def process_gamestate_via_cells(self):
-        self.cells_not_visited = []
-        self.closed_door_cells = []
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
             if cell.has_player_visited:
                 self.cells_visited[self.current_game_state.player_depth].add(cell)
@@ -73,22 +86,10 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
         self.num_cells_visited = len(self.cells_visited[self.current_game_state.player_depth])
 
-    def get_full_health_goal(self):
-        return "(playerfullhealth)"
-
-    def get_nearest_item_pickup_goal(self):
-        pass
-
     def get_random_nonvisited_nonwall_playerat_goal(self):
         i = 1
-<<<<<<< HEAD
-        farthest_away_cells = []
-        player_current_cell = self.current_game_state.get_cell_map().get_player_cell()
-        target_cells = [c for c in self.cells_not_visited if c != player_current_cell]
-=======
         farthest_away_cells = set()
         target_cells = self.cells_not_visited[self.current_game_state.player_depth].copy()
->>>>>>> dev
         while len(target_cells) > 1:
             farthest_away_cells = target_cells
             # remove all cells that are i distance away from other visited cells
@@ -106,21 +107,22 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             target_cells = new_target_cells
             i += 1
 
-        #print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
+        # print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if len(self.closed_door_cells[self.current_game_state.player_depth]) > 1:
             print("Attempting to choose a closed door as a goal if possible")
             goal_cell = self.closed_door_cells[self.current_game_state.player_depth].pop()
         elif len(farthest_away_cells) > 0:
             goal_cell = farthest_away_cells.pop()
-            print("Visited {} cells - Goal is now {}".format(len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
+            print("Visited {} cells - Goal is now {}".format(
+                len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
 
         else:
             # can't find any cells
             return None
 
         goal_str = "(playerat {})".format(goal_cell.get_pddl_name())
-        #print("Returning goal str of {}".format(goal_str))
+        # print("Returning goal str of {}".format(goal_str))
         return goal_str
 
     def get_first_monster_goal(self):
@@ -139,23 +141,36 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
         monster_cell_goal = random.choice(cells_with_monsters)
         monster_goal_str = "(not (hasmonster {}))".format(monster_cell_goal.get_pddl_name())
-        #print("about to return monster goal: {}".format(monster_goal_str))
+        # print("about to return monster goal: {}".format(monster_goal_str))
         # time.sleep(1)
         return monster_goal_str
 
     def generate_current_state_pddl(self, goals):
+        pddl_objects = []
+        pddl_facts = []
         if self.current_game_state:
-            self.current_game_state.get_player_stats_pddl()
-            self.current_game_state.get_player_skills_pddl()
-            self.current_game_state.get_player_inventory_pddl()
-            self.current_game_state.object_strs, fact_strs = self.cellmap.get_cell_map_pddl_global()
+            pddl_map_objects, pddl_map_facts = self.current_game_state.get_all_map_objects_in_pddl()
+            pddl_objects += pddl_map_objects
+            pddl_facts += pddl_map_facts
+
+            pddl_facts += self.current_game_state.get_player_stats_pddl()
+            pddl_facts += self.current_game_state.get_player_skills_pddl()
+            inv_objects, inv_facts = self.current_game_state.get_player_inventory_pddl()
+            pddl_objects += inv_objects
+            pddl_facts += inv_facts
+
+        return pddl.get_pddl_problem(objects=pddl_objects, init_facts=pddl_facts, goals=goals)
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            logging.info("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
-            self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
-                                                                     goals=goals)
+            self._pddl_state_counter += 1
+            print("About to write out game state with filename {}".format(self.get_pddl_state_filename()))
+            with open(self.get_pddl_state_filename(), 'w') as f:
+                f.write(self.generate_current_state_pddl(goals=goals))
+            print("...wrote to file {}".format(self.get_pddl_state_filename()))
+
+
         else:
             print("WARNING current game state is null when trying to call fast downward planner")
             time.sleep(1000)
@@ -171,12 +186,12 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             "./FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\"".format(
                 self.plan_result_filename,
                 self.plan_domain_filename,
-                self.plan_current_pddl_state_filename), ]
+                self.get_pddl_state_filename()), ]
         # This is used for windows
         fast_downward_system_call = "python FastDownward/fast-downward.py --plan-file {} {} {} --search \"astar(lmcut())\" {}".format(
             self.plan_result_filename,
             self.plan_domain_filename,
-            self.plan_current_pddl_state_filename,
+            self.get_pddl_state_filename(),
             "> NUL")  # this last line is to remove output from showing up in the terminal, feel free to remove this if debugging
 
         # print("About to call fastdownward like:")
@@ -203,7 +218,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
                         pass
         except FileNotFoundError:
             print("Plan could not be generated...")
-            self.failed_goals+=goals
+            self.failed_goals += goals
             self.failed_goals = list(set(self.failed_goals))
             return []
         except:
@@ -271,25 +286,18 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         monster_goal = self.get_first_monster_goal()
         if monster_goal:
             return monster_goal, "monster"
-#        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
-#            return self.get_full_health_goal(), "heal"
+        #        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
+        #            return self.get_full_health_goal(), "heal"
         if self.player_has_seen_stairs_down[self.current_game_state.player_depth]:
             lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
-                                             self.current_game_state.player_depth+1)
+                                             self.current_game_state.player_depth + 1)
             lower_place_goal = "(playerplace {})".format(lower_place_str)
             print("Goal selection choosing next goal: {}".format(lower_place_goal))
             return lower_place_goal, "descend"
         else:
-            #goal = self.get_random_nonvisited_nonwall_playerat_goal()
-
-            # sometimes try random closed doors
-            if random.choice([True, False]):
-                if len(self.closed_door_cells) > 0:
-                    goal = '(playerat {})'.format(random.choice(self.closed_door_cells).get_pddl_name())
-                    return goal, "explore"
-            # if didn't choose closed door, pick random location
-            goal = '(playerat {})'.format(random.choice(self.cells_not_visited).get_pddl_name())
-            return goal, "explore"
+            goal = self.get_random_nonvisited_nonwall_playerat_goal()
+            selected_goal = goal
+            return selected_goal, "explore"
 
     def get_random_simple_action(self):
         simple_commands = [Command.MOVE_OR_ATTACK_N,
@@ -306,12 +314,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.current_game_state = gamestate
         self.process_gamestate_via_cells()
 
-<<<<<<< HEAD
         available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(
             self.current_game_state.get_current_menu())
-=======
-        available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(self.current_game_state.get_current_menu())
->>>>>>> dev
         print("available_menu_choices = {}".format(available_menu_choices))
         if available_menu_choices:
             return available_menu_choices[0]
@@ -322,7 +326,8 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         for a in self.plan:
             print("  plan action is {}".format(a))
 
-        if self.new_goal and self.new_goal_type and (len(self.plan) < 1 or self.new_goal_type != self.previous_goal_type):
+        if self.new_goal and self.new_goal_type and (
+                len(self.plan) < 1 or self.new_goal_type != self.previous_goal_type):
             self.current_goal = self.new_goal
             self.current_goal_type = self.new_goal_type
             # plan
@@ -342,25 +347,19 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         next_action = self.get_random_simple_action()
         return next_action
 
+
 if __name__ == "__main__":
     my_config = WebserverConfig
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-
-    my_config.delay = 0.25
-
+    my_config.delay = 0.5
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
-    #my_config.max_actions = 500
 
     my_config.auto_start_new_game = True
     my_config.always_start_new_game = True
 
-    # set the logging level you want
-    logger = logging.getLogger('dcss-ai-wrapper')
-    logger.setLevel(logging.WARNING)
-
     # create game
-    game = WebSockGame(config=my_config, agent_class=FastDownwardPlanningBaseAgent)
+    game = WebSockGame(config=my_config, agent_class=SimpleGRAgent)
     game.run()

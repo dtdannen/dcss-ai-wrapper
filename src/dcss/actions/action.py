@@ -79,6 +79,7 @@ class Action:
         Command.PUT_ON_JEWELLERY: {'text': 'P', 'msg': 'input'},
         Command.REMOVE_JEWELLERY: {'text': 'R', 'msg': 'input'},
         Command.EVOKE: {'text': 'v', 'msg': 'input'},
+        Command.EXAMINE_TILE_IN_EXPLORE_MENU: {'text': 'v', 'msg': 'input'},
         Command.SELECT_ITEM_TO_EVOKE: {'text': 'V', 'msg': 'input'},
         Command.MEMORISE: {'text': 'M', 'msg': 'input'},
         Command.COUNT_GOLD: {'text': '$', 'msg': 'input'},
@@ -134,7 +135,7 @@ class Action:
     }
 
     # the order of letters and symbols in this string should match the order of MenuChoice enum options
-    dcss_menu_chars = list(string.ascii_lowercase + string.ascii_uppercase + '0123456789' + '*!/?')
+    dcss_menu_chars = list(string.ascii_lowercase + string.ascii_uppercase + '0123456789' + '*!/?<>\r.-^\t\\_\x1b')
 
     @staticmethod
     def get_execution_repr(command_or_menu_choice):
