@@ -1058,7 +1058,7 @@ class GameState:
             Player has 31 skills that increase over time if the player
             is actively 'training' those skills.
 
-            Each skill is represented by a vector of size 2:
+            Each skill is represented by a vector of size 3:
                 +--------------+---------------------------------------+------------------------+
                 | Vector Index | Description of Data                   | Data Type if available |
                 +==============+=======================================+========================+
