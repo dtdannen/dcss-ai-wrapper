@@ -12,7 +12,8 @@ from dcss.connection.config import WebserverConfig
 import logging
 logging.basicConfig(level=logging.WARNING)
 
-# just a little convenience step
+# just a little convenience step - this is used to prevent asking the player for an action when an old game is about
+# to be deleted and a new game will be started
 STILL_NEED_TO_RESTART = False
 
 if sys.platform == 'win32':
@@ -93,6 +94,7 @@ class HumanInterfaceBaseAgent(BaseAgent):
             STILL_NEED_TO_RESTART = False
             return Command.WAIT_1_TURN # arbitrary, just send any command... this is last command before destroying game
         else:
+            self.print_current_menu()
             print("Waiting for your next keypress, human")
             next_action = getch()
             #next_action = input("Waiting for your next keypress, human")
@@ -119,6 +121,12 @@ class HumanInterfaceBaseAgent(BaseAgent):
         print(player_stats_vector)
         print("Player stats vector has length {}".format(len(player_stats_vector)))
 
+    def print_current_menu(self):
+        """
+            Print the menu that the API thinks is currently true
+        """
+
+        print("MENU: {}".format(self.gamestate.get_current_menu()))
 
     def get_command_from_human_keypress(self, keypress):
         """
@@ -159,6 +167,8 @@ class HumanInterfaceBaseAgent(BaseAgent):
             'q': Command.QUAFF,
             'I': Command.LIST_ALL_SPELLS,
             'm': Command.SHOW_SKILL_SCREEN,
+            'x': Command.EXAMINE_SURROUNDINGS_AND_TARGETS,
+            ';': Command.EXAMINE_CURRENT_TILE_PICKUP_PART_OF_SINGLE_STACK,
         }
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
