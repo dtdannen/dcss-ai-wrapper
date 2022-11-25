@@ -408,7 +408,6 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         if self.check_for_inventory_menu(json_msg):
             self._IN_MENU = Menu.CHARACTER_INVENTORY_MENU
-            self.inventory_menu_options = self.get_inventory_menu_options(json_msg)
             logger.debug("setting _IN_MENU = Menu.CHARACTER_INVENTORY_MENU")
 
         if self.check_for_all_spells_menu(json_msg):
@@ -560,32 +559,6 @@ class DCSSProtocol(WebSocketClientProtocol):
                 skills_tag_found = True
 
         return is_menu and skills_tag_found
-
-    def get_inventory_menu_options(self, json_msg):
-        # get inventory menu items and keypresses
-        #TODO: get something like the following to work
-
-        # background_name_to_hotkeys = {}
-        # for buttons_list in nested_lookup('buttons', json_msg):
-        #     for background_option in buttons_list:
-        #         # print("background_option: {}".format(background_option))
-        #         hotkey = background_option["hotkey"]
-        #         if hotkey != 9:
-        #             # '9' corresponds to the background used in the last game, ignore for now TODO - find a better solution
-        #             background_name = None
-        #             if 'labels' in background_option.keys():
-        #                 background_name = background_option["labels"][0].split('-')[-1].strip()
-        #             elif 'label' in background_option.keys():
-        #                 background_name = background_option["label"].split('-')[-1].strip()
-        #             else:
-        #                 print("WARNING - Could not find label for background option json: {}".format(
-        #                     background_option))
-        #
-        #             if background_name:
-        #                 # print("Just found background {} with hotkey {}".format(background_name, hotkey))
-        #                 background_name_to_hotkeys[background_name] = int(hotkey)
-        #     return background_name_to_hotkeys
-        pass
 
     def get_spell_menu_options(self, json_msg):
         # TODO: mimic other similar functions, like background or species options

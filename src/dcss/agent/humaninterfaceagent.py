@@ -3,7 +3,7 @@ from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
 from dcss.state.game import GameState
 from dcss.actions.action import Action
-from dcss.actions.menuchoice import MenuChoice
+from dcss.actions.menuchoice import MenuChoice, MenuChoiceMapping
 from dcss.state.menu import Menu
 
 from dcss.websockgame import WebSockGame
@@ -76,16 +76,8 @@ class HumanInterfaceBaseAgent(BaseAgent):
         self.gameturns.append(gameturn)
         #self.print_all_items_near_player(gamestate)
         self.num_game_facts.append(num_facts)
-        #print("about to plot {}, {}".format(gameturn, num_facts))
-        #plt.plot(self.gameturns, self.num_game_facts)
-        #plt.draw()
-        #plt.pause(0.001)
 
-        # linux solution:
-        #next_action = readchar.readchar()
-
-        # windows solution
-        #next_action = None
+        self.gamestate.draw_cell_map()
 
         # convenience hack to prevent the user from an extra, meaningless keypress before old game is destroyed
         global STILL_NEED_TO_RESTART
@@ -125,8 +117,12 @@ class HumanInterfaceBaseAgent(BaseAgent):
         """
             Print the menu that the API thinks is currently true
         """
-
+        current_menu = self.gamestate.get_current_menu()
         print("MENU: {}".format(self.gamestate.get_current_menu()))
+        if current_menu != Menu.NO_MENU:
+            available_menu_choices = self.gamestate.get_possible_actions_for_current_menu()
+            print(available_menu_choices)
+            print("Available Menu Choices: {}".format([repr(x) for x in available_menu_choices]))
 
     def print_player_skills_pddl(self):
         """
@@ -190,11 +186,11 @@ class HumanInterfaceBaseAgent(BaseAgent):
             'v': Command.EXAMINE_TILE_IN_EXPLORE_MENU,
         }
 
-        if keypress in ['i']:
-            self.print_player_inv_pddl()
+        #if keypress in ['i']:
+        #    self.print_player_inv_pddl()
 
-        if keypress in ['m']:
-            self.print_player_skills_pddl()
+        #if keypress in ['m']:
+        #    self.print_player_skills_pddl()
 
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
             return keypress_to_command_no_menu[keypress]
@@ -230,7 +226,7 @@ if __name__ == "__main__":
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
     my_config.starting_weapon = 'hand axe'
-    my_config.delay = 0.0
+    my_config.delay = 0.1
 
     # set the logging level you want
     logger = logging.getLogger('dcss-ai-wrapper')

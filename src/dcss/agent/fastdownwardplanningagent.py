@@ -81,14 +81,10 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
     def get_random_nonvisited_nonwall_playerat_goal(self):
         i = 1
-<<<<<<< HEAD
-        farthest_away_cells = []
-        player_current_cell = self.current_game_state.get_cell_map().get_player_cell()
-        target_cells = [c for c in self.cells_not_visited if c != player_current_cell]
-=======
+
         farthest_away_cells = set()
         target_cells = self.cells_not_visited[self.current_game_state.player_depth].copy()
->>>>>>> dev
+
         while len(target_cells) > 1:
             farthest_away_cells = target_cells
             # remove all cells that are i distance away from other visited cells
@@ -306,12 +302,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.current_game_state = gamestate
         self.process_gamestate_via_cells()
 
-<<<<<<< HEAD
-        available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(
-            self.current_game_state.get_current_menu())
-=======
         available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(self.current_game_state.get_current_menu())
->>>>>>> dev
         print("available_menu_choices = {}".format(available_menu_choices))
         if available_menu_choices:
             return available_menu_choices[0]

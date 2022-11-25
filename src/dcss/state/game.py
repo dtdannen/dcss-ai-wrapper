@@ -3,7 +3,8 @@ import os
 import time
 import re
 
-from dcss.actions.action import Action, MenuChoice
+from dcss.actions.action import Action
+from dcss.actions.menuchoice import MenuChoice, MenuChoiceMapping
 from dcss.state.cell import Cell
 from dcss.state.cellmap import CellMap
 from dcss.state.cellrawstrdatum import CellRawStrDatum
@@ -163,8 +164,10 @@ class GameState:
         GameState.ID += 1
 
         self._in_menu = Menu.NO_MENU
+        self.available_menu_choices = []
         self.cursor_x = 0
         self.cursor_y = 0
+
 
     def update(self, msg_from_server):
         """
@@ -1256,6 +1259,27 @@ class GameState:
             player_stats_pddl.append('(player_has_mutation {})'.format(MutationPDDLMapping.mutation_pddl_lookup[mutation]))
 
         return player_stats_pddl
+
+    def get_possible_actions_for_current_menu(self):
+        if self._in_menu in [Menu.NO_MENU]:
+            return None
+        elif self._in_menu in MenuChoiceMapping.menus_to_static_choices.keys():
+            return MenuChoiceMapping.menus_to_static_choices[self._in_menu]
+        elif self._in_menu is Menu.CHARACTER_INVENTORY_MENU:
+            return self.get_inventory_menu_choices()
+        else:
+            #raise Exception("Don't have choices set for Menu: {}".format(menu))
+            self.logger.info("Don't have choices set for Menu: {}".format(self._in_menu))
+
+    def get_inventory_menu_choices(self):
+        """
+            Returns the menu choices for selecting an item in the inventory menu
+        """
+        menu_choices = []
+        for inv_item in self.inventory_by_id.values():
+            menu_choices.append(MenuChoiceMapping.get_menu_choice_from_letter(inv_item.get_letter()))
+
+        return menu_choices
 
     def get_player_inventory_pddl(self):
         """

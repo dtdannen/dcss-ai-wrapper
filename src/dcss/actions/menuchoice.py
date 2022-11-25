@@ -2,6 +2,9 @@ from enum import Enum
 from dcss.state.menu import Menu
 import string
 
+import logging
+logger = logging.getLogger("dcss-ai-wrapper")
+
 
 class MenuChoice(Enum):
     """
@@ -85,29 +88,24 @@ class MenuChoice(Enum):
     UNDERSCORE = 74
     ESCAPE = 75
 
+
 class MenuChoiceMapping:
 
     # the order of letters and symbols in this string should match the order of MenuChoice enum options
     dcss_menu_chars = list(string.ascii_lowercase + string.ascii_uppercase + '0123456789' + '*!/?<>\r.-^\t\\_\x1b')
 
-    menus_to_choices = {Menu.ATTRIBUTE_INCREASE_TEXT_MENU: [MenuChoice.UPPER_S, MenuChoice.UPPER_I, MenuChoice.UPPER_D],
-                        Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N],
-                        Menu.EXAMINE_MAP_MENU: [MenuChoice.GREATER_THAN, MenuChoice.LESS_THAN, MenuChoice.ENTER,
+    menus_to_static_choices = {Menu.ATTRIBUTE_INCREASE_TEXT_MENU: [MenuChoice.UPPER_S, MenuChoice.UPPER_I, MenuChoice.UPPER_D],
+                               Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N],
+                               Menu.EXAMINE_MAP_MENU: [MenuChoice.GREATER_THAN, MenuChoice.LESS_THAN, MenuChoice.ENTER,
                                                 MenuChoice.CARAT, MenuChoice.TAB, MenuChoice.BACKSLASH,
                                                 MenuChoice.UNDERSCORE, MenuChoice.UPPER_I, MenuChoice.UPPER_O,
                                                 MenuChoice.ESCAPE
                                                 ]}
 
     @staticmethod
-    def get_possible_actions_for_current_menu(menu: Menu):
-        if menu in MenuChoiceMapping.menus_to_choices.keys():
-            return MenuChoiceMapping.menus_to_choices[menu]
-        elif menu in [Menu.NO_MENU]:
-            return None
-        else:
-            #raise Exception("Don't have choices set for Menu: {}".format(menu))
-            print("Don't have choices set for Menu: {}".format(menu))
+    def get_menu_letter_to_menu_choice():
+        return {x:MenuChoice(MenuChoiceMapping.dcss_menu_chars.index(x)) for x in MenuChoiceMapping.dcss_menu_chars}
 
     @staticmethod
-    def get_menu_letter_to_menu_choice():
-        return {x:MenuChoice for x in MenuChoiceMapping.dcss_menu_chars}
+    def get_menu_choice_from_letter(letter):
+        return MenuChoiceMapping.get_menu_letter_to_menu_choice()[letter]
