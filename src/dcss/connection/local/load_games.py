@@ -51,7 +51,7 @@ def load_games(existing_games):  # type: (GamesConfig) -> GamesConfig
     new_games = collections.OrderedDict()  # type: GamesConfig
     new_games.update(existing_games)
     if not conf_subdir:
-        logging.info("Skipping game data directory")
+        logger.info("Skipping game data directory")
         return new_games
     base_path = os.path.join(webtiles.config.server_path, conf_subdir)
     if not os.path.exists(base_path):
@@ -85,7 +85,7 @@ def load_games(existing_games):  # type: (GamesConfig) -> GamesConfig
               "Found extra top-level keys '%s' in %s, ignoring them"
               " (only 'games' key will be parsed).",
               extra_keys, file_name)
-        logging.info("Loading data from %s", file_name)
+        logger.info("Loading data from %s", file_name)
         for game in data['games']:  # noqa
             if not validate_game_dict(game):
                 continue
@@ -100,10 +100,10 @@ def load_games(existing_games):  # type: (GamesConfig) -> GamesConfig
             delta_messages.append(msg)
     if delta:
         assert len(delta.keys()) == len(delta_messages)
-        logging.info("Updating live games config")
+        logger.info("Updating live games config")
         new_games.update(delta)
         for message in delta_messages:
-            logging.info(*message)
+            logger.info(*message)
     return new_games
 
 

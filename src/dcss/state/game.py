@@ -26,6 +26,8 @@ class GameState:
     ID = 0
 
     def __init__(self):
+        self.logger = logging.getLogger('dcss-ai-wrapper')
+
         # state is just a dictionary of key value pairs
         self.state = {}
 
@@ -173,7 +175,7 @@ class GameState:
         """
         try:
             # print(str(self.state))
-            logging.info("state.update() is now processing: {}".format(str(msg_from_server)))
+            self.logger.info("state.update() is now processing: {}".format(str(msg_from_server)))
             self._process_raw_state(msg_from_server)
         except Exception as e:
             raise Exception("Something went wrong: " + str(e))
@@ -1368,7 +1370,7 @@ class GameState:
                     # self.update_map_obj(cells_x_y_g_data_only)
                     # self.update_map_obj()
                 last_key = k
-                print("k is {}".format(k))
+                #self.logger.debug("k is {}".format(k))
                 if k == 'more':
                     if s[k]:
                         self.more_prompt = True
@@ -1531,11 +1533,7 @@ class GameState:
             print("   {}".format(i))
 
     def _process_single_spell(self, message):
-<<<<<<< HEAD
-        logging.debug("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
-=======
-        #print("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
->>>>>>> dev
+        self.logger.debug("************************** IN PROCESS ALL SPELLS and message is {}".format(message))
 
         # define the regex terms
         spell_name_regex = re.compile(
@@ -1580,7 +1578,7 @@ class GameState:
             print("Added player spell {} ".format(spell_obj))
 
         except:
-            logging.info("Ignoring spell processing for messzage: {}".format(message))
+            self.logger.info("Ignoring spell processing for messzage: {}".format(message))
             pass
 
     def _process_single_ability(self, message):
@@ -1625,7 +1623,7 @@ class GameState:
             print("Added player ability {} ".format(ability_obj))
 
         except:
-            logging.info("Ignoring ability processing for message: {}".format(message))
+            self.logger.info("Ignoring ability processing for message: {}".format(message))
             pass
 
     def process_messages(self, data):
@@ -1813,7 +1811,7 @@ class GameState:
                 self.agent_y = self.player_position['y']
                 self.cellmap.set_agent_x(self.agent_x)
                 self.cellmap.set_agent_y(self.agent_y)
-                logging.debug("Player position is now x={}, y={}".format(self.agent_x, self.agent_y))
+                self.logger.debug("Player position is now x={}, y={}".format(self.agent_x, self.agent_y))
 
             # Todo - I don't know the difference between adjusted noise and noise
             elif k == 'adjusted_noise':
@@ -1964,7 +1962,7 @@ class GameState:
             for i in range(1, len(ascending_bin_labels)+1):
                 if self.player_current_hp < i * bin_size:
                     player_pddl_strs.append("(playerhealth {})".format(ascending_bin_labels[i-1]))
-                    logging.debug("Just wrote player_health to be {} because its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
+                    self.logger.debug("Just wrote player_health to be {} because its value is {}".format(ascending_bin_labels[i-1], self.player_current_hp))
                     break
 
         player_pddl_strs.append("(playerplace {}_{})".format(self.player_place.lower().strip(), self.player_depth))
@@ -2037,7 +2035,7 @@ class GameState:
             pddl_str += "  {}\n".format(fact)
 
         # read in common knowledge facts and write to file
-        logging.debug("Current directory is {}".format(os.getcwd()))
+        self.logger.debug("Current directory is {}".format(os.getcwd()))
         with open(self.general_knowledge_pddl_facts_filename, 'r') as f2:
             for line in f2.readlines():
                 if not line.startswith(';'):
@@ -2050,7 +2048,7 @@ class GameState:
         pddl_str += ")\n"
         pddl_str += ")\n\n)"
 
-        logging.debug("filename is {}".format(filename))
+        self.logger.debug("filename is {}".format(filename))
         with open(filename.format(), 'w') as f:
             f.write(pddl_str)
         print("Current state written to file {}".format(filename))

@@ -10,7 +10,6 @@ from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
 
 import logging
-logger = logging.getLogger("dcss-ai-wrapper")
 
 # just a little convenience step - this is used to prevent asking the player for an action when an old game is about
 # to be deleted and a new game will be started
@@ -87,7 +86,6 @@ class HumanInterfaceBaseAgent(BaseAgent):
 
         # windows solution
         #next_action = None
-<<<<<<< HEAD
 
         # convenience hack to prevent the user from an extra, meaningless keypress before old game is destroyed
         global STILL_NEED_TO_RESTART
@@ -107,19 +105,7 @@ class HumanInterfaceBaseAgent(BaseAgent):
             next_action_command = self.get_command_from_human_keypress(next_action)
             #print("Got next_action {} and command is {}".format(next_action, next_action_command))
             return next_action_command
-=======
-        print("Waiting for your next keypress, human")
-        #next_action = msvcrt.getch().decode()
-        next_action = input("Waiting for your next keypress, human")
-        # while not next_action:
-        #     try:
-        #         next_action = msvcrt.getch().decode()
-        #     except:
-        #         print("Sorry, couldn't decode that keypress, try again?")
-        next_action_command = self.get_command_from_human_keypress(next_action)
-        print("Got next_action {} and command is {}".format(next_action, next_action_command))
-        return next_action_command
->>>>>>> dev
+
 
     def print_all_items_near_player(self, gamestate: GameState, r=1):
         cells = gamestate.get_cell_map().get_radius_around_agent_cells(r=r)
@@ -135,14 +121,13 @@ class HumanInterfaceBaseAgent(BaseAgent):
         print(player_stats_vector)
         print("Player stats vector has length {}".format(len(player_stats_vector)))
 
-<<<<<<< HEAD
     def print_current_menu(self):
         """
             Print the menu that the API thinks is currently true
         """
 
         print("MENU: {}".format(self.gamestate.get_current_menu()))
-=======
+
     def print_player_skills_pddl(self):
         """
             Print the pddl facts about the players skill and what they are training, current level, etc.
@@ -159,7 +144,7 @@ class HumanInterfaceBaseAgent(BaseAgent):
         print("Inventory Item Facts are:")
         for fact in facts:
             print("  {}".format(fact))
->>>>>>> dev
+
 
     def get_command_from_human_keypress(self, keypress):
         """
@@ -201,11 +186,8 @@ class HumanInterfaceBaseAgent(BaseAgent):
             'I': Command.LIST_ALL_SPELLS,
             'm': Command.SHOW_SKILL_SCREEN,
             'x': Command.EXAMINE_SURROUNDINGS_AND_TARGETS,
-<<<<<<< HEAD
             ';': Command.EXAMINE_CURRENT_TILE_PICKUP_PART_OF_SINGLE_STACK,
-=======
             'v': Command.EXAMINE_TILE_IN_EXPLORE_MENU,
->>>>>>> dev
         }
 
         if keypress in ['i']:
@@ -223,6 +205,15 @@ class HumanInterfaceBaseAgent(BaseAgent):
         else:
             #print("Got keypress {} and current Menu is {}".format(keypress, self.gamestate.get_current_menu()))
             return Command.EXIT_MENU
+
+
+def setup_logger(logger):
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
 
 if __name__ == "__main__":
@@ -243,7 +234,10 @@ if __name__ == "__main__":
 
     # set the logging level you want
     logger = logging.getLogger('dcss-ai-wrapper')
-    logger.setLevel(logging.WARNING)
+    setup_logger(logger)
+    logger.setLevel(logging.DEBUG)
+
+    logger.debug("Starting up {}".format("HumanInterfaceBaseAgent"))
 
     # create game
     game = WebSockGame(config=my_config, agent_class=HumanInterfaceBaseAgent)

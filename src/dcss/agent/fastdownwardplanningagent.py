@@ -153,7 +153,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
-            logging.info("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
+            logger.info("About to write out game state with filename {}".format(self.plan_current_pddl_state_filename))
             self.current_game_state.write_pddl_current_state_to_file(filename=self.plan_current_pddl_state_filename,
                                                                      goals=goals)
         else:

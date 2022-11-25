@@ -1,9 +1,7 @@
 from enum import Enum
 from dcss.state.menu import Menu
-<<<<<<< HEAD
 import string
-=======
->>>>>>> dev
+
 
 class MenuChoice(Enum):
     """

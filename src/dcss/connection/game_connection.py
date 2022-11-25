@@ -65,26 +65,26 @@ class GameConnection:
         assert isinstance(self.config, config.WebserverConfig)
 
         # connect
-        logging.info("Connecting to URI " + str(self.config.server_uri) + " ...")
+        logger.info("Connecting to URI " + str(self.config.server_uri) + " ...")
         # print("AWAITING ON WEBSOCKET_3 CONNECT")
         self.websocket = await websockets.connect(self.config.server_uri)
         # print("POST-AWAITING ON WEBSOCKET_3 CONNECT")
-        logging.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
+        logger.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
 
     async def login_webserver(self):
         assert isinstance(self.config, config.WebserverConfig)
 
         # login
-        logging.info("Sending login message...")
+        logger.info("Sending login message...")
         login_msg = {'msg': 'login',
                      'username': self.config.agent_name,
                      'password': self.config.agent_password}
 
         await self.websocket.send(json.dumps(login_msg))
-        logging.info("Sent login message")
+        logger.info("Sent login message")
 
     async def send_pong(self):
-        logging.info("Sending pong")
+        logger.info("Sending pong")
 
         await self.websocket.send(json.dumps({'msg': 'pong'}))
 
@@ -156,7 +156,7 @@ class GameConnection:
             except ValueError as e:
                 logging.warning("i=" + str(i) + "Ignoring unparseable JSON (error: %s): %s.", e.args[0], json_message)
             except asyncio.CancelledError:
-                logging.info('Received message to cancel - ignoring so recv can finish up')
+                logger.info('Received message to cancel - ignoring so recv can finish up')
                 self.begin_shutdown = True
             except asyncio.TimeoutError:
                 # server is now ready for input
@@ -213,7 +213,7 @@ class GameConnection:
     #
     #         self.game_ended = True
     #
-    #     logging.info("Sent all quit messages, game is deleted...")
+    #     logger.info("Sent all quit messages, game is deleted...")
 
     async def connect_webserver(self):
         print("Logging in...")
