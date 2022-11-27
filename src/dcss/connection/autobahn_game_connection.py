@@ -450,12 +450,6 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._BEGIN_DELETING_GAME = True
             self._GAME_IS_ONGOING = False
 
-        if self.check_for_attribute_increase(json_msg):
-            print("AGENT HAS CHOICE OF ATTRIBUTE INCREASE")
-            self._IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU
-            self.attribute_increase_menu_options = self.get_ability_menu_options(json_msg)
-            print("setting _IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU")
-
         if self.check_agent_wants_to_start_next_game():
             print("AGENT WANTS TO START A NEW GAME")
             self._BEGIN_DELETING_GAME = True
@@ -499,6 +493,10 @@ class DCSSProtocol(WebSocketClientProtocol):
         if self.check_for_sprint_map_menu(json_msg):
             self._IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU
             logger.debug("setting _IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU")
+
+        if self.check_for_close_all_menus(json_msg):
+            self._IN_MENU = Menu.NO_MENU
+            logger.debug("setting _IN_MENU = Menu.NO_MENU")
 
     def check_for_in_lobby(self, json_msg):
         for v in nested_lookup('msg', json_msg):
@@ -803,6 +801,34 @@ class DCSSProtocol(WebSocketClientProtocol):
         if action_limit >= 0:
             return self.actions_sent >= action_limit
         return False
+
+    def check_for_close_all_menus(self, json_msg):
+        """
+        {"msgs":[{"msg":"close_menu"}
+,{"msg":"close_all_menus"}
+,{"msg":"close_all_menus"}
+,{"msg":"input_mode","mode":1}
+
+        """
+        # TODO - process close all menus to reset self.menu to Menu.NO_MENU
+        pass
+
+    def check_for_item_description_menu(self, json_msg):
+        """
+            {'msgs': [{'msg': 'update_menu_items', 'chunk_start': 1, 'items': [{'text': ' a + a +0 hand axe (weapon)', 'colour': 10, 'tiles': [{'t': 4152, 'tex': 4}, {'t': 3041, 'tex': 4}]}]}, {'title': 'a - a +0 hand axe (weapon).', 'body': "A small axe. \n\nBase accuracy: +3  Base damage: 7  Base attack delay: 1.3\nThis weapon's minimum attack delay (0.6) is reached at skill level 14.\n    Your skill: 3.6; use <white>(s)<lightgrey> to set 14.0 as a target for Axes.\n    At 100% training you would reach 14.0 in about 8.0 XLs.\n    At current training (39%) you reach 14.0 in about 10.6 XLs.\n\nIt hits all enemies adjacent to the wielder, dealing less damage to those not targeted.\n\nThis weapon falls into the 'Axes' category. It is a one handed weapon.\nIt can be maximally enchanted to +9.\n\n\nStash search prefixes: {inventory} {Axes} {one-handed} {melee weapon}\nMenu/colouring prefixes: identified uncursed melee equipped weapon\n\n“Lizzie Borden took an axe\n And gave her mother forty whacks.\n When she saw what she had done\n She gave her father forty-one.”\n    -A popular skipping-rope rhyme, after 1893.\nSPELLSET_PLACEHOLDER", 'spellset': [], 'actions': '(=)adjust, (u)nwield, (s)kill, (d)rop, or (i)nscribe.', 'tiles': [{'t': 4152, 'tex': 4}, {'t': 3041, 'tex': 4}], 'msg': 'ui-push', 'type': 'describe-item', 'ui-centred': False, 'generation_id': 3}]}
+
+        """
+        # TODO - process these kinds of messages to show a nested menu of an item description
+        pass
+
+    def check_for_close_nested_menu(self, json_msg):
+        """
+             {"msgs":[{"msg":"ui-pop"}
+,{"msg":"update_menu_items","chunk_start":1,"items":[{"text":" a - a +0 hand axe (weapon)","colour":10,"tiles":[{"t":4152,"tex":4},{"t":3041,"tex":4}]}]}
+        """
+        # TODO - write code to check for 'ui-pop' and use this to close the current menu and return to the previous menu
+        # TODO - keep current Menus on a 'stack' and pop them off when they are done
+        pass
 
     def get_hotkey_json_as_msg(self, hotkey):
         return {"keycode": hotkey, "msg": "key"}
