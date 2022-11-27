@@ -5,7 +5,7 @@ import collections
 import os.path
 import logging
 
-from webtiles import load_games
+from dcss.connection.local import load_games
 
 server_config = {}
 source_file = None

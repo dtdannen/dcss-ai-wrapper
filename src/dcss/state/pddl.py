@@ -2,7 +2,7 @@ from datetime import datetime
 
 
 def get_pddl_problem(domainname: str = "dcss", problemname: str = "test_prob", objects: [str] = None,
-                     init_facts: [str] = None, goals: [str] = None) -> str:
+                     init_facts: [str] = None, goals: [str] = None, map_s: str = None) -> str:
     """
     Returns a complete pddl state string ready to be passed to a planner, given the domain name, objects, init facts,
     and goals.
@@ -18,9 +18,14 @@ def get_pddl_problem(domainname: str = "dcss", problemname: str = "test_prob", o
     """
 
     pddl_str = ";; Generated on {}\n".format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+    if map_s:
+        # add comments to the beginning of lines
+        map_s = ';; ' + map_s
+        map_s = map_s.replace('\n', '\n;; ')
+        pddl_str += map_s + "\n\n"
+
     pddl_str += "(define (problem {problemname})\n  (:domain {domainname})\n\n".format(problemname=problemname,
                                                                                     domainname=domainname)
-
     pddl_str += "  (:objects \n"
     for obj in objects:
         pddl_str += "    {}\n".format(obj)

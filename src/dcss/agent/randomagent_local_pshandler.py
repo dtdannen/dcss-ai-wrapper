@@ -5,13 +5,13 @@ from dcss.actions.action import Action
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig, LocalConfig
 from dcss.connection.local.socket_connection import WebtilesSocketConnection
+from dcss.connection.local.process_handler import CrawlProcessHandler
 
 import json
 import time
 import logging
 import random
 import os
-import logging
 
 from tornado.ioloop import IOLoop
 from tornado.escape import utf8
@@ -34,6 +34,14 @@ class MyAgent(BaseAgent):
 
 
 if __name__ == "__main__":
+
+    process_handler = CrawlProcessHandler(None)
+
+    # TODO left off here
+
+    # TODO - OLD code below
+
+
     import zlib
     game_state = GameState()
     global game_updates_called
@@ -209,12 +217,4 @@ if __name__ == "__main__":
             time.sleep(1)
 
 
-    # set the logging level you want
-    logger = logging.getLogger('dcss-ai-wrapper')
-    logger.setLevel(logging.WARNING)
-
-
-    # create game
-    game = WebSockGame(config=my_config, agent_class=MyAgent)
-    game.run(local=True)
 

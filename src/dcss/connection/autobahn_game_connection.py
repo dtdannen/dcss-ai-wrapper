@@ -225,6 +225,8 @@ class DCSSProtocol(WebSocketClientProtocol):
 
 
                     if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU, Menu.ABILITY_MENU, Menu.SKILL_MENU, Menu.ATTRIBUTE_INCREASE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
+                        if self.config.draw_map: self.game_state.draw_cell_map()
+
                         # the following executes the next action if we are using an instance of Agent to control
                         # sending actions
                         if self.agent:
@@ -287,6 +289,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_3_TO_DELETE_GAME = True
                         self.reset_before_next_game()
 
+
             logger.info("About to sleep for delay {}".format(config.WebserverConfig.delay))
 
             # if user is trying to run with really low delay, only use that delay after a game has started
@@ -296,6 +299,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                 delay = 0.5
 
             await asyncio.sleep(delay)
+
 
     def onMessage(self, payload, isBinary):
         logger.debug("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))

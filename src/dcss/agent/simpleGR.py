@@ -2,6 +2,8 @@ import os
 import platform
 import random
 import subprocess
+import glob
+import re
 
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
@@ -14,10 +16,11 @@ from dcss.state.menu import Menu
 from enum import Enum
 import dcss.state.pddl as pddl
 
-from time import time
+import time
 
 import logging
 logger = logging.getLogger("dcss-ai-wrapper")
+
 
 
 class Goal(Enum):
@@ -39,8 +42,11 @@ class SimpleGRAgent(BaseAgent):
         super().__init__()
         self.current_game_state = None
         self.next_command_id = 1
+        self.pddl_objects = []
+        self.pddl_state_facts = []
         self.plan_domain_filename = "models/fastdownward_simple.pddl"
         self._pddl_state_counter = 0
+        self._pddl_state_dir = "agent_temp_state"
         self._pddl_state_filename = self.get_pddl_state_filename()
         self.plan_result_filename = "models/fdtempfiles/dcss_plan.sas"
         self.plan = []
@@ -64,8 +70,20 @@ class SimpleGRAgent(BaseAgent):
 
         self.failed_goals = []
 
+        self.time_per_action = []
+
+        self._remove_old_state_files()
+
+    def _remove_old_state_files(self):
+        files_removed = 0
+        for state_file in glob.glob("{}/state*".format(self._pddl_state_dir)):
+            os.remove(state_file)
+            files_removed += 1
+
+        logging.info("Removed {} old state files from {}".format(files_removed, self._pddl_state_dir))
+
     def get_pddl_state_filename(self):
-        return "agent_temp_state/state{}.pddl".format(self._pddl_state_counter)
+        return "{}/state{}.pddl".format(self._pddl_state_dir, self._pddl_state_counter)
 
     def process_gamestate_via_cells(self):
         for cell in self.current_game_state.get_cell_map().get_xy_to_cells_dict().values():
@@ -82,7 +100,7 @@ class SimpleGRAgent(BaseAgent):
 
             if cell.has_stairs_down:
                 self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
-                print("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
+                logging.debug("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
         self.num_cells_visited = len(self.cells_visited[self.current_game_state.player_depth])
 
@@ -110,11 +128,11 @@ class SimpleGRAgent(BaseAgent):
         # print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if len(self.closed_door_cells[self.current_game_state.player_depth]) > 1:
-            print("Attempting to choose a closed door as a goal if possible")
+            logging.debug("Attempting to choose a closed door as a goal if possible")
             goal_cell = self.closed_door_cells[self.current_game_state.player_depth].pop()
         elif len(farthest_away_cells) > 0:
             goal_cell = farthest_away_cells.pop()
-            print("Visited {} cells - Goal is now {}".format(
+            logging.debug("Visited {} cells - Goal is now {}".format(
                 len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
 
         else:
@@ -125,7 +143,34 @@ class SimpleGRAgent(BaseAgent):
         # print("Returning goal str of {}".format(goal_str))
         return goal_str
 
+    def get_item_goal(self):
+        """
+        This picks the first available potion.
+        """
+
+        cells_with_item = []
+        for f in self.pddl_state_facts:
+            if 'hasitem_generic' in f:
+                matches = re.findall('cellx[_]*[0-9]+y[_]*[0-9]+', f)
+                for c in matches:
+                    cells_with_item.append(c)
+
+        cells_in_failed_goals = []
+        for g in self.failed_goals:
+            matches = re.findall('cellx[_]*[0-9]+y[_]*[0-9]+', g)
+            for c in matches:
+                cells_in_failed_goals.append(c)
+        cells_with_item = [c for c in cells_with_item if c not in cells_in_failed_goals]
+
+        if len(cells_with_item) == 0:
+            return None
+
+        item_goal_cell = random.choice(cells_with_item)
+        item_goal_str = "(not (hasitem_generic {}))".format(item_goal_cell)
+        return item_goal_str
+
     def get_first_monster_goal(self):
+        #TODO rewrite this to only use PDDL facts, not the gamestate API directly
         """
         This picks a the first available monster and chooses that monsters cell to be the goal. In the process of trying to move
         into the monsters cell, the agent should end up attacking the monster, because movement and attacking are the
@@ -136,16 +181,24 @@ class SimpleGRAgent(BaseAgent):
             if cell.monster:
                 cells_with_monsters.append(cell)
 
+        cells_in_failed_goals = []
+        for g in self.failed_goals:
+            matches = re.findall('cellx[_]*[0-9]+y[_]*[0-9]+', g)
+            for c in matches:
+                cells_in_failed_goals.append(c)
+
+        cells_with_monsters = [c for c in cells_with_monsters if c.get_pddl_name() not in cells_in_failed_goals]
+
         if len(cells_with_monsters) == 0:
             return None
 
         monster_cell_goal = random.choice(cells_with_monsters)
-        monster_goal_str = "(not (hasmonster {}))".format(monster_cell_goal.get_pddl_name())
+        monster_goal_str = "(not (hasmonster {} {}))".format(monster_cell_goal.get_pddl_name(), monster_cell_goal.monster.name)
         # print("about to return monster goal: {}".format(monster_goal_str))
         # time.sleep(1)
         return monster_goal_str
 
-    def generate_current_state_pddl(self, goals):
+    def update_pddl_objs_and_facts(self):
         pddl_objects = []
         pddl_facts = []
         if self.current_game_state:
@@ -159,20 +212,24 @@ class SimpleGRAgent(BaseAgent):
             pddl_objects += inv_objects
             pddl_facts += inv_facts
 
-        return pddl.get_pddl_problem(objects=pddl_objects, init_facts=pddl_facts, goals=goals)
+        self.pddl_state_facts = pddl_facts
+        self.pddl_objects = pddl_objects
 
     def get_plan_from_fast_downward(self, goals):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
             self._pddl_state_counter += 1
-            print("About to write out game state with filename {}".format(self.get_pddl_state_filename()))
+            logging.debug("About to write out game state with filename {}".format(self.get_pddl_state_filename()))
+            logging.debug("current working directory: {}".format(os.getcwd()))
             with open(self.get_pddl_state_filename(), 'w') as f:
-                f.write(self.generate_current_state_pddl(goals=goals))
-            print("...wrote to file {}".format(self.get_pddl_state_filename()))
+                pddl_str = pddl.get_pddl_problem(objects=self.pddl_objects, init_facts=self.pddl_state_facts, goals=goals,
+                                      map_s=self.current_game_state.get_cell_map().draw_cell_map())
+                f.write(pddl_str)
+            logging.debug("...wrote to file {}".format(self.get_pddl_state_filename()))
 
 
         else:
-            print("WARNING current game state is null when trying to call fast downward planner")
+            logging.warning("current game state is null when trying to call fast downward planner")
             time.sleep(1000)
 
         # step 2: run fastdownward
@@ -217,15 +274,15 @@ class SimpleGRAgent(BaseAgent):
                         # we have a comment, ignore
                         pass
         except FileNotFoundError:
-            print("Plan could not be generated...")
+            logging.warning("Plan could not be generated...adding goals: {} to list of failed goals".format(goals))
             self.failed_goals += goals
             self.failed_goals = list(set(self.failed_goals))
             return []
         except:
-            print("Unknown error preventing plan from being generated")
+            logging.warning("Unknown error preventing plan from being generated")
             return
 
-        # for ps in plan:
+        #for ps in plan:
         #    print("Plan step: {}".format(ps))
 
         return plan
@@ -286,18 +343,39 @@ class SimpleGRAgent(BaseAgent):
         monster_goal = self.get_first_monster_goal()
         if monster_goal:
             return monster_goal, "monster"
+
+        # try to pick up items
+        item_pickup_goal = self.get_item_goal()
+        if item_pickup_goal:
+            return item_pickup_goal, "item"
+
         #        elif self.current_game_state.player_current_hp and self.current_game_state.player_hp_max and self.current_game_state.player_current_hp < self.current_game_state.player_hp_max / 2:
         #            return self.get_full_health_goal(), "heal"
-        if self.player_has_seen_stairs_down[self.current_game_state.player_depth]:
-            lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
-                                             self.current_game_state.player_depth + 1)
-            lower_place_goal = "(playerplace {})".format(lower_place_str)
-            print("Goal selection choosing next goal: {}".format(lower_place_goal))
-            return lower_place_goal, "descend"
+
+        # if self.player_has_seen_stairs_down[self.current_game_state.player_depth]:
+        #     lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
+        #                                      self.current_game_state.player_depth + 1)
+        #     lower_place_goal = "(playerplace {})".format(lower_place_str)
+        #     print("Goal selection choosing next goal: {}".format(lower_place_goal))
+        #     return lower_place_goal, "descend"
+        #
         else:
             goal = self.get_random_nonvisited_nonwall_playerat_goal()
             selected_goal = goal
             return selected_goal, "explore"
+
+    def goal_satisified(self):
+        if self.current_goal:
+            if self.current_goal[0:5] == '(not ':
+                if self.current_goal[5:-1] not in self.pddl_state_facts:
+                    logging.info("Dropping goal {} because it's been achieved".format(self.current_goal))
+                    return True
+            else:
+                if self.current_goal in self.pddl_state_facts:
+                    logging.info("Dropping goal {} because it's been achieved".format(self.current_goal))
+                    return True
+
+        return False
 
     def get_random_simple_action(self):
         simple_commands = [Command.MOVE_OR_ATTACK_N,
@@ -311,27 +389,36 @@ class SimpleGRAgent(BaseAgent):
         return random.choice(simple_commands)
 
     def get_action(self, gamestate: GameState):
+        start_time = time.time()
         self.current_game_state = gamestate
         self.process_gamestate_via_cells()
 
         available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(
             self.current_game_state.get_current_menu())
-        print("available_menu_choices = {}".format(available_menu_choices))
+        logging.debug("available_menu_choices = {}".format(available_menu_choices))
         if available_menu_choices:
             return available_menu_choices[0]
 
+        self.update_pddl_objs_and_facts()
+
+        # check if goal is already satisified, and if so, reset goal to be empty
+        if self.goal_satisified():
+            self.current_goal = None
+            self.current_goal_type = None
+            self.failed_goals = []  # reset this because maybe know we can achieve past goals
+
         self.new_goal, self.new_goal_type = self.goal_selection()
-        print("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
-        print("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
+        logging.debug("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
+        logging.debug("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
         for a in self.plan:
-            print("  plan action is {}".format(a))
+            logging.debug("  plan action is {}".format(a))
 
         if self.new_goal and self.new_goal_type and (
                 len(self.plan) < 1 or self.new_goal_type != self.previous_goal_type):
             self.current_goal = self.new_goal
             self.current_goal_type = self.new_goal_type
             # plan
-            print("Planning with goal {}".format(self.new_goal))
+            logging.debug("Planning with goal {}".format(self.new_goal))
             self.plan = self.get_plan_from_fast_downward(goals=[self.new_goal])
             self.previous_goal = self.new_goal
             self.previous_goal_type = self.new_goal_type
@@ -340,25 +427,28 @@ class SimpleGRAgent(BaseAgent):
         if self.plan and len(self.plan) > 0:
             next_action = self.plan.pop(0)
             self.actions_taken_so_far += 1
+        else:
 
-            return next_action
+            logging.info("warning - no plan, taking random action!")
+            next_action = self.get_random_simple_action()
 
-        print("warning - no plan, taking random action!")
-        next_action = self.get_random_simple_action()
+        self.time_per_action.append(start_time - time.time())
+        if len(self.time_per_action) > 10:
+            print("Average time per action (per last 10) = {}".format(sum(self.time_per_action[-10:])/10))
         return next_action
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+
     my_config = WebserverConfig
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.delay = 0.5
+    my_config.delay = 0.01
     my_config.species = 'Minotaur'
     my_config.background = 'Berserker'
-
-    my_config.auto_start_new_game = True
-    my_config.always_start_new_game = True
+    my_config.draw_map = False
 
     # create game
     game = WebSockGame(config=my_config, agent_class=SimpleGRAgent)

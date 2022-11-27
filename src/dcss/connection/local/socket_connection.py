@@ -88,6 +88,7 @@ class WebtilesSocketConnection(object):
             pass
 
     def _handle_data(self, data): # type: (bytes) -> None
+        print("in _handle_data in WebtilesSocketConnection")
         if self.msg_buffer is not None:
             data = self.msg_buffer + data
 
@@ -101,7 +102,9 @@ class WebtilesSocketConnection(object):
             self.msg_buffer = None
 
             if self.message_callback:
+                print("Calling message_callback in WebtilesSocketConnection")
                 self.message_callback(to_unicode(data))
+                #self.message_callback(data)
 
     def send_message(self, data): # type: (str) -> None
         start = datetime.now()

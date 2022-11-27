@@ -424,7 +424,7 @@
   killer_bee_larva - monster
   killer_klown - monster
   kirke - monster
-  kobold_monster - monster
+  kobold - monster
   kobold_demonologist - monster
   komodo_dragon - monster
   kraken - monster
@@ -1393,6 +1393,7 @@
     (hasarmour ?cell - cell)
     (hasfooditem ?cell - cell)
     (hasitem ?cell - cell ?item - item)
+    (hasitem_generic ?cell - cell) ;; some items, like unidentified potions and scrolls, etc. don't have a name
     (cursed ?item - item)
     (equipped ?item - item)
     (weapon ?item - item)
@@ -1757,128 +1758,128 @@
 )
 
 (:action attack_without_move_n
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (northof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_s
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_s
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_e
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (eastof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_w
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (westof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_ne
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (northeastof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_nw
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (northwestof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_se
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southeastof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_sw
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southwestof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
@@ -1926,19 +1927,32 @@
     )
 )
 
-
 (:action pickup_item
-    :parameters (?item - item ?cell - cell)
+    :parameters (?cell - cell)
     :precondition
     (and
         (playerat ?cell)
-        (hasitem ?cell ?item)
+        (hasitem_generic ?cell)
     )
     :effect
     (and
-        (invhasitem ?item)
+        (not (hasitem_generic ?cell))
     )
 )
+
+
+;;(:action pickup_item
+;;    :parameters (?item - item ?cell - cell)
+;;    :precondition
+;;    (and
+;;        (playerat ?cell)
+;;        (hasitem ?cell ?item)
+;;    )
+;;    :effect
+;;    (and
+;;        (invhasitem ?item)
+;;    )
+;;)
 
 (:action drop_item
     :parameters (?item - item ?cell - cell)
@@ -2034,14 +2048,14 @@
 )
 
 (:action attack_by_throwing
-    :parameters (?item - item ?targetcell - cell)
+    :parameters (?item - item ?targetcell - cell ?monster - monster)
     :precondition
     (and
         (invhasitem ?item)
     )
     :effect
     (and
-        (not (hasmonster ?targetcell))
+        (not (hasmonster ?targetcell ?monster))
     )
 )
 
@@ -2093,15 +2107,15 @@
 
 
 (:action cast_spell_on_target
-    :parameters (?spell - target_based_spell ?cell - cell)
+    :parameters (?spell - target_based_spell ?cell - cell ?monster)
     :precondition
     (and
         (player_memorised_spell ?spell)
-        (hasmonster ?cell)
+        (hasmonster ?cell ?monster)
     )
     :effect
     (and
-        (not (hasmonster ?cell))
+        (not (hasmonster ?cell ?monster))
     )
 )
 

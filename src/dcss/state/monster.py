@@ -1,6 +1,7 @@
 import string
 from enum import Enum
 
+
 class Monster:
     """
 
@@ -40,6 +41,7 @@ class Monster:
         self.ac = None
         self.ev = None
         self.mr = None
+        self.avghp = None
 
     @staticmethod
     def create_or_update_monster(vals, ascii_sym):
@@ -74,13 +76,17 @@ class Monster:
             self.id = vals['id']
 
         if 'name' in vals.keys():
-            self.name = vals['name']
+            self.name = vals['name'].replace(' ', '_')
 
         if 'type' in vals.keys():
             self.type = vals['type']
 
         if 'threat' in vals.keys():
             self.threat = vals['threat']
+
+        if 'typedata' in vals.keys():
+            if 'avghp' in vals['typedata']:
+                self.avghp = vals['typedata']['avghp']
 
     def set_cell(self, cell):
         self.cell = cell
@@ -96,10 +102,16 @@ class Monster:
             (monster_health ?cell - cell ?amount - qualitative_quantity)
             (monster_status_effect ?cell - cell ?status - status_effect)
         """
+        print("about to write hasmonster with name: {}".format(self.name))
         strs = [
             "(hasmonster {} {})".format(pddl_cell_str, self.name),
-            "(monster_danger"
         ]
+
+        # TODO - also return other monster pddl strings:
+        #         (monster_danger_rating ?cell - cell ?danger - danger_rating)
+        #         (monster_health ?cell - cell ?amount - qualitative_quantity)
+        #         (monster_status_effect ?cell - cell ?status - status_effect)
+
         return strs
 
     def set_health(self, health:int):

@@ -83,9 +83,23 @@ class CellMap:
         logging.debug("agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
                                                                       self.min_x, self.max_x, self.min_y, self.max_y))
 
-        s = ""
+        # build the x digit string at the top
+        s = '     '
+        for i in range(self.min_x, self.max_x):
+            i_digit = '-'
+            if i == 0:
+                i_digit = '0'
+            elif i % 10 == 0:
+                i_digit = str(abs(int(i / 10)))
+                if len(i_digit) > 1:
+                    i_digit = i_digit[-2]  # this handles the case where i > 100 and we want to print out tens place
+            s += i_digit
+
+        s += '\n'
+
         non_empty_cells = []
         for curr_y in range(self.min_y, self.max_y + 1):
+            s += '{0:0=+3d} '.format(curr_y) + ' '
             for curr_x in range(self.min_x, self.max_x + 1):
                 if (curr_x, curr_y) in self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth].keys():
                     cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(curr_x, curr_y)]
@@ -171,9 +185,6 @@ class CellMap:
         """
             Returns PDDL object and fact statements for the entire game so far, including multiple levels
         """
-        monster_obj_strs = []
-        monster_facts_strs = []
-
         tile_object_strs = []
         tile_fact_strs = []
         for place in self.place_depth_to_x_y_to_cells.keys():
