@@ -804,14 +804,13 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def check_for_close_all_menus(self, json_msg):
         """
-        {"msgs":[{"msg":"close_menu"}
-,{"msg":"close_all_menus"}
-,{"msg":"close_all_menus"}
-,{"msg":"input_mode","mode":1}
-
+            Checks for the 'close_all_menus' message from server to exit out of menus
         """
-        # TODO - process close all menus to reset self.menu to Menu.NO_MENU
-        pass
+        logger.debug("json_msg is {}".format(json_msg))
+        for v in nested_lookup('msg', json_msg):
+            if 'close_all_menus' in v:
+                return True
+        return False
 
     def check_for_item_description_menu(self, json_msg):
         """
