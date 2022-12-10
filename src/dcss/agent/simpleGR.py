@@ -18,8 +18,8 @@ import dcss.state.pddl as pddl
 
 import time
 
-import logging
-logger = logging.getLogger("dcss-ai-wrapper")
+from loguru import logger
+
 
 
 
@@ -80,7 +80,7 @@ class SimpleGRAgent(BaseAgent):
             os.remove(state_file)
             files_removed += 1
 
-        logging.info("Removed {} old state files from {}".format(files_removed, self._pddl_state_dir))
+        logger.info("Removed {} old state files from {}".format(files_removed, self._pddl_state_dir))
 
     def get_pddl_state_filename(self):
         return "{}/state{}.pddl".format(self._pddl_state_dir, self._pddl_state_counter)
@@ -100,7 +100,7 @@ class SimpleGRAgent(BaseAgent):
 
             if cell.has_stairs_down:
                 self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
-                logging.debug("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
+                logger.debug("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
         self.num_cells_visited = len(self.cells_visited[self.current_game_state.player_depth])
 
@@ -128,11 +128,11 @@ class SimpleGRAgent(BaseAgent):
         # print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if len(self.closed_door_cells[self.current_game_state.player_depth]) > 1:
-            logging.debug("Attempting to choose a closed door as a goal if possible")
+            logger.debug("Attempting to choose a closed door as a goal if possible")
             goal_cell = self.closed_door_cells[self.current_game_state.player_depth].pop()
         elif len(farthest_away_cells) > 0:
             goal_cell = farthest_away_cells.pop()
-            logging.debug("Visited {} cells - Goal is now {}".format(
+            logger.debug("Visited {} cells - Goal is now {}".format(
                 len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
 
         else:
@@ -219,13 +219,13 @@ class SimpleGRAgent(BaseAgent):
         # step 1: write state output so fastdownward can read it in
         if self.current_game_state:
             self._pddl_state_counter += 1
-            logging.debug("About to write out game state with filename {}".format(self.get_pddl_state_filename()))
-            logging.debug("current working directory: {}".format(os.getcwd()))
+            logger.debug("About to write out game state with filename {}".format(self.get_pddl_state_filename()))
+            logger.debug("current working directory: {}".format(os.getcwd()))
             with open(self.get_pddl_state_filename(), 'w') as f:
                 pddl_str = pddl.get_pddl_problem(objects=self.pddl_objects, init_facts=self.pddl_state_facts, goals=goals,
                                       map_s=self.current_game_state.get_cell_map().draw_cell_map())
                 f.write(pddl_str)
-            logging.debug("...wrote to file {}".format(self.get_pddl_state_filename()))
+            logger.debug("...wrote to file {}".format(self.get_pddl_state_filename()))
 
 
         else:
@@ -368,11 +368,11 @@ class SimpleGRAgent(BaseAgent):
         if self.current_goal:
             if self.current_goal[0:5] == '(not ':
                 if self.current_goal[5:-1] not in self.pddl_state_facts:
-                    logging.info("Dropping goal {} because it's been achieved".format(self.current_goal))
+                    logger.info("Dropping goal {} because it's been achieved".format(self.current_goal))
                     return True
             else:
                 if self.current_goal in self.pddl_state_facts:
-                    logging.info("Dropping goal {} because it's been achieved".format(self.current_goal))
+                    logger.info("Dropping goal {} because it's been achieved".format(self.current_goal))
                     return True
 
         return False
@@ -395,7 +395,7 @@ class SimpleGRAgent(BaseAgent):
 
         available_menu_choices = MenuChoiceMapping.get_possible_actions_for_current_menu(
             self.current_game_state.get_current_menu())
-        logging.debug("available_menu_choices = {}".format(available_menu_choices))
+        logger.debug("available_menu_choices = {}".format(available_menu_choices))
         if available_menu_choices:
             return available_menu_choices[0]
 
@@ -408,17 +408,17 @@ class SimpleGRAgent(BaseAgent):
             self.failed_goals = []  # reset this because maybe know we can achieve past goals
 
         self.new_goal, self.new_goal_type = self.goal_selection()
-        logging.debug("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
-        logging.debug("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
+        logger.debug("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
+        logger.debug("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
         for a in self.plan:
-            logging.debug("  plan action is {}".format(a))
+            logger.debug("  plan action is {}".format(a))
 
         if self.new_goal and self.new_goal_type and (
                 len(self.plan) < 1 or self.new_goal_type != self.previous_goal_type):
             self.current_goal = self.new_goal
             self.current_goal_type = self.new_goal_type
             # plan
-            logging.debug("Planning with goal {}".format(self.new_goal))
+            logger.debug("Planning with goal {}".format(self.new_goal))
             self.plan = self.get_plan_from_fast_downward(goals=[self.new_goal])
             self.previous_goal = self.new_goal
             self.previous_goal_type = self.new_goal_type
@@ -429,7 +429,7 @@ class SimpleGRAgent(BaseAgent):
             self.actions_taken_so_far += 1
         else:
 
-            logging.info("warning - no plan, taking random action!")
+            logger.info("warning - no plan, taking random action!")
             next_action = self.get_random_simple_action()
 
         self.time_per_action.append(start_time - time.time())
@@ -439,8 +439,6 @@ class SimpleGRAgent(BaseAgent):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-
     my_config = WebserverConfig
 
     # set game mode to Tutorial #1

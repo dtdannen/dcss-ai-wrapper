@@ -1,3 +1,4 @@
+import logging
 import sys
 from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
@@ -9,7 +10,7 @@ from dcss.state.menu import Menu
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
 
-import logging
+from loguru import logger
 
 # just a little convenience step - this is used to prevent asking the player for an action when an old game is about
 # to be deleted and a new game will be started
@@ -121,8 +122,9 @@ class HumanInterfaceBaseAgent(BaseAgent):
         print("MENU: {}".format(self.gamestate.get_current_menu()))
         if current_menu != Menu.NO_MENU:
             available_menu_choices = self.gamestate.get_possible_actions_for_current_menu()
-            print(available_menu_choices)
-            print("Available Menu Choices: {}".format([repr(x) for x in available_menu_choices]))
+            if available_menu_choices:
+                print(available_menu_choices)
+                print("Available Menu Choices: {}".format([repr(x) for x in available_menu_choices]))
 
     def print_player_skills_pddl(self):
         """
@@ -203,15 +205,6 @@ class HumanInterfaceBaseAgent(BaseAgent):
             return Command.EXIT_MENU
 
 
-def setup_logger(logger):
-    # create console handler and set level to debug
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-
-
 if __name__ == "__main__":
     my_config = WebserverConfig
 
@@ -228,10 +221,11 @@ if __name__ == "__main__":
     my_config.starting_weapon = 'hand axe'
     my_config.delay = 0.1
 
-    # set the logging level you want
-    logger = logging.getLogger('dcss-ai-wrapper')
-    setup_logger(logger)
-    logger.setLevel(logging.DEBUG)
+    # default loguru logging level is DEBUG
+    # if you want to change this, uncomment the following, and replace INFO with your desired level
+    #logger.remove()  # this removes all handlers, including the default one
+    #logger.add(sys.stderr, level=logging.INFO)  # stderr is the output location for the default handler, so this is
+                                                # like replacing default but with a different level
 
     logger.debug("Starting up {}".format("HumanInterfaceBaseAgent"))
 

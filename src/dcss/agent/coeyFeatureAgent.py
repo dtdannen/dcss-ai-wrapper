@@ -1,5 +1,5 @@
 import random
-import logging
+from loguru import logger
 
 from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
@@ -110,9 +110,11 @@ if __name__ == "__main__":
     my_config.background = "Berserker"
     my_config.starting_weapon = "hand axe"
 
-    # set the logging level you want
-    logger = logging.getLogger('dcss-ai-wrapper')
-    logger.setLevel(logging.WARNING)
+    # default loguru logging level is DEBUG
+    # if you want to change this, uncomment the following, and replace INFO with your desired level
+    # logger.remove()  # this removes all handlers, including the default one
+    # logger.add(sys.stderr, level=config.LOG_LEVEL)  # stderr is the default one, so this is like replacing default
+    # but with a different level
 
     # create game
     game = WebSockGame(config=my_config, agent_class=coeyFeatureAgent)

@@ -2,8 +2,8 @@ from enum import Enum
 from dcss.state.menu import Menu
 import string
 
-import logging
-logger = logging.getLogger("dcss-ai-wrapper")
+from loguru import logger
+
 
 
 class MenuChoice(Enum):

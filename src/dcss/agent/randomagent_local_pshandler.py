@@ -9,7 +9,7 @@ from dcss.connection.local.process_handler import CrawlProcessHandler
 
 import json
 import time
-import logging
+from loguru import logger
 import random
 import os
 

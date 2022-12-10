@@ -18,8 +18,8 @@ from dcss.actions.action import Action
 from dcss.state.game import GameState
 import time
 
-import logging
-logger = logging.getLogger("dcss-ai-wrapper")
+from loguru import logger
+
 
 
 class WebSockGame:

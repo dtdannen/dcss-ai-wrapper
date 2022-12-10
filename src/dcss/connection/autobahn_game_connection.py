@@ -1,5 +1,7 @@
 import json
 import time
+from icecream import ic
+from loguru import logger
 
 from dcss.actions.action import Action
 from dcss.actions.menuchoice import MenuChoice
@@ -15,9 +17,6 @@ import importlib
 from autobahn.asyncio.websocket import WebSocketClientProtocol
 from dcss.state.game import GameState
 from dcss.state.menu import Menu
-
-import logging
-logger = logging.getLogger("dcss-ai-wrapper")
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -299,7 +298,6 @@ class DCSSProtocol(WebSocketClientProtocol):
                 delay = 0.5
 
             await asyncio.sleep(delay)
-
 
     def onMessage(self, payload, isBinary):
         logger.debug("Message {} recieved: isBinary={}".format(self.messages_received_counter, isBinary))
@@ -621,7 +619,6 @@ class DCSSProtocol(WebSocketClientProtocol):
         #     return background_name_to_hotkeys
         pass
 
-
     def check_for_sprint_map_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):
             if 'You have a choice of maps' in v:
@@ -682,7 +679,6 @@ class DCSSProtocol(WebSocketClientProtocol):
             if 'You die...' in v:
                 return True
         return False
-
 
     def check_for_death_message(self, json_msg):
         reason_is_dead_found = False
@@ -814,11 +810,36 @@ class DCSSProtocol(WebSocketClientProtocol):
 
     def check_for_item_description_menu(self, json_msg):
         """
-            {'msgs': [{'msg': 'update_menu_items', 'chunk_start': 1, 'items': [{'text': ' a + a +0 hand axe (weapon)', 'colour': 10, 'tiles': [{'t': 4152, 'tex': 4}, {'t': 3041, 'tex': 4}]}]}, {'title': 'a - a +0 hand axe (weapon).', 'body': "A small axe. \n\nBase accuracy: +3  Base damage: 7  Base attack delay: 1.3\nThis weapon's minimum attack delay (0.6) is reached at skill level 14.\n    Your skill: 3.6; use <white>(s)<lightgrey> to set 14.0 as a target for Axes.\n    At 100% training you would reach 14.0 in about 8.0 XLs.\n    At current training (39%) you reach 14.0 in about 10.6 XLs.\n\nIt hits all enemies adjacent to the wielder, dealing less damage to those not targeted.\n\nThis weapon falls into the 'Axes' category. It is a one handed weapon.\nIt can be maximally enchanted to +9.\n\n\nStash search prefixes: {inventory} {Axes} {one-handed} {melee weapon}\nMenu/colouring prefixes: identified uncursed melee equipped weapon\n\n“Lizzie Borden took an axe\n And gave her mother forty whacks.\n When she saw what she had done\n She gave her father forty-one.”\n    -A popular skipping-rope rhyme, after 1893.\nSPELLSET_PLACEHOLDER", 'spellset': [], 'actions': '(=)adjust, (u)nwield, (s)kill, (d)rop, or (i)nscribe.', 'tiles': [{'t': 4152, 'tex': 4}, {'t': 3041, 'tex': 4}], 'msg': 'ui-push', 'type': 'describe-item', 'ui-centred': False, 'generation_id': 3}]}
+            {'msgs': [{'msg': 'update_menu_items',
+                       'chunk_start': 1,
+                       'items': [{'text': ' a + a +0 hand axe (weapon)', 'colour': 10, 'tiles': [{'t': 4152, 'tex': 4}, {'t': 3041, 'tex': 4}]}]},
+                      {'title': 'a - a +0 hand axe (weapon).', 'body': "A small axe. \n\nBase accuracy: +3  Base damage: 7  Base attack delay: 1.3\nThis
+                                weapon's minimum attack delay (0.6) is reached at skill level 14.\n    Your skill: 3.6; use <white>(s)<lightgrey> to set
+                                14.0 as a target for Axes.\n    At 100% training you would reach 14.0 in about 8.0 XLs.\n
+                                At current training (39%) you reach 14.0 in about 10.6 XLs.\n\nIt hits all enemies adjacent to the wielder,
+                                 dealing less damage to those not targeted.\n\nThis weapon falls into the 'Axes' category. It is a one handed
+                                 weapon.\nIt can be maximally enchanted to +9.\n\n\nStash search prefixes: {inventory} {Axes} {one-handed} {melee weapon}
+                                 \nMenu/colouring prefixes: identified uncursed melee equipped weapon\n\n“Lizzie Borden took an axe\n And gave her
+                                  mother forty whacks.\n When she saw what she had done\n She gave her father forty-one.”\n    -A popular skipping-rope
+                                  rhyme, after 1893.\nSPELLSET_PLACEHOLDER",
+                        'spellset': [],
+                        'actions': '(=)adjust, (u)nwield, (s)kill, (d)rop, or (i)nscribe.',
+                        'tiles': [{'t': 4152, 'tex': 4},
+                                  {'t': 3041, 'tex': 4}], 'msg': 'ui-push', 'type': 'describe-item', 'ui-centred': False, 'generation_id': 3}]}
 
         """
         # TODO - process these kinds of messages to show a nested menu of an item description
-        pass
+
+        if self._IN_MENU == Menu.CHARACTER_INVENTORY_MENU:
+            update_menu_items = False
+            for v in nested_lookup('msg', json_msg):
+                if v == 'update_menu_items':
+                    update_menu_items = True
+
+            inventory_tag_found = False
+            for v in nested_lookup('tag', json_msg):
+                if v == 'inventory':
+                    inventory_tag_found = True
 
     def check_for_close_nested_menu(self, json_msg):
         """

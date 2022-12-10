@@ -2,6 +2,7 @@ import os
 import platform
 import random
 import subprocess
+import sys
 
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
@@ -15,7 +16,7 @@ from dcss.state.menu import Menu
 from dcss.actions.menuchoice import MenuChoice, MenuChoiceMapping
 from time import time
 
-import logging
+from loguru import logger
 
 
 class FastDownwardPlanningBaseAgent(BaseAgent):
@@ -69,7 +70,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
             if cell.has_stairs_down:
                 self.player_has_seen_stairs_down[self.current_game_state.player_depth] = True
-                logging.debug("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
+                logger.debug("Setting stairs down to be True for depth {}".format(self.current_game_state.player_depth))
 
         self.num_cells_visited = len(self.cells_visited[self.current_game_state.player_depth])
 
@@ -105,11 +106,11 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         #print("Found {} non visited cells {} distance away from player".format(len(farthest_away_cells), i - 1))
 
         if len(self.closed_door_cells[self.current_game_state.player_depth]) > 1:
-            logging.debug("Attempting to choose a closed door as a goal if possible")
+            logger.debug("Attempting to choose a closed door as a goal if possible")
             goal_cell = self.closed_door_cells[self.current_game_state.player_depth].pop()
         elif len(farthest_away_cells) > 0:
             goal_cell = farthest_away_cells.pop()
-            logging.debug("Visited {} cells - Goal is now {}".format(len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
+            logger.debug("Visited {} cells - Goal is now {}".format(len(self.cells_visited[self.current_game_state.player_depth]), goal_cell.get_pddl_name()))
 
         else:
             # can't find any cells
@@ -276,7 +277,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             lower_place_str = "{}_{}".format(self.current_game_state.player_place.lower().strip(),
                                              self.current_game_state.player_depth+1)
             lower_place_goal = "(playerplace {})".format(lower_place_str)
-            logging.info("Goal selection choosing next goal: {}".format(lower_place_goal))
+            logger.info("Goal selection choosing next goal: {}".format(lower_place_goal))
             return lower_place_goal, "descend"
         else:
             #goal = self.get_random_nonvisited_nonwall_playerat_goal()
@@ -306,21 +307,21 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
         self.process_gamestate_via_cells()
 
         available_menu_choices = self.current_game_state.get_possible_actions_for_current_menu()
-        logging.debug("available_menu_choices = {}".format(available_menu_choices))
+        logger.debug("available_menu_choices = {}".format(available_menu_choices))
         if available_menu_choices:
             return available_menu_choices[0]
 
         self.new_goal, self.new_goal_type = self.goal_selection()
-        logging.info("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
-        logging.info("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
+        logger.info("Player at: {},{}".format(self.current_game_state.agent_x, self.current_game_state.agent_y))
+        logger.info("New goal: {} with type: {}".format(self.new_goal, self.new_goal_type))
         for a in self.plan:
-            logging.info("  plan action is {}".format(a))
+            logger.info("  plan action is {}".format(a))
 
         if self.new_goal and self.new_goal_type and (len(self.plan) < 1 or self.new_goal_type != self.previous_goal_type):
             self.current_goal = self.new_goal
             self.current_goal_type = self.new_goal_type
             # plan
-            logging.info("Planning with goal {}".format(self.new_goal))
+            logger.info("Planning with goal {}".format(self.new_goal))
             self.plan = self.get_plan_from_fast_downward(goals=[self.new_goal])
             self.previous_goal = self.new_goal
             self.previous_goal_type = self.new_goal_type
@@ -333,7 +334,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
 
             return next_action
 
-        logging.info("No plan, taking random action!")
+        logger.info("No plan, taking random action!")
         next_action = self.get_random_simple_action()
         return next_action
 
@@ -363,10 +364,11 @@ if __name__ == "__main__":
     my_config.auto_start_new_game = False
     my_config.always_start_new_game = True
 
-    # set the logging level you want
-    logger = logging.getLogger('dcss-ai-wrapper')
-    setup_logger(logger)
-    logger.setLevel(logging.WARNING)
+    # default loguru logging level is DEBUG
+    # if you want to change this, uncomment the following, and replace INFO with your desired level
+    logger.remove()  # this removes all handlers, including the default one
+    logger.add(sys.stderr, level=logging.INFO)  # stderr is the output location for the default handler, so this is
+    # like replacing default but with a different level
 
     logger.debug("Starting up {}".format("FastdownwardPlanningAgent"))
 

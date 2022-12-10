@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta
 import warnings
 import os
-import logging
+from loguru import logger
 import time
 from connection import config
 import asyncio
@@ -140,7 +140,7 @@ class GameConnection:
                 # # json_messages_from_server_file.write(pprint.pformat(msg_from_server,indent=2)+'\n')
                 # # json_messages_from_server_file.flush()
                 #
-                # logging.debug("i=" + str(i) + "Received Message:\n" + str(msg_from_server))
+                # logger.debug("i=" + str(i) + "Received Message:\n" + str(msg_from_server))
                 #
                 # if self.ai:
                 #     self.ai.add_server_message(msg_from_server)
@@ -353,23 +353,23 @@ class GameConnection:
         await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
 
     def send_and_receive_dict(self, input_dict):
-        logging.debug("Sending {}".format(input_dict))
+        logger.debug("Sending {}".format(input_dict))
         self._send_message(GameConnection.json_encode(input_dict))
         msgs = self._read_msgs()
         self._handle_msgs(msgs)
 
     async def send_and_receive_dict_ws(self, input_dict):
-        logging.debug("Sending {}".format(input_dict))
+        logger.debug("Sending {}".format(input_dict))
         await self.send_and_receive(input_dict)
 
     def send_and_receive_str(self, input_str):
-        logging.debug("Sending {}".format(input_str))
+        logger.debug("Sending {}".format(input_str))
         self._send_input(input_str)
         msgs = self._read_msgs()
         self._handle_msgs(msgs)
 
     def send_and_receive_command(self, command, sleep_secs=0.05):
-        logging.debug("Sending {}".format(command.name))
+        logger.debug("Sending {}".format(command.name))
         self._send_command(command)
         if sleep_secs > 0:
             time.sleep(sleep_secs)

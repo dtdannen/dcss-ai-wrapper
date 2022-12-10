@@ -8,10 +8,10 @@ from dcss.connection.local.socket_connection import WebtilesSocketConnection
 
 import json
 import time
-import logging
+from loguru import logger
 import random
 import os
-import logging
+from loguru import logger
 
 from tornado.ioloop import IOLoop
 from tornado.escape import utf8
@@ -209,9 +209,12 @@ if __name__ == "__main__":
             time.sleep(1)
 
 
-    # set the logging level you want
-    logger = logging.getLogger('dcss-ai-wrapper')
-    logger.setLevel(logging.WARNING)
+    # default loguru logging level is DEBUG
+    # if you want to change this, uncomment the following, and replace INFO with your desired level
+    #logger.remove()  # this removes all handlers, including the default one
+    #logger.add(sys.stderr, level=logging.INFO)  # stderr is the output location for the default handler, so this is
+                                                # like replacing default but with a different level
+
 
 
     # create game

@@ -12,8 +12,8 @@ from dcss.connection import config
 import asyncio
 from autobahn.asyncio.websocket import WebSocketClientFactory
 
-import logging
-logger = logging.getLogger("dcss-ai-wrapper")
+from loguru import logger
+
 
 
 def main():

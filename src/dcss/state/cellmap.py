@@ -1,7 +1,7 @@
 from dcss.state.cell import Cell
 
-import logging
-logger = logging.getLogger("dcss-ai-wrapper")
+from loguru import logger
+
 
 
 class CellMap:
@@ -80,7 +80,7 @@ class CellMap:
 
     def draw_cell_map(self):
 
-        logging.debug("agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
+        logger.debug("agent=({},{})\nminx={},maxx={},miny={},maxy={}\n".format(self.agent_x, self.agent_y,
                                                                       self.min_x, self.max_x, self.min_y, self.max_y))
 
         # build the x digit string at the top
