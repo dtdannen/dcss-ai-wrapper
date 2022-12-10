@@ -829,9 +829,9 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         """
         # TODO - process these kinds of messages to show a nested menu of an item description
-
         if self._IN_MENU == Menu.CHARACTER_INVENTORY_MENU:
             update_menu_items = False
+            # TODO LEFT OFF HERE, BELOW
             for v in nested_lookup('msg', json_msg):
                 if v == 'update_menu_items':
                     update_menu_items = True
