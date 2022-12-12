@@ -854,6 +854,31 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         return False
 
+
+    def check_for_identify_which_item_menu(self, json_msg):
+        """
+
+            When you read a scroll of identify, you will get to a special menu of all things you can identify.
+
+            This function checks for this menu.
+
+            data looks like:
+
+            into: {"msgs":[{"msg":"input_mode","mode":0},
+                           {"msg":"menu","ui-centred":false,"tag":"inventory","flags":2,
+                            "title":{"text":"<white>Identify which item? (\\ to view known items)"},
+                            "more":"","total_items":2,"chunk_start":0,
+                            "items":[{"text":"Scrolls","colour":1,"level":1},
+                                     {"text":" e - a scroll labelled AMAPPOAXZA","q":1,"colour":9,
+                                      "hotkeys":[101,63],"level":2,"tiles":[{"t":3424,"tex":4}]}]}
+                           ,{"msg":"player",
+                             "inv":{"3":{"sub_type":0,"flags":2,"name":"scroll of identify","col":-1,"tile":[3424,3425]}}}
+                            ,{"msg":"msgs","more":false}
+                    ]}
+        """
+        # TODO
+        pass
+
     def check_for_close_nested_menu(self, json_msg):
         """
              {"msgs":[{"msg":"ui-pop"}
