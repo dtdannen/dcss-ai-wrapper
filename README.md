@@ -6,10 +6,6 @@
 
 (Demo of an agent taking random actions to play DCSS in the browser using the docker container running a DCSS webserver instance)
 
-![](contribute/terminal_demo.gif)
-
-(Demo of an agent taking random actions to play DCSS in the terminal)
-
 # About
 
 **dcss-ai-wrapper** is an API for Dungeon Crawl Stone Soup for Artificial Intelligence research. This effort started with the following paper: 
@@ -79,9 +75,9 @@ def main():
 
 # Contribute
 
-- **Jan. 17, 2022**: We are currently working towards towards version 0.1 described in the [roadmap](contribute/Roadmap.md).
-
 - The most recent branch is the `dev` branch.
+
+- The current goal is to enable the API to support every DCSS action and level (except ABYSS, LABRYNTH levels, we'll worry about those later). The _humaninterfaceagent_ is an agent that accepts keyboard input from a human. We are using this to test the API by playing DCSS. A great way to help contribute is to play the game and post any errors you get when playing as new git issues!
 
 - Please feel free to look at existing issues and submit a PR.
 
