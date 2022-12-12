@@ -4,7 +4,7 @@ from icecream import ic
 from loguru import logger
 
 from dcss.actions.action import Action
-from dcss.actions.menuchoice import MenuChoice
+from dcss.actions.menuchoice import MenuChoice, MenuChoiceMapping
 from dcss.connection import config
 import zlib
 import copy
@@ -222,8 +222,15 @@ class DCSSProtocol(WebSocketClientProtocol):
                         enter_key_msg = {"text": "\r", "msg": "input"}
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
 
+                    if self._IN_MENU in [Menu.NO_MENU,
+                                         Menu.CHARACTER_INVENTORY_MENU,
+                                         Menu.CHARACTER_ITEM_SPECIFIC_MENU,
+                                         Menu.ALL_SPELLS_MENU,
+                                         Menu.ABILITY_MENU,
+                                         Menu.SKILL_MENU,
+                                         Menu.ATTRIBUTE_INCREASE_TEXT_MENU,
+                                         Menu.INDIVIDUAL_INVENTORY_ITEM_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
 
-                    if self._IN_MENU in [Menu.NO_MENU, Menu.CHARACTER_INVENTORY_MENU, Menu.CHARACTER_ITEM_SPECIFIC_MENU, Menu.ALL_SPELLS_MENU, Menu.ABILITY_MENU, Menu.SKILL_MENU, Menu.ATTRIBUTE_INCREASE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
                         if self.config.draw_map: self.game_state.draw_cell_map()
 
                         # the following executes the next action if we are using an instance of Agent to control
@@ -396,6 +403,7 @@ class DCSSProtocol(WebSocketClientProtocol):
             self._LOBBY_IS_CLEAR = True
             logger.debug("setting _LOBBY_IS_CLEAR = TRUE")
 
+        # this is a menu before the game has started, not like other menus FYI
         if self.check_for_game_seed_menu(json_msg):
             self._IN_GAME_SEED_MENU = True
             logger.debug("setting _IN_GAME_SEED_MENU = TRUE")
@@ -407,25 +415,6 @@ class DCSSProtocol(WebSocketClientProtocol):
         if self.check_for_tutorial_menu(json_msg):
             self._IN_MENU = Menu.TUTORIAL_SELECTION_MENU
             logger.debug("setting _IN_MENU = Menu.TUTORIAL_SELECTION_MENU")
-
-        if self.check_for_inventory_menu(json_msg):
-            self._IN_MENU = Menu.CHARACTER_INVENTORY_MENU
-            logger.debug("setting _IN_MENU = Menu.CHARACTER_INVENTORY_MENU")
-
-        if self.check_for_all_spells_menu(json_msg):
-            self._IN_MENU = Menu.ALL_SPELLS_MENU
-            self.spell_menu_options = self.get_spell_menu_options(json_msg)
-            logger.debug("setting _IN_MENU = Menu.ALL_SPELLS_MENU")
-
-        if self.check_for_skills_menu(json_msg):
-            self._IN_MENU = Menu.SKILL_MENU
-            self.skill_menu_options = self.get_skill_menu_options(json_msg)
-            logger.debug("setting _IN_MENU = Menu.SKILL_MENU")
-
-        if self.check_for_ability_menu(json_msg):
-            self._IN_MENU = Menu.ABILITY_MENU
-            self.ability_menu_options = self.get_ability_menu_options(json_msg)
-            logger.debug("setting _IN_MENU = Menu.ABILITY_MENU")
 
         if self.check_for_game_started(json_msg):
             logger.debug("setting _GAME_STARTED = TRUE")
@@ -457,44 +446,61 @@ class DCSSProtocol(WebSocketClientProtocol):
             logger.debug("setting _RECEIVED_MAP_DATA = TRUE")
             self._RECEIVED_MAP_DATA = True
 
-        if self.check_for_attribute_increase(json_msg):
-            print("AGENT HAS CHOICE OF ATTRIBUTE INCREASE")
-            self._IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU
-            self.attribute_increase_menu_options = self.get_ability_menu_options(json_msg)
-            print("setting _IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU")
-
-        if self.check_for_walk_into_teleport_trap(json_msg):
-            print("AGENT HAS CHOICE OF WALKING INTO TELEPORT TRAP")
-            self._IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU
-            self.teleport_trap_menu_options = self.get_ability_menu_options(json_msg)
-            print("setting _IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU")
-
         if self._GAME_STARTED:
+            # start checking for menus - can only ever be in one of these at a time, so big if/else chain saves checking
             if self.check_for_species_selection_menu(json_msg):
                 logger.debug("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES")
                 self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_SPECIES
                 self.species_options = self.get_species_options(json_msg)
-
-            if self.check_for_background_selection_menu(json_msg):
+            elif self.check_for_background_selection_menu(json_msg):
                 logger.debug("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_BACKGROUND")
                 self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_BACKGROUND
                 self.background_options = self.get_background_options(json_msg)
-
-            if self.check_for_weapon_selection_menu(json_msg):
+            elif self.check_for_weapon_selection_menu(json_msg):
                 logger.debug("setting self.IN_MENU = Menu.CHARACTER_CREATION_SELECT_WEAPON")
                 self._IN_MENU = Menu.CHARACTER_CREATION_SELECT_WEAPON
                 self.weapon_options = self.get_weapon_options(json_msg)
+            elif self.check_for_sprint_map_menu(json_msg):
+                self._IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU
+                logger.debug("setting _IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU")
+            elif self.check_for_inventory_menu(json_msg):
+                self._IN_MENU = Menu.CHARACTER_INVENTORY_MENU
+                logger.debug("setting _IN_MENU = Menu.CHARACTER_INVENTORY_MENU")
+            elif self.check_for_item_description_menu(json_msg):
+                self._IN_MENU = Menu.INDIVIDUAL_INVENTORY_ITEM_MENU
+                logger.debug("setting _IN_MENU = Menu.INDIVIDUAL_INVENTORY_ITEM_MENU")
+            elif self.check_for_all_spells_menu(json_msg):
+                self._IN_MENU = Menu.ALL_SPELLS_MENU
+                self.spell_menu_options = self.get_spell_menu_options(json_msg)
+                logger.debug("setting _IN_MENU = Menu.ALL_SPELLS_MENU")
+            elif self.check_for_skills_menu(json_msg):
+                self._IN_MENU = Menu.SKILL_MENU
+                self.skill_menu_options = self.get_skill_menu_options(json_msg)
+                logger.debug("setting _IN_MENU = Menu.SKILL_MENU")
+            elif self.check_for_ability_menu(json_msg):
+                self._IN_MENU = Menu.ABILITY_MENU
+                self.ability_menu_options = self.get_ability_menu_options(json_msg)
+                logger.debug("setting _IN_MENU = Menu.ABILITY_MENU")
+            elif self.check_for_attribute_increase(json_msg):
+                print("AGENT HAS CHOICE OF ATTRIBUTE INCREASE")
+                self._IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU
+                self.attribute_increase_menu_options = self.get_ability_menu_options(json_msg)
+                print("setting _IN_MENU = Menu.ATTRIBUTE_INCREASE_TEXT_MENU")
+            elif self.check_for_walk_into_teleport_trap(json_msg):
+                print("AGENT HAS CHOICE OF WALKING INTO TELEPORT TRAP")
+                self._IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU
+                self.teleport_trap_menu_options = self.get_ability_menu_options(json_msg)
+                print("setting _IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU")
+            elif self.check_for_close_all_menus(json_msg):
+                self._IN_MENU = Menu.NO_MENU
+                logger.debug("setting _IN_MENU = Menu.NO_MENU")
 
             if self.check_if_player_died(json_msg):
                 self._PLAYER_DIED = True
 
-        if self.check_for_sprint_map_menu(json_msg):
-            self._IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU
-            logger.debug("setting _IN_MENU = Menu.SPRINT_MAP_SELECTION_MENU")
 
-        if self.check_for_close_all_menus(json_msg):
-            self._IN_MENU = Menu.NO_MENU
-            logger.debug("setting _IN_MENU = Menu.NO_MENU")
+
+
 
     def check_for_in_lobby(self, json_msg):
         for v in nested_lookup('msg', json_msg):
@@ -813,7 +819,8 @@ class DCSSProtocol(WebSocketClientProtocol):
             {'msgs': [{'msg': 'update_menu_items',
                        'chunk_start': 1,
                        'items': [{'text': ' a + a +0 hand axe (weapon)', 'colour': 10, 'tiles': [{'t': 4152, 'tex': 4}, {'t': 3041, 'tex': 4}]}]},
-                      {'title': 'a - a +0 hand axe (weapon).', 'body': "A small axe. \n\nBase accuracy: +3  Base damage: 7  Base attack delay: 1.3\nThis
+                      {'title': 'a - a +0 hand axe (weapon).',
+                       'body': "A small axe. \n\nBase accuracy: +3  Base damage: 7  Base attack delay: 1.3\nThis
                                 weapon's minimum attack delay (0.6) is reached at skill level 14.\n    Your skill: 3.6; use <white>(s)<lightgrey> to set
                                 14.0 as a target for Axes.\n    At 100% training you would reach 14.0 in about 8.0 XLs.\n
                                 At current training (39%) you reach 14.0 in about 10.6 XLs.\n\nIt hits all enemies adjacent to the wielder,
@@ -828,18 +835,24 @@ class DCSSProtocol(WebSocketClientProtocol):
                                   {'t': 3041, 'tex': 4}], 'msg': 'ui-push', 'type': 'describe-item', 'ui-centred': False, 'generation_id': 3}]}
 
         """
-        # TODO - process these kinds of messages to show a nested menu of an item description
         if self._IN_MENU == Menu.CHARACTER_INVENTORY_MENU:
             update_menu_items = False
-            # TODO LEFT OFF HERE, BELOW
             for v in nested_lookup('msg', json_msg):
                 if v == 'update_menu_items':
                     update_menu_items = True
 
-            inventory_tag_found = False
-            for v in nested_lookup('tag', json_msg):
-                if v == 'inventory':
-                    inventory_tag_found = True
+            actions = []
+            if update_menu_items:
+                for v in nested_lookup('actions', json_msg):
+                    actions = v.split(",")
+
+                menu_choice_actions = [MenuChoiceMapping.get_menu_choice_from_item_menu_raw_str(action) for action in actions]
+                menu_choice_actions.append(MenuChoice.ESCAPE)  # this is always an option when in this kind of menu
+                logger.debug("About to add {} to menu choice actions for menu {}".format(menu_choice_actions, Menu.INDIVIDUAL_INVENTORY_ITEM_MENU))
+                MenuChoiceMapping.add_menu_choices_for_individual_item_menu(Menu.INDIVIDUAL_INVENTORY_ITEM_MENU, menu_choice_actions)
+                return True
+
+        return False
 
     def check_for_close_nested_menu(self, json_msg):
         """

@@ -1,5 +1,5 @@
-import logging
 import sys
+import icecream as ic
 from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
 from dcss.state.game import GameState
@@ -123,8 +123,8 @@ class HumanInterfaceBaseAgent(BaseAgent):
         if current_menu != Menu.NO_MENU:
             available_menu_choices = self.gamestate.get_possible_actions_for_current_menu()
             if available_menu_choices:
-                print(available_menu_choices)
-                print("Available Menu Choices: {}".format([repr(x) for x in available_menu_choices]))
+                #print(available_menu_choices)
+                logger.debug("Available Menu Choices: {}".format([repr(x) for x in available_menu_choices]))
 
     def print_player_skills_pddl(self):
         """

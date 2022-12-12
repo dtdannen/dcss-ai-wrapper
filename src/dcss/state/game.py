@@ -1261,13 +1261,13 @@ class GameState:
     def get_possible_actions_for_current_menu(self):
         if self._in_menu in [Menu.NO_MENU]:
             return None
-        elif self._in_menu in MenuChoiceMapping.menus_to_static_choices.keys():
-            return MenuChoiceMapping.menus_to_static_choices[self._in_menu]
+        elif self._in_menu in MenuChoiceMapping.menus_to_choices.keys():
+            return MenuChoiceMapping.menus_to_choices[self._in_menu]
         elif self._in_menu is Menu.CHARACTER_INVENTORY_MENU:
             return self.get_inventory_menu_choices()
         else:
             #raise Exception("Don't have choices set for Menu: {}".format(menu))
-            logger.info("Don't have choices set for Menu: {}".format(self._in_menu))
+            logger.critical("You've found a menu we don't support {}\n********** Please submit a git issue ********\nThank you,\n\t-Dustin".format(self._in_menu))
 
     def get_inventory_menu_choices(self):
         """
