@@ -230,7 +230,9 @@ class DCSSProtocol(WebSocketClientProtocol):
                                          Menu.ABILITY_MENU,
                                          Menu.SKILL_MENU,
                                          Menu.ATTRIBUTE_INCREASE_TEXT_MENU,
-                                         Menu.INDIVIDUAL_INVENTORY_ITEM_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
+                                         Menu.INDIVIDUAL_INVENTORY_ITEM_MENU,
+                                         Menu.RENOUNCE_FAITH_TEXT_MENU,
+                                         Menu.ARE_YOU_SURE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
 
                         if self.config.draw_map: self.game_state.draw_cell_map()
 
@@ -296,7 +298,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_3_TO_DELETE_GAME = True
                         self.reset_before_next_game()
 
-
+            logger.warning("If you're seeing this message, probably forgot to update autobahn code above")
             logger.info("About to sleep for delay {}".format(config.WebserverConfig.delay))
 
             # if user is trying to run with really low delay, only use that delay after a game has started
@@ -490,8 +492,17 @@ class DCSSProtocol(WebSocketClientProtocol):
             elif self.check_for_walk_into_teleport_trap(json_msg):
                 print("AGENT HAS CHOICE OF WALKING INTO TELEPORT TRAP")
                 self._IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU
-                self.teleport_trap_menu_options = self.get_ability_menu_options(json_msg)
                 print("setting _IN_MENU = Menu.WALK_INTO_TELEPORT_TRAP_TEXT_MENU")
+            elif self.check_for_renounce_religion_prompt(json_msg):
+                print("AGENT HAS CHOICE OF RENOUNCING RELIGION")
+                self._IN_MENU = Menu.RENOUNCE_FAITH_TEXT_MENU
+                print("setting _IN_MENU = Menu.RENOUNCE_FAITH_TEXT_MENU")
+            elif self.check_for_are_you_sure_text_menu(json_msg):
+                self._IN_MENU = Menu.ARE_YOU_SURE_TEXT_MENU
+                print("setting _IN_MENU = Menu.ARE_YOU_SURE_TEXT_MENU")
+            elif self.check_for_no_longer_in_text_menu(json_msg):
+                self._IN_MENU = Menu.NO_MENU
+                print("setting _IN_MENU = Menu.NO_MENU")
             elif self.check_for_close_all_menus(json_msg):
                 self._IN_MENU = Menu.NO_MENU
                 logger.debug("setting _IN_MENU = Menu.NO_MENU")
@@ -581,6 +592,29 @@ class DCSSProtocol(WebSocketClientProtocol):
     def check_for_walk_into_teleport_trap(self, json_msg):
         for v in nested_lookup('text', json_msg):
             if "Really walk into teleport trap?" in v:
+                return True
+        return False
+
+    def check_for_renounce_religion_prompt(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            logger.info("v={}".format(v))
+            if "Really renounce your faith, foregoing its fabulous benefits?" in v:
+                return True
+        return False
+
+    def check_for_are_you_sure_text_menu(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            logger.info("v={}".format(v))
+            if "Are you sure?" in v:
+                return True
+        return False
+
+    def check_for_no_longer_in_text_menu(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            logger.info("v={}".format(v))
+            if "Okay, then." in v:
+                return True
+            if "You have lost your religion!" in v:
                 return True
         return False
 

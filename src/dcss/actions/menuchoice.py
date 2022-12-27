@@ -101,7 +101,9 @@ class MenuChoiceMapping:
                                                 MenuChoice.UNDERSCORE, MenuChoice.UPPER_I, MenuChoice.UPPER_O,
                                                 MenuChoice.ESCAPE
                                                 ],
-                        Menu.ABILITY_MENU: []}
+                        Menu.ABILITY_MENU: [],
+                        Menu.RENOUNCE_FAITH_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N],
+                        Menu.ARE_YOU_SURE_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N],}
 
     @staticmethod
     def get_menu_letter_to_menu_choice():
