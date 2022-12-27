@@ -100,7 +100,8 @@ class MenuChoiceMapping:
                                                 MenuChoice.CARAT, MenuChoice.TAB, MenuChoice.BACKSLASH,
                                                 MenuChoice.UNDERSCORE, MenuChoice.UPPER_I, MenuChoice.UPPER_O,
                                                 MenuChoice.ESCAPE
-                                                ]}
+                                                ],
+                        Menu.ABILITY_MENU: []}
 
     @staticmethod
     def get_menu_letter_to_menu_choice():
@@ -155,3 +156,12 @@ class MenuChoiceMapping:
         if len(actual_choices) > 0:
             if menu not in MenuChoiceMapping.menus_to_choices.keys():
                 MenuChoiceMapping.menus_to_choices[menu] = actual_choices
+
+
+    @staticmethod
+    def add_ability_menu_choice(letter):
+        current_choices = MenuChoiceMapping.menus_to_choices[Menu.ABILITY_MENU]
+        choice = MenuChoiceMapping.get_menu_choice_from_letter(letter)
+        if choice not in current_choices:
+            MenuChoiceMapping.menus_to_choices[Menu.ABILITY_MENU].append(choice)
+            logger.info("Added ability menu choice {}".format(choice))

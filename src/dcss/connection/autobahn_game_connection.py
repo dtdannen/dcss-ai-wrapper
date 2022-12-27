@@ -17,6 +17,7 @@ import importlib
 from autobahn.asyncio.websocket import WebSocketClientProtocol
 from dcss.state.game import GameState
 from dcss.state.menu import Menu
+from dcss.state.ability import Ability
 
 
 class DCSSProtocol(WebSocketClientProtocol):
@@ -499,9 +500,6 @@ class DCSSProtocol(WebSocketClientProtocol):
                 self._PLAYER_DIED = True
 
 
-
-
-
     def check_for_in_lobby(self, json_msg):
         for v in nested_lookup('msg', json_msg):
             if v == 'set_game_links':
@@ -600,8 +598,60 @@ class DCSSProtocol(WebSocketClientProtocol):
         return input_mode_found and ability_tag_found
 
     def get_ability_menu_options(self, json_msg):
-        # get inventory menu items and keypresses
+        """
+        {"msgs":
+            [{"msg":"input_mode","mode":0},
+             {"msg":"menu","ui-centred":false,"tag":"ability","flags":3154,
+                          "title":{"text":" <white>Ability - do what?                  Cost                            Failure"},
+                          "more":"Press '<white>!<lightgrey>' or '<white>?<lightgrey>' to toggle between ability selection and description.",
+                          "total_items":3,
+                          "chunk_start":0,
+                          "items":[{"text":" Invocations -    ","colour":1,"level":1},
+                                   {"text":" X - Renounce Religion               None                            0%","q":1,"hotkeys":[88],"level":2,"tiles":[{"t":7696,"tex":5}]},
+                                   {"text":" a - Berserk                         None                            0%","q":1,"hotkeys":[97],"level":2,"tiles":[{"t":7795,"tex":5}]}]}
+        """
         # TODO: get something like the following to work
+
+        ability_name_to_hotkeys = {}
+        ability_name_to_letter = {}
+        ability_name_to_fail_chance = {}
+        ability_name_to_cost = {}
+        index = 0
+
+        for v_list in nested_lookup('items', json_msg):
+            for ability_line_item_raw in v_list:
+                if 'hotkeys' in ability_line_item_raw:
+                    if 'text' not in ability_line_item_raw:
+                        logger.critical("**** Found ability raw json that is missing 'text' field, please make github issue with screenshot from game, thanks! ***")
+                    main_raw_text_items = ability_line_item_raw['text'].split()  # separate based on whitespace
+                    letter = main_raw_text_items[0]
+                    ability_name_first_word = main_raw_text_items[2]
+                    if ability_name_first_word not in Ability.ABILITY_NAME_LENGTH.keys():
+                        logger.critical(
+                            "**** Ability name of \"{}\" is not in Ability.ABILITY_NAME_LENGTH, please make github issue with screenshot from game and this message, thanks! ***")
+                    ability_name_length = Ability.ABILITY_NAME_LENGTH[ability_name_first_word]
+                    ability_name = ability_name_first_word
+
+                    # ugly, this whole thing should be replaced with regex
+                    index = 2
+                    did_index_increase = False
+                    for i in range(1, ability_name_length):
+                        ability_name += ' ' + main_raw_text_items[2+i]
+                        index += 1
+                        did_index_increase = True
+
+                    index+=1
+
+                    cost = main_raw_text_items[index]
+
+                    index += 1
+
+                    fail_chance = main_raw_text_items[index]
+
+                    logger.info("Adding ability {} referenced by letter {} with cost {} and fail chance {}".format(ability_name, letter, cost, fail_chance))
+
+                    # TODO actually do the adding
+                    MenuChoiceMapping.add_ability_menu_choice(letter)
 
         # background_name_to_hotkeys = {}
         # for buttons_list in nested_lookup('buttons', json_msg):
