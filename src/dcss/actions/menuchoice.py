@@ -137,6 +137,8 @@ class MenuChoiceMapping:
             return MenuChoice.LOWER_U
         elif '(w)ield' in raw_str:
             return MenuChoice.LOWER_W
+        elif '(q)uaff' in raw_str:
+            return MenuChoice.LOWER_Q
         else:
             for we_should_ignore in IGNORE_LIST:
                 if we_should_ignore in raw_str:

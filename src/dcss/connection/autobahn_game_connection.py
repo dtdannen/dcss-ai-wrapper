@@ -610,12 +610,20 @@ class DCSSProtocol(WebSocketClientProtocol):
         return False
 
     def check_for_no_longer_in_text_menu(self, json_msg):
+        """
+            After choosing an option in a text menu, getting one of the following messages means you are no longer in
+            that text menu
+        """
+
         for v in nested_lookup('text', json_msg):
             logger.info("v={}".format(v))
             if "Okay, then." in v:
                 return True
-            if "You have lost your religion!" in v:
+            elif "You have lost your religion!" in v:
                 return True
+            elif "You feel stronger." in v:
+                return True
+
         return False
 
     def check_for_ability_menu(self, json_msg):
