@@ -100,6 +100,7 @@ class StatusEffect(Enum):
     WEAK_STATUS_EFFECT = 90
     WISP_STATUS_EFFECT = 91
     ZOT_STATUS_EFFECT = 92
+    UNABLE_TO_BERSERK_STATUS_EFFECT = 93  # happens immediately after going berserk
 
 
 class StatusEffectMapping:
@@ -299,5 +300,6 @@ class StatusEffectPDDLMapping:
         StatusEffect.VULNERABLE_STATUS_EFFECT: 'vulnerable_status',
         StatusEffect.WATER_STATUS_EFFECT: 'water_status',
         StatusEffect.WEAK_STATUS_EFFECT: 'weak_status',
+        StatusEffect.UNABLE_TO_BERSERK_STATUS_EFFECT: 'unable_berserk_status',
 
     }

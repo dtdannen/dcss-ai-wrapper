@@ -286,6 +286,8 @@ class GameState:
                 +--------------+---------------------------------------+------------------------+
                 | 42           | Berserk status effect                 | Boolean                |
                 +--------------+---------------------------------------+------------------------+
+                | 170          | Unable to Berserk status effect       | Boolean                |
+                +--------------+---------------------------------------+------------------------+
                 | 43           | Black Mark status effect              | Boolean                |
                 +--------------+---------------------------------------+------------------------+
                 | 44           | Blind status effect                   | Boolean                |
@@ -591,6 +593,7 @@ class GameState:
             "Augmentation status effect",
             "Bad Forms status effect",
             "Berserk status effect",
+            "Unable to berserk status effect",
             "Black Mark status effect",
             "Blind status effect",
             "Brilliant status effect",
@@ -784,6 +787,7 @@ class GameState:
             StatusEffect.AUGMENTATION_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BAD_FORMS_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BERSERK_STATUS_EFFECT in self.player_status_effects,
+            StatusEffect.UNABLE_TO_BERSERK_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BLACK_MARK_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BLIND_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.BLOODLESS_STATUS_EFFECT in self.player_status_effects,
@@ -869,6 +873,7 @@ class GameState:
             StatusEffect.VULNERABLE_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.WATER_STATUS_EFFECT in self.player_status_effects,
             StatusEffect.WEAK_STATUS_EFFECT in self.player_status_effects,
+
 
             Mutation.ACUTE_VISION_MUTATION in self.player_mutations,
             Mutation.ANTENNAE_MUTATION in self.player_mutations,
@@ -1888,10 +1893,13 @@ class GameState:
                         current_status_effects.add(StatusEffect.BERSERK_STATUS_EFFECT)
                     elif v == 'Wisp':
                         current_status_effects.add(StatusEffect.WISP_STATUS_EFFECT)
+                    elif v == '-Berserk':
+                        current_status_effects.add(StatusEffect.UNABLE_TO_BERSERK_STATUS_EFFECT)
+                    elif v == 'Slow':
+                        current_status_effects.add(StatusEffect.SLOW_STATUS_EFFECT)
                     else:
-                        print("******* UNKNOWN STATUS VALUE - PLEASE UPDATE GAME KNOWLEDGE *******")
+                        logger.critical("******* UNKNOWN STATUS VALUE - PLEASE SUBMIT GITHUB PULL REQUEST TO UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))
-                        time.sleep(100)
                         raise Exception("Please update knowledge to support this status effect (thank you! -Dustin)")
 
         self.player_status_effects = current_status_effects
