@@ -35,11 +35,11 @@ And do a pip install of the project in develop mode so you can change files in b
 
 **Using Docker to run the Webserver**
 
-There are two ways to run the webserver via docker: use a premade image (option 1) or build the webserver docker yourself (option 2).
+There are two ways to run the webserver via docker: build the webserver docker yourself (option 1) or use a premade image (option 2).
 
 **(Option 1) Build the docker image yourself**::
 
-    cd docker_webserver/
+    cd webserver_docker/
     docker build .
 
 It will take a few minutes to compile. Once it finishes, run::
