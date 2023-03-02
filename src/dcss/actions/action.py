@@ -95,7 +95,7 @@ class Action:
         Command.ABANDON_CURRENT_CHARACTER_AND_QUIT_GAME: {'msg': 'key', "keycode": 17},
 
         Command.DISPLAY_CHARACTER_STATUS: {'text': '@', 'msg': 'input'},
-        Command.SHOW_SKILL_SCREEN: {'text': 'm', 'msg': 'input'},
+        Command.SHOW_SKILL_SCREEN: {'text': 'm*', 'msg': 'input'},
         Command.CHARACTER_OVERVIEW: {'text': '%', 'msg': 'input'},
         Command.SHOW_RELIGION_SCREEN: {'text': '^', 'msg': 'input'},
         Command.SHOW_ABILITIES_AND_MUTATIONS: {'text': 'A', 'msg': 'input'},

@@ -96,10 +96,15 @@ class MenuChoiceMapping:
                                                 MenuChoice.UNDERSCORE, MenuChoice.UPPER_I, MenuChoice.UPPER_O,
                                                 MenuChoice.ESCAPE
                                                 ],
-                        Menu.SKILL_MENU: [MenuChoice.LOWER_A, MenuChoice.LOWER_B, MenuChoice.LOWER_C,
+                        Menu.SKILL_MENU: [MenuChoice.ESCAPE, MenuChoice.LOWER_A, MenuChoice.LOWER_B, MenuChoice.LOWER_C,
                           MenuChoice.LOWER_D, MenuChoice.LOWER_E, MenuChoice.LOWER_F, MenuChoice.LOWER_G,
-                          MenuChoice.LOWER_H, MenuChoice.LOWER_H, MenuChoice.LOWER_I,  MenuChoice.EXCLAMATION_POINT,
-                          MenuChoice.ASTERISK, MenuChoice.UNDERSCORE, MenuChoice.QUESTION_MARK]}
+                          MenuChoice.LOWER_H, MenuChoice.LOWER_H, MenuChoice.LOWER_I, MenuChoice.LOWER_J,
+                          MenuChoice.Lower_K, MenuChoice.LOWER_L, MenuChoice.LOWER_M, MenuChoice.LOWER_N,
+                          MenuChoice.LOWER_P, MenuChoice.LOWER_Q, MenuChoice.LOWER_R, MenuChoice.LOWER_S,
+                          MenuChoice.LOWER_T, MenuChoice.LOWER_U, MenuChoice.LOWER_V, MenuChoice.LOWER_W,
+                          MenuChoice.LOWER_X, MenuChoice.LOWER_Y, MenuChoice.LOWER_Z, MenuChoice.ZERO,
+                          MenuChoice.ZERO, MenuChoice.ONE, MenuChoice.TWO, MenuChoice.THREE, MenuChoice.EXCLAMATION_POINT,
+                          MenuChoice.UNDERSCORE, MenuChoice.QUESTION_MARK, MenuChoice.ESCAPE]}
 
     @staticmethod
     def get_possible_actions_for_current_menu(menu: Menu):
