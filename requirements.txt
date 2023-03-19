@@ -17,6 +17,6 @@ scipy # optional, needed for generating dungeons (see custom_sprints/dungeon_gen
 networkx # optional, needed for generating dungeons (see custom_sprints/dungeon_generator)
 
 tornado~=6.1
-setuptools~=60.2.0
+setuptools
 loguru
 icecream
