@@ -75,7 +75,7 @@ def main():
 
 # Contribute
 
-- The most recent branch is the `dev` branch.
+- The most recent branch is the `master` branch. 
 
 - The current goal is to enable the API to support every DCSS action and level (except ABYSS, LABRYNTH levels, we'll worry about those later). The _humaninterfaceagent_ is an agent that accepts keyboard input from a human. We are using this to test the API by playing DCSS. A great way to help contribute is to play the game and post any errors you get when playing as new git issues!
 
