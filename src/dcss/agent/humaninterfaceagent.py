@@ -1,18 +1,19 @@
 import sys
+import icecream as ic
 from dcss.actions.command import Command
 from dcss.agent.base import BaseAgent
 from dcss.state.game import GameState
 from dcss.actions.action import Action
-from dcss.actions.menuchoice import MenuChoice
+from dcss.actions.menuchoice import MenuChoice, MenuChoiceMapping
 from dcss.state.menu import Menu
 
 from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
 
-import logging
-logging.basicConfig(level=logging.WARNING)
+from loguru import logger
 
-# just a little convenience step
+# just a little convenience step - this is used to prevent asking the player for an action when an old game is about
+# to be deleted and a new game will be started
 STILL_NEED_TO_RESTART = False
 
 if sys.platform == 'win32':
@@ -76,16 +77,8 @@ class HumanInterfaceBaseAgent(BaseAgent):
         self.gameturns.append(gameturn)
         #self.print_all_items_near_player(gamestate)
         self.num_game_facts.append(num_facts)
-        #print("about to plot {}, {}".format(gameturn, num_facts))
-        #plt.plot(self.gameturns, self.num_game_facts)
-        #plt.draw()
-        #plt.pause(0.001)
 
-        # linux solution:
-        #next_action = readchar.readchar()
-
-        # windows solution
-        #next_action = None
+        self.gamestate.draw_cell_map()
 
         # convenience hack to prevent the user from an extra, meaningless keypress before old game is destroyed
         global STILL_NEED_TO_RESTART
@@ -93,6 +86,7 @@ class HumanInterfaceBaseAgent(BaseAgent):
             STILL_NEED_TO_RESTART = False
             return Command.WAIT_1_TURN # arbitrary, just send any command... this is last command before destroying game
         else:
+            self.print_current_menu()
             print("Waiting for your next keypress, human")
             next_action = getch()
             #next_action = input("Waiting for your next keypress, human")
@@ -104,6 +98,7 @@ class HumanInterfaceBaseAgent(BaseAgent):
             next_action_command = self.get_command_from_human_keypress(next_action)
             #print("Got next_action {} and command is {}".format(next_action, next_action_command))
             return next_action_command
+
 
     def print_all_items_near_player(self, gamestate: GameState, r=1):
         cells = gamestate.get_cell_map().get_radius_around_agent_cells(r=r)
@@ -118,6 +113,35 @@ class HumanInterfaceBaseAgent(BaseAgent):
         player_stats_vector = self.gamestate.get_player_stats_vector(verbose=verbose)
         print(player_stats_vector)
         print("Player stats vector has length {}".format(len(player_stats_vector)))
+
+    def print_current_menu(self):
+        """
+            Print the menu that the API thinks is currently true
+        """
+        current_menu = self.gamestate.get_current_menu()
+        print("MENU: {}".format(self.gamestate.get_current_menu()))
+        if current_menu != Menu.NO_MENU:
+            available_menu_choices = self.gamestate.get_possible_actions_for_current_menu()
+            if available_menu_choices:
+                #print(available_menu_choices)
+                logger.debug("Available Menu Choices: {}".format([repr(x) for x in available_menu_choices]))
+
+    def print_player_skills_pddl(self):
+        """
+            Print the pddl facts about the players skill and what they are training, current level, etc.
+        """
+        print("PLAYER SKILL FACTS:")
+        for pddl_fact in self.gamestate.get_player_skills_pddl():
+            print("   {}".format(pddl_fact))
+
+    def print_player_inv_pddl(self):
+        objs, facts = self.gamestate.get_player_inventory_pddl()
+        print("Inventory Item Names are:")
+        for obj in objs:
+            print("  {}".format(obj))
+        print("Inventory Item Facts are:")
+        for fact in facts:
+            print("  {}".format(fact))
 
 
     def get_command_from_human_keypress(self, keypress):
@@ -159,10 +183,14 @@ class HumanInterfaceBaseAgent(BaseAgent):
             'q': Command.QUAFF,
             'I': Command.LIST_ALL_SPELLS,
             'm': Command.SHOW_SKILL_SCREEN,
+            'x': Command.EXAMINE_SURROUNDINGS_AND_TARGETS,
+            ';': Command.EXAMINE_CURRENT_TILE_PICKUP_PART_OF_SINGLE_STACK,
+            'v': Command.EXAMINE_TILE_IN_EXPLORE_MENU,
         }
 
+
         print("current menus is {}".format(self.gamestate.get_current_menu()))
-        
+
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
             return keypress_to_command_no_menu[keypress]
         elif keypress in Action.dcss_menu_chars:
@@ -179,14 +207,24 @@ if __name__ == "__main__":
 
     # set game mode to Tutorial #1
     my_config.game_id = 'dcss-web-trunk'
-    my_config.always_start_new_game = True
-    my_config.auto_start_new_game = True
-    my_config.species = 'Vampire'
-    my_config.background = 'Necromancer'
+    my_config.always_start_new_game = False
+    my_config.auto_start_new_game = False
+
+    if my_config.always_start_new_game:  # convenience step preventing human keypress before deleting prior game
+        STILL_NEED_TO_RESTART = True
+
+    my_config.species = 'Minotaur'
+    my_config.background = 'Berserker'
+    my_config.starting_weapon = 'hand axe'
     my_config.delay = 0.1
 
-    if my_config.always_start_new_game:
-        STILL_NEED_TO_RESTART = True
+    # default loguru logging level is DEBUG
+    # if you want to change this, uncomment the following, and replace INFO with your desired level
+    #logger.remove()  # this removes all handlers, including the default one
+    #logger.add(sys.stderr, level=logging.INFO)  # stderr is the output location for the default handler, so this is
+                                                # like replacing default but with a different level
+
+    logger.debug("Starting up {}".format("HumanInterfaceBaseAgent"))
 
     # create game
     game = WebSockGame(config=my_config, agent_class=HumanInterfaceBaseAgent)

@@ -2,6 +2,10 @@ from enum import Enum
 from dcss.state.menu import Menu
 import string
 
+from loguru import logger
+
+
+
 class MenuChoice(Enum):
     """
     Menu choices are always a lower or upper case letter
@@ -84,6 +88,7 @@ class MenuChoice(Enum):
     UNDERSCORE = 74
     ESCAPE = 75
 
+
 class MenuChoiceMapping:
 
     # the order of letters and symbols in this string should match the order of MenuChoice enum options
@@ -104,18 +109,77 @@ class MenuChoiceMapping:
                           MenuChoice.LOWER_T, MenuChoice.LOWER_U, MenuChoice.LOWER_V, MenuChoice.LOWER_W,
                           MenuChoice.LOWER_X, MenuChoice.LOWER_Y, MenuChoice.LOWER_Z, MenuChoice.ZERO,
                           MenuChoice.ZERO, MenuChoice.ONE, MenuChoice.TWO, MenuChoice.THREE, MenuChoice.EXCLAMATION_POINT,
-                          MenuChoice.UNDERSCORE, MenuChoice.QUESTION_MARK, MenuChoice.ESCAPE]}
+                          MenuChoice.UNDERSCORE, MenuChoice.QUESTION_MARK, MenuChoice.ESCAPE],
+                        Menu.ABILITY_MENU: [],
+                        Menu.RENOUNCE_FAITH_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N],
+                        Menu.ARE_YOU_SURE_TEXT_MENU: [MenuChoice.UPPER_Y, MenuChoice.UPPER_N],}
 
     @staticmethod
-    def get_possible_actions_for_current_menu(menu: Menu):
-        if menu in MenuChoiceMapping.menus_to_choices.keys():
-            return MenuChoiceMapping.menus_to_choices[menu]
-        elif menu in [Menu.NO_MENU]:
-            return None
+    def get_menu_letter_to_menu_choice():
+        return {x:MenuChoice(MenuChoiceMapping.dcss_menu_chars.index(x)) for x in MenuChoiceMapping.dcss_menu_chars}
+
+    @staticmethod
+    def get_menu_choice_from_letter(letter):
+        return MenuChoiceMapping.get_menu_letter_to_menu_choice()[letter]
+
+
+    @staticmethod
+    def get_menu_choice_from_item_menu_raw_str(raw_str):
+        """
+        Individual inventory item menus have actoins at the bottom that look like this (example is a scroll):
+
+            '(=)adjust, (r)ead, (d)rop, or (i)nscribe.'
+
+        This function takes one of these actions, '(r)ead' and returns the appropriate MenuChoice enum, which would be
+
+            MenuChoice.LOWER_R in this example
+        """
+
+        raw_str.strip().replace(".","")
+
+        IGNORE_LIST = ['(=)adjust', '(i)nscribe', '(s)kill']
+
+        if '(r)ead' in raw_str:
+            return MenuChoice.LOWER_R
+        elif '(d)rop' in raw_str:
+            return MenuChoice.LOWER_D
+        elif '(u)nwield' in raw_str:
+            return MenuChoice.LOWER_U
+        elif '(w)ield' in raw_str:
+            return MenuChoice.LOWER_W
+        elif '(q)uaff' in raw_str:
+            return MenuChoice.LOWER_Q
         else:
-            #raise Exception("Don't have choices set for Menu: {}".format(menu))
-            print("Don't have choices set for Menu: {}".format(menu))
+            for we_should_ignore in IGNORE_LIST:
+                if we_should_ignore in raw_str:
+                    return MenuChoice.NONE
+
+            logger.critical("MISSING logic to handle item action: {}\n************** Please submit a git issue **************\n\t-Dustin".format(raw_str))
+
+            raise Exception("MISSING LOGIC TO PARSE ITEM ACTION {}".format(raw_str))
 
     @staticmethod
     def get_menu_letter_to_menu_choice():
         return {x:MenuChoice for x in MenuChoiceMapping.dcss_menu_chars}
+
+    def add_menu_choices_for_individual_item_menu(menu: Menu, choices: list):
+
+        # first filter out any NONE choices
+        actual_choices = []
+        for choice in choices:
+            if choice != MenuChoice.NONE:
+                actual_choices.append(choice)
+
+        if len(actual_choices) > 0:
+            if menu not in MenuChoiceMapping.menus_to_choices.keys():
+                MenuChoiceMapping.menus_to_choices[menu] = actual_choices
+
+
+    @staticmethod
+    def add_ability_menu_choice(letter):
+        current_choices = MenuChoiceMapping.menus_to_choices[Menu.ABILITY_MENU]
+        choice = MenuChoiceMapping.get_menu_choice_from_letter(letter)
+        if choice not in current_choices:
+            MenuChoiceMapping.menus_to_choices[Menu.ABILITY_MENU].append(choice)
+            logger.info("Added ability menu choice {}".format(choice))
+
