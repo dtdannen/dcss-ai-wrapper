@@ -8,7 +8,7 @@ class AbilityName(Enum):
     """
 
     NULL_SPELL_SPECIAL_CASE = 0
-    ANCESTOR_IDENTITY = 1
+    ANCESTOR_IDENTITY_ABILITY = 1
     ANCESTOR_LIFE_ABILITY = 2
     ANIMATE_DEAD_ABILITY = 3
     ANIMATE_REMAINS_ABILITY = 4
@@ -103,6 +103,7 @@ class AbilityName(Enum):
     UPHEAVAL_ABILITY = 92
     VITALISATION_ABILITY = 93
     WALL_JUMP_ABILITY = 94
+    RENOUNCE_RELIGION_ABILITY = 95
 
 
 class AbilityNameMapping:
@@ -128,6 +129,12 @@ class Ability:
     """
 
     NULL_ABILITY_VECTOR = [AbilityName.NULL_SPELL_SPECIAL_CASE, -1, -1, -1, False, False]
+
+    # Data describing the length of the ability name for the first word in the ability name
+    # This is used for parsing abilities from raw JSON in autobahn game connection class
+    # A better solution would be to use Regex
+    ABILITY_NAME_LENGTH = {'Berserk':1,
+                           'Renounce':2}
 
     def __init__(self, abilityname: AbilityName, fail_chance: int, mp_cost: bool, piety_cost: bool, delay_cost: bool, frailty_cost: bool):
         self.abilityname = abilityname

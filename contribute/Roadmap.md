@@ -3,16 +3,21 @@
 The following is a tentative roadmap for the project to reach version 1.0.
 
 ### v0.1
-*  ~~Sprint game mode is supported~~
-*  ~~Items in cells can be parsed by the game state~~
-*  API for vector state representations is complete
-*  API for PDDL state representations is complete
-*  Update `models/fastdownward_simple.pddl` to be consistent with PDDL state representation API
-*  ~~New agent class that acts as a passthrough for a human player to play the game~~ 
+* ~~Sprint game mode is supported~~
+* ~~Items in cells can be parsed by the game state~~
+* API for vector state representations is complete
+  * Finish monster vector in monster.py get_monster_vector.py
+    * Next step - return monster details like health, ac, ev, etc.
+  * Obtain item properties, see list in state/itemproperty.py
+* API for PDDL state representations is complete
+* Update `models/fastdownward_simple.pddl` to be consistent with PDDL state representation API
+* Create simple RL agent that uses vector-based API
+* Create simple planning agent that uses PDDL-based API 
+* ~~New agent class that acts as a passthrough for a human player to play the game~~ 
 
 ### v0.2 
-*  Create simple RL agent that uses vector-based API
-*  Create simple planning agent that uses PDDL-based API 
+*  Simple planning agent working on tutorials
+*  Simple reinforcement learning agent working on tutorials
 
 ### v0.3
 *  Add support for autobahn for terminal version of the game

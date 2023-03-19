@@ -10,10 +10,10 @@ Make sure to run crawl before running this demo, see:
 from dcss.connection.autobahn_game_connection import DCSSProtocol
 from dcss.connection import config
 import asyncio
-import logging
 from autobahn.asyncio.websocket import WebSocketClientFactory
 
-logging.basicConfig(level=logging.WARNING)
+from loguru import logger
+
 
 
 def main():

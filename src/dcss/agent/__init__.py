@@ -1,6 +1,6 @@
-__all__ = ['base.py',
+__all__ = ['base',
            'fastdownwardplanningagent',
-           'humaninterfaceagent.py',
-           'simplerlagent',
+           'humaninterfaceagent',
+           'QLearning',
            'SimpleRandomAgent',
            'testallcommandsagent']

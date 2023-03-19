@@ -27,6 +27,9 @@ RUN git clone --recurse-submodules -j8 https://github.com/crawl/crawl.git crawl/
 WORKDIR /dcss/crawl/
 RUN git reset --hard "d7a4d63c155831395aa76a5b27c080510dfb948e"
 
+# copying sprint files from ai-wrapper to dcss folder
+COPY ../custom_sprints/* /dcss/crawl/crawl-ref/source/dat/des/sprint
+
 # compile crawl
 WORKDIR /dcss/crawl/crawl-ref/source/
 RUN make install prefix=/usr/local WEBTILES=y

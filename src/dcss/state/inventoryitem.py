@@ -1,7 +1,22 @@
 import re
 import string
+from enum import Enum
 
 from dcss.state.itemproperty import ItemProperty
+
+
+class ItemType(Enum):
+    """
+    Represents a type of item, enum value matches what the game sends over as 'base_type'
+    """
+
+    NULL_ITEM_TYPE = -1
+
+    WEAPON = 0
+    AMMUNITION = 1
+    ARMOUR = 2
+    SCROLL = 5
+    POTION = 7
 
 
 class InventoryItem:
@@ -9,21 +24,40 @@ class InventoryItem:
 
     NULL_ITEM_VECTOR = [0, 0, 0, False, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY, ItemProperty.NO_PROPERTY]
 
+    ITEM_TYPE_MAPPING = {item_enum_obj: item_enum_obj.name.lower() for item_enum_obj in ItemType}
+
     def __init__(self, id_num, name, quantity, base_type=None):
         self.id_num = int(id_num)
         self.name = name
         self.quantity = quantity
         self.base_type = base_type
         self.item_bonus = 0
+        self.cursed = False
         self.properties = []
+        self.base_type = base_type
+
+        if base_type is not None:
+            try:
+                self.item_type = ItemType(base_type)
+            except:
+                print("Found an UNKNOWN BASE TYPE - Please update API")
+                print("   Base Type is {}".format(base_type))
+                print("   The name of the item is {}".format(self.name))
 
         if self.name:
+            if '(curse)' in self.name:
+                self.cursed = True
+                self.name = self.name.replace("(curse)", "")
+
+            self.simple_name = "{}_{}".format(self.get_letter(),re.sub(r'[+-]?[0-9][0-9]?', '', self.name).strip().replace(" ","_"))
+
             if '+' in self.name or '-' in self.name:
                 m = re.search('[+-][1-9][1-9]?', self.name)
                 if m:
                     self.item_bonus = int(m.group(0))
                 else:
                     self.item_bonus = 0
+
         else:
             if self.quantity == 0:
                 # Might just be an empty slot that the server is telling us about
@@ -33,9 +67,6 @@ class InventoryItem:
                     "\n\nself.name is None, not sure why...args to InventoryItem were id_num={}, name={}, quantity={}, base_type={}\n\n".format(
                         id_num, name, quantity, base_type))
                 exit(1)
-
-        # TODO - figure out how to know if item is equipped
-        self.equipped = False
 
     def set_base_type(self, base_type):
         self.base_type = base_type
@@ -69,6 +100,12 @@ class InventoryItem:
 
     def is_item_equipped(self):
         return self.equipped
+
+    def unequip(self):
+        self.equipped = False
+
+    def equip(self):
+        self.equipped = True
 
     def get_item_type(self):
         """
@@ -111,6 +148,68 @@ class InventoryItem:
 
         return item_vector
 
+    def get_item_pddl(self):
+        """
+        Returns:
+             1. list of pddl object statements where each item has a unique name
+             2. list of pddl predicates about that item
+
+        Index  Information Contained
+        -----  ---------------------
+          0    Item Type (Armour, Weapon, etc)
+          1    Item Count
+          2    Item Bonus ("+x" value)
+          3    Item Equipped
+          4    Property* (Fire resist, stealth, venom, etc)
+          5   Property* (Fire resist, stealth, venom, etc)
+          6   Property* (Fire resist, stealth, venom, etc)
+        """
+
+        item_pddl_facts = []
+
+        if self.equipped:
+            item_pddl_facts.append("(equipped {})".format(self.simple_name))
+
+        if self.item_bonus != 0:
+            quantitative_choices = ['none','low', 'medium', 'high']
+            quantitative_choice_id = 0
+            if 1 <= self.item_bonus <= 3:
+                quantitative_choice_id = 1
+            elif 4 <= self.item_bonus <= 7:
+                quantitative_choice_id = 2
+            elif self.item_bonus > 7:
+                quantitative_choice_id = 3
+
+            item_pddl_facts.append("(item_bonus {} {})".format(self.simple_name, quantitative_choices[quantitative_choice_id]))
+
+        if self.cursed:
+            item_pddl_facts.append("(cursed {})".format(self.simple_name))
+
+        # singleton item types (will never have more than one per item slot in inventory)
+        if self.item_type is ItemType.WEAPON:
+            item_pddl_facts.append("(weapon {})".format(self.simple_name))
+        elif self.item_type is ItemType.ARMOUR:
+            item_pddl_facts.append("(armour {})".format(self.simple_name))
+        else:
+            # items with quantities, so need to provide some quantity information
+            if self.quantity == 1:
+                item_pddl_facts.append("(only_one_remaining {})".format(self.simple_name))
+            elif self.quantity > 1:
+                item_pddl_facts.append("(multiple_remaining {})".format(self.simple_name))
+
+            # and don't forget item type for these
+            if self.item_type is ItemType.POTION:
+                item_pddl_facts.append("(potion {})".format(self.simple_name))
+            elif self.item_type is ItemType.SCROLL:
+                item_pddl_facts.append("(scroll {})".format(self.simple_name))
+            elif self.item_type is ItemType.AMMUNITION:
+                item_pddl_facts.append("(ammunition {})".format(self.simple_name))
+
+        pddl_obj_name = "{} - {}".format(self.simple_name, InventoryItem.ITEM_TYPE_MAPPING[self.item_type])
+
+        return pddl_obj_name, item_pddl_facts
+
+
     @staticmethod
     def get_empty_item_vector():
         item_vector = [0 for i in range(InventoryItem.ITEM_VECTOR_LENGTH)]
@@ -122,3 +221,6 @@ class InventoryItem:
     def __str__(self):
         return "{}({}) - {} (#={}, base_type={})".format(self.get_letter(), self.id_num, self.get_name(),
                                                          self.get_quantity(), self.get_base_type())
+
+
+

@@ -58,6 +58,9 @@
 
         weapon - equipitem
         armour - equipitem
+        ammunition - equipitem
+
+
 )
 
 (:constants
@@ -93,6 +96,7 @@
   deep_water - terrain
   lava - terrain
   rock_wall - terrain
+  statue - terrain
   translucent_rock_wall - terrain
   green_crystal_wall - terrain
   stone_wall - terrain
@@ -312,7 +316,7 @@
   freezing_wraith - monster
   frilled_lizard - monster
   frost_giant - monster
-  frost-covered_statue - monster
+  frost_covered_statue - monster
   gargoyle_monster - monster
   gastronok - monster
   gelid_demonspawn - monster
@@ -420,7 +424,7 @@
   killer_bee_larva - monster
   killer_klown - monster
   kirke - monster
-  kobold_monster - monster
+  kobold - monster
   kobold_demonologist - monster
   komodo_dragon - monster
   kraken - monster
@@ -651,7 +655,6 @@
   swamp_drake - monster
   swamp_worm - monster
   tarantella - monster
-  template:monster_info - monster
   tengu_monster - monster
   tengu_conjurer - monster
   tengu_reaver - monster
@@ -679,7 +682,7 @@
   troll - monster
   troll_monster - monster
   twister - monster
-  two-headed_ogre - monster
+  two_headed_ogre - monster
   tyrant_leech - monster
   tzitzimitl - monster
   ufetubus - monster
@@ -715,7 +718,7 @@
   white_imp - monster
   wight - monster
   wiglaf - monster
-  will-o-the-wisp - monster
+  will_o_the_wisp - monster
   wind_drake - monster
   wizard_monster - monster
   wizard_statue - monster
@@ -792,7 +795,8 @@
   orb_status - status_effect
   ozocubus_armour_status - status_effect
   paralysis_status - status_effect
-  petrifying_or_petrified_status - status_effect
+  petrifying_status - status_effect
+  petrified_status - status_effect
   poison_status - status_effect
   powered_by_death_status - status_effect
   quad_damage_status - status_effect
@@ -868,6 +872,23 @@
   tough_skin - mutation
   wild_magic - mutation
   yellow_scales - mutation
+  offhand_punch_aux_atk - mutation
+  offhand_punch_w_claws_aux_atk - mutation
+  offhand_punch_w__blade_hands_aux_atk - mutation
+  headbutt_aux_atk - mutation
+  peck_aux_atk - mutation
+  kick_w_hooves_aux_atk - mutation
+  kick_w_talons_aux_atk - mutation
+  tail_slap_aux_atk - mutation
+  tail_slap_w_stinger_aux_atk - mutation
+  bite_w_fangs_aux_atk - mutation
+  bite_w_acidic_bite_aux_atk - mutation
+  bite_w_anti_magic_bite_aux_atk - mutation
+  pseudopods_aux_atk - mutation
+  tentacle_spike_aux_atk - mutation
+  tentacle_slap_aux_atk - mutation
+  tentacles_squeeze_aux_atk - mutation
+  constriction_aux_atk - mutation
 
   ashenzari - god
   beogh - god
@@ -1319,8 +1340,6 @@
     (opendoor ?cell - cell)
     (closeddoor ?cell - cell)
 
-    (statue ?cell - cell)
-
     (hasterrain ?cell - cell ?terrain - terrain)
 
     ;altars enable worshipping a god
@@ -1332,12 +1351,30 @@
     ; player loc
     (playerat ?cell - cell)
 
-    ; player health
+    ; player stats
     (playerhealth ?amount - qualitative_quantity)
     (playermagicpoints ?amount - qualitative_quantity)
+    (player_resist_fire ?amount - qualitative_quantity)
+    (player_resist_cold ?amount - qualitative_quantity)
+    (player_resist_neg ?amount - qualitative_quantity)
+    (player_resist_pois ?amount - qualitative_quantity)
+    (player_resist_elec ?amount - qualitative_quantity)
+    (player_resist_corr ?amount - qualitative_quantity)
+    (player_willpower ?amount - qualitative_quantity)
+    (player_stealth ?amount - qualitative_quantity)
+    (player_see_invis)
+    (player_faith_status)
+    (player_spirit_status)
+    (player_reflect_status)
+    (player_harm_status)
+    (player_rampage)
+    (player_movement_speed - qualitative_quantity)
+    (player_attack_speed - qualitative_quantity)
+    (player_has_status_effect - status_effect)
+    (player_has_mutation - mutation)
 
     ; monster related predicates - only one monster per cell
-    (hasmonster ?cell - cell)
+    (hasmonster ?cell - cell ?monster - monster)
     (monster_danger_rating ?cell - cell ?danger - danger_rating)
     (monster_health ?cell - cell ?amount - qualitative_quantity)
     (monster_status_effect ?cell - cell ?status - status_effect)
@@ -1356,6 +1393,14 @@
     (hasarmour ?cell - cell)
     (hasfooditem ?cell - cell)
     (hasitem ?cell - cell ?item - item)
+    (hasitem_generic ?cell - cell) ;; some items, like unidentified potions and scrolls, etc. don't have a name
+    (cursed ?item - item)
+    (equipped ?item - item)
+    (weapon ?item - item)
+    (armour ?item - item)
+    (only_one_remaining ?item - item)
+    (multiple_remaining ?item - item)
+    (item_bonus ?item - item ?amount - qualitative_quantity)
 
     ; special items
     (hasorbofzot ?cell - cell)
@@ -1396,10 +1441,14 @@
     (player_memorised_spell ?spell - spell)
     (spell_chance_of_failure ?spell - spell ?amount - qualitative_quantity)
     (spell_available_to_memorise ?spell - spell)
+    (player_has_available_spell_slot)
 
     ;abilities
     (player_has_ability ?ability - ability)
     (ability_chance_of_failure ?ability - ability ?amount - qualitative_quantity)
+
+    ;examination_menu
+    (cursor ?cell - cell)
 )
 
 
@@ -1409,7 +1458,7 @@
     (and
         (southof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1428,7 +1477,7 @@
     (and
         (northof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1448,7 +1497,7 @@
     (and
         (eastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1467,7 +1516,7 @@
     (and
         (westof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1486,7 +1535,7 @@
     (and
         (northwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1505,7 +1554,7 @@
     (and
         (southwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1524,7 +1573,7 @@
     (and
         (northeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1543,7 +1592,7 @@
     (and
         (southeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1562,7 +1611,7 @@
     (and
         (northof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1581,7 +1630,7 @@
     (and
         (southof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1600,7 +1649,7 @@
     (and
         (eastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1619,7 +1668,7 @@
     (and
         (westof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1638,7 +1687,7 @@
     (and
         (northwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1657,7 +1706,7 @@
     (and
         (southwestof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1676,7 +1725,7 @@
     (and
         (northeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1695,7 +1744,7 @@
     (and
         (southeastof ?currcell ?destcell)
         (not (hasterrain ?destcell stone_wall))
-        (not (statue ?destcell))
+        (not (hasterrain ?destcell statue))
         (not (hasterrain ?destcell lava))
         (not (hasterrain ?destcell plant))
         (not (hasterrain ?destcell trees))
@@ -1709,128 +1758,128 @@
 )
 
 (:action attack_without_move_n
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (northof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_s
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_s
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_e
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (eastof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_w
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (westof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_ne
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (northeastof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_nw
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (northwestof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_se
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southeastof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
 (:action attack_without_move_sw
-    :parameters (?currcell ?destcell - cell)
+    :parameters (?currcell ?destcell - cell ?monster - monster)
     :precondition
     (and
         (southwestof ?currcell ?destcell)
-        (hasmonster ?destcell)
+        (hasmonster ?destcell ?monster)
         (playerat ?currcell)
     )
     :effect
     (and
-        (not (hasmonster ?destcell))
+        (not (hasmonster ?destcell ?monster))
     )
 )
 
@@ -1878,19 +1927,32 @@
     )
 )
 
-
 (:action pickup_item
-    :parameters (?item - item ?cell - cell)
+    :parameters (?cell - cell)
     :precondition
     (and
         (playerat ?cell)
-        (hasitem ?cell ?item)
+        (hasitem_generic ?cell)
     )
     :effect
     (and
-        (invhasitem ?item)
+        (not (hasitem_generic ?cell))
     )
 )
+
+
+;;(:action pickup_item
+;;    :parameters (?item - item ?cell - cell)
+;;    :precondition
+;;    (and
+;;        (playerat ?cell)
+;;        (hasitem ?cell ?item)
+;;    )
+;;    :effect
+;;    (and
+;;        (invhasitem ?item)
+;;    )
+;;)
 
 (:action drop_item
     :parameters (?item - item ?cell - cell)
@@ -1986,14 +2048,14 @@
 )
 
 (:action attack_by_throwing
-    :parameters (?item - item ?targetcell - cell)
+    :parameters (?item - item ?targetcell - cell ?monster - monster)
     :precondition
     (and
         (invhasitem ?item)
     )
     :effect
     (and
-        (not (hasmonster ?targetcell))
+        (not (hasmonster ?targetcell ?monster))
     )
 )
 
@@ -2045,15 +2107,15 @@
 
 
 (:action cast_spell_on_target
-    :parameters (?spell - target_based_spell ?cell - cell)
+    :parameters (?spell - target_based_spell ?cell - cell ?monster)
     :precondition
     (and
         (player_memorised_spell ?spell)
-        (hasmonster ?cell)
+        (hasmonster ?cell ?monster)
     )
     :effect
     (and
-        (not (hasmonster ?cell))
+        (not (hasmonster ?cell ?monster))
     )
 )
 

@@ -122,3 +122,6 @@ class Command(Enum):
     RESPOND_YES_TO_PROMPT = 90
     RESPOND_NO_TO_PROMPT = 91
     ENTER_KEY = 92
+
+    # Menu specific actions
+    EXAMINE_TILE_IN_EXPLORE_MENU = 93

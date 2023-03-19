@@ -6,7 +6,8 @@ from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
 
 import random
-
+import sys
+from loguru import logger
 
 class MyAgent(BaseAgent):
 
@@ -35,6 +36,13 @@ if __name__ == "__main__":
     my_config.game_id = 'dcss-web-trunk'
     my_config.always_start_new_game = False
     my_config.auto_start_new_game = False
+
+    # default loguru logging level is DEBUG
+    # if you want to change this, uncomment the following, and replace INFO with your desired level
+    #logger.remove()  # this removes all handlers, including the default one
+    #logger.add(sys.stderr, level=logging.INFO)  # stderr is the output location for the default handler, so this is
+                                                # like replacing default but with a different level
+
 
     # create game
     game = WebSockGame(config=my_config, agent_class=MyAgent)

@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timedelta
 import warnings
 import os
-import logging
+from loguru import logger
 import time
 from connection import config
 import asyncio
@@ -65,26 +65,26 @@ class GameConnection:
         assert isinstance(self.config, config.WebserverConfig)
 
         # connect
-        logging.info("Connecting to URI " + str(self.config.server_uri) + " ...")
+        logger.info("Connecting to URI " + str(self.config.server_uri) + " ...")
         # print("AWAITING ON WEBSOCKET_3 CONNECT")
         self.websocket = await websockets.connect(self.config.server_uri)
         # print("POST-AWAITING ON WEBSOCKET_3 CONNECT")
-        logging.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
+        logger.info("Connected to webserver:" + str(self.websocket and self.websocket.open))
 
     async def login_webserver(self):
         assert isinstance(self.config, config.WebserverConfig)
 
         # login
-        logging.info("Sending login message...")
+        logger.info("Sending login message...")
         login_msg = {'msg': 'login',
                      'username': self.config.agent_name,
                      'password': self.config.agent_password}
 
         await self.websocket.send(json.dumps(login_msg))
-        logging.info("Sent login message")
+        logger.info("Sent login message")
 
     async def send_pong(self):
-        logging.info("Sending pong")
+        logger.info("Sending pong")
 
         await self.websocket.send(json.dumps({'msg': 'pong'}))
 
@@ -140,7 +140,7 @@ class GameConnection:
                 # # json_messages_from_server_file.write(pprint.pformat(msg_from_server,indent=2)+'\n')
                 # # json_messages_from_server_file.flush()
                 #
-                # logging.debug("i=" + str(i) + "Received Message:\n" + str(msg_from_server))
+                # logger.debug("i=" + str(i) + "Received Message:\n" + str(msg_from_server))
                 #
                 # if self.ai:
                 #     self.ai.add_server_message(msg_from_server)
@@ -156,7 +156,7 @@ class GameConnection:
             except ValueError as e:
                 logging.warning("i=" + str(i) + "Ignoring unparseable JSON (error: %s): %s.", e.args[0], json_message)
             except asyncio.CancelledError:
-                logging.info('Received message to cancel - ignoring so recv can finish up')
+                logger.info('Received message to cancel - ignoring so recv can finish up')
                 self.begin_shutdown = True
             except asyncio.TimeoutError:
                 # server is now ready for input
@@ -213,7 +213,7 @@ class GameConnection:
     #
     #         self.game_ended = True
     #
-    #     logging.info("Sent all quit messages, game is deleted...")
+    #     logger.info("Sent all quit messages, game is deleted...")
 
     async def connect_webserver(self):
         print("Logging in...")
@@ -353,23 +353,23 @@ class GameConnection:
         await self.websocket.send(GameConnection.json_encode(Action.get_execution_repr(command)))
 
     def send_and_receive_dict(self, input_dict):
-        logging.debug("Sending {}".format(input_dict))
+        logger.debug("Sending {}".format(input_dict))
         self._send_message(GameConnection.json_encode(input_dict))
         msgs = self._read_msgs()
         self._handle_msgs(msgs)
 
     async def send_and_receive_dict_ws(self, input_dict):
-        logging.debug("Sending {}".format(input_dict))
+        logger.debug("Sending {}".format(input_dict))
         await self.send_and_receive(input_dict)
 
     def send_and_receive_str(self, input_str):
-        logging.debug("Sending {}".format(input_str))
+        logger.debug("Sending {}".format(input_str))
         self._send_input(input_str)
         msgs = self._read_msgs()
         self._handle_msgs(msgs)
 
     def send_and_receive_command(self, command, sleep_secs=0.05):
-        logging.debug("Sending {}".format(command.name))
+        logger.debug("Sending {}".format(command.name))
         self._send_command(command)
         if sleep_secs > 0:
             time.sleep(sleep_secs)
