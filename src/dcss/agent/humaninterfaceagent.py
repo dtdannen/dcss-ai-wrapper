@@ -161,6 +161,8 @@ class HumanInterfaceBaseAgent(BaseAgent):
             'm': Command.SHOW_SKILL_SCREEN,
         }
 
+        print("current menus is {}".format(self.gamestate.get_current_menu()))
+        
         if self.gamestate.get_current_menu() is Menu.NO_MENU:
             return keypress_to_command_no_menu[keypress]
         elif keypress in Action.dcss_menu_chars:
