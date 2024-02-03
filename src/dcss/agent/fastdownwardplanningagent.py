@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import random
@@ -135,7 +136,7 @@ class FastDownwardPlanningBaseAgent(BaseAgent):
             return None
 
         monster_cell_goal = random.choice(cells_with_monsters)
-        monster_goal_str = "(not (hasmonster {}))".format(monster_cell_goal.get_pddl_name())
+        monster_goal_str = "(not (hasmonster {} {}))".format(monster_cell_goal.get_pddl_name(), monster_cell_goal.monster.name)  
         #print("about to return monster goal: {}".format(monster_goal_str))
         # time.sleep(1)
         return monster_goal_str
