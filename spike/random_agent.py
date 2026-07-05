@@ -19,14 +19,18 @@ crawl is a curses program, so it is launched under a pty. We never need to type
 at it (the agent drives via clua sendkeys); a background thread just drains the
 pty so crawl's screen writes never block.
 
-Run:  python3 spike/random_agent.py [num_turns]
+Run:  python3 spike/random_agent.py [num_turns] [--view] [--delay SECONDS]
+      --view mirrors crawl's screen to this terminal; --delay throttles the
+      agent so the game is watchable (defaults to 0.03s with --view, else 0).
 """
+import argparse
 import errno
 import glob
 import json
 import os
 import random
 import select
+import shutil
 import signal
 import struct
 import subprocess
@@ -139,7 +143,7 @@ def ensure_databases():
                    stderr=subprocess.DEVNULL, check=False)
 
 
-def launch_crawl():
+def launch_crawl(view=False):
     # Sandbox ALL crawl state under /tmp via -dir (crawl_dir): on macOS crawl
     # otherwise saves to ~/Library/Application Support/... . Keep the db/des
     # cache between runs (rebuilding it every launch is slow) but remove the
@@ -154,14 +158,19 @@ def launch_crawl():
             pass
 
     master_fd, slave_fd = os.openpty()
-    # crawl wants at least 80x24; give it a comfortable window.
-    winsize = struct.pack("HHHH", 40, 110, 0, 0)
+    # crawl wants at least 80x24; give it a comfortable window. In view mode,
+    # match the real terminal so the mirrored screen isn't garbled.
+    rows, cols = 40, 110
+    if view:
+        ts = shutil.get_terminal_size((cols, rows))
+        rows, cols = max(ts.lines, 24), max(ts.columns, 80)
+    winsize = struct.pack("HHHH", rows, cols, 0, 0)
     fcntl.ioctl(slave_fd, termios.TIOCSWINSZ, winsize)
 
     env = dict(os.environ)
     env["TERM"] = "xterm-256color"
-    env["LINES"] = "40"
-    env["COLUMNS"] = "110"
+    env["LINES"] = str(rows)
+    env["COLUMNS"] = str(cols)
     env["DCSS_STATE_FIFO"] = STATE_FIFO
     env["DCSS_ACTION_FIFO"] = ACTION_FIFO
 
@@ -193,6 +202,8 @@ def launch_crawl():
                 if not data:
                     break
                 tail.append(data)
+                if view:
+                    os.write(1, data)      # mirror crawl's screen live
         except OSError:
             pass
 
@@ -210,7 +221,17 @@ def screen_tail(tail, nbytes=1200):
 # main lockstep loop
 # --------------------------------------------------------------------------- #
 def main():
-    num_turns = int(sys.argv[1]) if len(sys.argv) > 1 else 100
+    ap = argparse.ArgumentParser(
+        description="random agent driving crawl in lockstep over FIFOs")
+    ap.add_argument("num_turns", nargs="?", type=int, default=100)
+    ap.add_argument("--view", action="store_true",
+                    help="mirror crawl's screen to this terminal")
+    ap.add_argument("--delay", type=float, default=None, metavar="SECONDS",
+                    help="pause between actions (default: 0.03 with --view, else 0)")
+    args = ap.parse_args()
+    num_turns = args.num_turns
+    view = args.view
+    delay = args.delay if args.delay is not None else (0.03 if view else 0.0)
 
     if not os.path.exists(CRAWL_BIN):
         print(f"FAIL: crawl binary not found at {CRAWL_BIN}\n"
@@ -221,9 +242,10 @@ def main():
     make_fifo(STATE_FIFO)
     make_fifo(ACTION_FIFO)
 
-    proc, master_fd, tail = launch_crawl()
-    print(f"launched crawl pid={proc.pid}; seed={CRAWL_SEED}; "
-          f"driving {num_turns} turns of MiBe over FIFOs\n")
+    proc, master_fd, tail = launch_crawl(view)
+    if not view:
+        print(f"launched crawl pid={proc.pid}; seed={CRAWL_SEED}; "
+              f"driving {num_turns} turns of MiBe over FIFOs\n")
 
     received = 0
     turn_advances = 0
@@ -284,7 +306,7 @@ def main():
                     max_dist = max(max_dist, max(abs(rx), abs(ry)))
             last_turns = state["turns"]
 
-            if received <= 3 or received % 25 == 0:
+            if not view and (received <= 3 or received % 25 == 0):
                 print(f"[recv {received:>3}] turns={state['turns']:>4} "
                       f"reckon=({rx:+d},{ry:+d}) hp={state['hp']}/{state['hp_max']} "
                       f"{state['place']} cells={len(state['cells'])} "
@@ -295,6 +317,8 @@ def main():
                 print(f"[recv {received}] hp<=0 -> dead")
                 break
 
+            if delay:
+                time.sleep(delay)
             action = random.choice(SAFE_ACTIONS)
             pending_action = action
             if not write_action(action, STATE_TIMEOUT):
@@ -318,6 +342,9 @@ def main():
             proc.kill()
 
     # ---- results ----
+    if view:
+        # leave crawl's alt screen, reset attrs, restore cursor
+        os.write(1, b"\x1b[?1049l\x1b[0m\x1b[?25h\n")
     elapsed = (t_last - t_first) if (t_first and t_last and t_last > t_first) else 0.0
     sps = (received - 1) / elapsed if elapsed > 0 else 0.0
 
