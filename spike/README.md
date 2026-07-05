@@ -231,3 +231,109 @@ line webtiles parser painful — so it's the better long-term transport.
 Net: keep webtiles only if you must target an unmodified upstream server.
 For this repo — which builds and controls its own crawl — the FIFO/clua bridge is
 the recommended primary transport.
+
+---
+
+# Follow-up: watch the bridge agent in a browser via webtiles
+
+The FIFO bridge is the control/state transport; webtiles is kept purely as a
+**viewer**. The *same* crawl process does both: crawl's webtiles output renders
+the game to a browser while its clua `ready()` hook talks to the external agent
+over the FIFOs. This confirms the architecture split — **FIFO = control/state,
+webtiles = visualization** — end to end.
+
+## Extra deliverables
+
+| file | what it is |
+|------|-----------|
+| `setup_webtiles.sh`      | provisions a Python venv + tornado, writes the game config, installs the rc, registers the account, starts the server |
+| `attach_agent.py`        | random agent in **attach mode**: waits on the FIFOs a webtiles-spawned crawl opens; drives it with a `--delay` throttle so it's watchable |
+| `verify_webtiles.py`     | headless end-to-end proof: speaks the webtiles websocket protocol (login → play → receive `map`/`player` render msgs) while driving the FIFOs |
+| `webtiles_compat/crypt.py` | `crypt` polyfill for Python 3.13+ (only used as a fallback; the pinned 3.12 has stdlib crypt) |
+
+## How to watch (user steps)
+
+```bash
+# 1. build the webtiles binary once (keeps the console ./crawl intact):
+cd spike/crawl/crawl-ref/source
+make -j8 GAME=crawl-web WEBTILES=y BUILD_FREETYPE=YesPlease BUILD_LIBPNG=YesPlease \
+        EXTERNAL_DEFINES="-DCLUA_UNRESTRICTED_LIBS"
+
+# 2. start the server (provisions everything on first run):
+spike/setup_webtiles.sh                       # serves http://localhost:8080
+
+# 3. in another terminal, start the agent and leave it waiting:
+python3 spike/attach_agent.py --turns 400 --delay 0.05
+
+# 4. open http://localhost:8080  ->  log in  BridgeBot / bridge
+#    ->  click "Bridge MiBe (FIFO-driven, seed 1)"  ->  watch it play itself.
+#    (just watch — don't type; keystrokes would compete with the agent.)
+```
+
+The game stays frozen on its first `ready()` until `attach_agent.py` is attached
+— that blocking FIFO read is the lockstep, so start the agent before (or expect a
+brief pause until) you press play.
+
+## How the pieces fit
+
+- **Binary**: `crawl-web` = `WEBTILES=y` + the same `-DCLUA_UNRESTRICTED_LIBS`
+  flag. Built as `GAME=crawl-web` so the console `crawl` from T0 is untouched
+  (the two coexist; WEBTILES also pulls in the `libpng`/`freetype`/`fonts`
+  contribs for build-time tile-sheet generation).
+- **rc injection**: the server loads each account's rc from `rcs/<name>.rc`, so
+  `setup_webtiles.sh` installs `bridge.rc` as `rcs/BridgeBot.rc`. The game entry
+  in `games.d/bridge.yaml` sets `DCSS_STATE_FIFO`/`DCSS_ACTION_FIFO` via its
+  `env:` map (the server forwards these to the spawned crawl) and passes
+  `-species Minotaur -background Berserker -seed 1` so the game auto-starts.
+- **sandbox**: `dir_path` points crawl's saves at `/tmp/dcss_spike_web/home`
+  (pre-built DB, fresh save each run); nothing lands in the repo.
+
+## Gotchas hit here
+
+1. **The webtiles server requires Python ≤ 3.12.** On 3.13+, two independent
+   breakages: (a) stdlib `crypt` was removed (userdb hashes passwords with it),
+   and (b) `webserver/webtiles/terminal.py` calls
+   `asyncio.get_event_loop().remove_signal_handler(...)` in the child of a raw
+   `pty.fork()` *before* `execvpe` — on 3.13/3.14 that raises
+   (`I/O operation on closed kqueue object`) so **crawl-web never execs and the
+   game dies instantly**. `setup_webtiles.sh` pins a 3.12 interpreter via `uv`
+   (which also restores stdlib `crypt`); the `crypt` shim is a secondary
+   fallback. Neither issue is fixable by patching our code — it's the server's.
+2. **WEBTILES clobbers the `crawl` binary name** by default — build with
+   `GAME=crawl-web` to keep both.
+3. Same rc-parser rule as T0 applies to the injected rc: **no bare `}` lines.**
+
+## Verified end-to-end (no browser needed)
+
+`verify_webtiles.py` logs in over the websocket, starts the game (which spawns
+crawl-web), and confirms the browser-facing render messages arrive while the
+FIFO side advances turns:
+
+```
+logged in as BridgeBot; sending play 'bridge-mibe'
+game_started: crawl-web spawned & rendering to the socket
+==================== WEBTILES E2E RESULT ====================
+logged_in           : True
+game_started        : True
+render msgs received: {'player': 1, 'map': 1, 'cursor': 1, 'input_mode': 19}
+FIFO states received: 10
+FIFO turn advances  : 7
+last state          : {'turns': 7, 'hp': 19, 'hp_max': 19, 'place': 'D:1'}
+VERDICT: PASS - browser-renderable game driven over the FIFO bridge
+```
+
+And the standalone tool (`attach_agent.py`) driving while a separate websocket
+spectates (`verify_webtiles.py --no-drive`):
+
+```
+==================== ATTACH RESULT ====================
+states received : 40
+turn advances   : 32
+VERDICT: PASS - drove a webtiles game over the FIFO bridge
+```
+
+So a browser watching `BridgeBot` sees the `map`/`player` stream update once per
+lockstep turn, at whatever pace `--delay` sets (~20–30 turns/sec is comfortable
+to watch). The agent's control path never touches webtiles, and webtiles never
+touches the agent's control path — exactly the separation we wanted.
+
