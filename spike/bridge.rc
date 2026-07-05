@@ -1,0 +1,185 @@
+# =============================================================================
+# T0 spike: DCSS clua <-> Python FIFO bridge (rc file)
+#
+# Loaded via:  crawl -rc spike/bridge.rc ...
+#
+# What it does:
+#   * Auto-starts a Minotaur Berserker so there are no character-creation menus.
+#   * Suppresses blocking "--more--" prompts so ready() drives the game unattended.
+#   * On every ready() (crawl calls this each time it awaits player input, see
+#     crawl-ref/source/main.cc), it:
+#         1. reads ground-truth state from the clua API (you.*, view.*, monster.*)
+#         2. serialises it to one line of JSON
+#         3. writes that line to the state FIFO   ($DCSS_STATE_FIFO)
+#         4. blocks reading one line from the action FIFO ($DCSS_ACTION_FIFO)
+#         5. translates the action token to keys and crawl.sendkeys() them
+#     The blocking FIFO read is the lockstep: crawl freezes until Python answers.
+#
+# Requires crawl built with -DCLUA_UNRESTRICTED_LIBS so that io/os are available
+# in the clua VM (stock builds only load base/table/string/math/coroutine).
+#
+# IMPORTANT rc-parser constraint (initfile.cc): a multi-line Lua block `{`..`}`
+# is terminated by the first line that, once trimmed, is exactly "}". So the Lua
+# below never puts a closing brace on its own line -- every table-closing `}` is
+# attached to a code line. The only bare `}` is the block terminator at the end.
+# =============================================================================
+
+# ---- newgame options: start MiBe with no menus --------------------------------
+name = BridgeBot
+species = Minotaur
+background = Berserker
+# "random" guarantees the weapon-choice menu is auto-answered (a wrong literal
+# weapon name would otherwise pop a blocking menu before ready() ever fires).
+weapon = random
+game_seed = 1
+
+# ---- suppress interaction / blocking prompts ----------------------------------
+show_more        = false
+small_more       = false
+clear_messages   = true
+default_manual_training = false
+travel_delay     = -1
+explore_delay    = -1
+rest_delay       = -1
+autofight_stop   = 0
+force_more_message =
+flash_screen_brightness = 0
+
+# =============================================================================
+# Lua bridge block.
+# =============================================================================
+{
+local STATE_FIFO  = os.getenv("DCSS_STATE_FIFO")  or "/tmp/dcss_state"
+local ACTION_FIFO = os.getenv("DCSS_ACTION_FIFO") or "/tmp/dcss_action"
+local VIEW_RADIUS = 8   -- player-centred window half-width (LOS radius ~7-8)
+
+-- ---- minimal JSON encoder (Lua 5.1, full stdlib available) -------------------
+local ESC = { ['"']='\\"', ['\\']='\\\\', ['\n']='\\n', ['\r']='\\r',
+              ['\t']='\\t', ['\b']='\\b', ['\f']='\\f' }
+local function esc_char(c)
+  return ESC[c] or string.format('\\u%04x', string.byte(c))
+end
+local function json(v)
+  local t = type(v)
+  if v == nil then
+    return "null"
+  elseif t == "boolean" then
+    return v and "true" or "false"
+  elseif t == "number" then
+    if v ~= v or v == math.huge or v == -math.huge then return "null" end
+    if v == math.floor(v) then return string.format("%d", v) end
+    return string.format("%.3f", v)
+  elseif t == "string" then
+    return '"' .. v:gsub('[%c"\\]', esc_char) .. '"'
+  elseif t == "table" then
+    local n = 0
+    for _ in pairs(v) do n = n + 1 end
+    if n == #v then                       -- dense array (also handles empty)
+      local parts = {}
+      for i = 1, #v do parts[i] = json(v[i]) end
+      return "[" .. table.concat(parts, ",") .. "]"
+    end
+    local parts = {}
+    for k, val in pairs(v) do
+      parts[#parts + 1] = json(tostring(k)) .. ":" .. json(val)
+    end
+    return "{" .. table.concat(parts, ",") .. "}"
+  end
+  return "null"
+end
+
+-- ---- state gathering via the clua API ---------------------------------------
+local function gather_state(turn_id)
+  local hp, hpmax = you.hp()
+  local mp, mpmax = you.mp()
+  -- NOTE: absolute player grid coords are NOT exposed to *client* clua in 0.34
+  -- (you.pos/x_pos/y_pos live only in the dungeon-Lua `you` table). The player
+  -- is therefore the ORIGIN (0,0) of the player-centred frame that view.* and
+  -- monster.* use; everything below is reported relative to the player.
+
+  -- explored map cells in a player-centred window.
+  -- view.feature_at(dx,dy) reads the *remembered* map (env.map_knowledge),
+  -- returning a dungeon-feature name string ("floor","rock_wall",...) or
+  -- "unseen" for never-seen cells.  (crawl-ref/source/l-view.cc)
+  local cells = {}
+  for dy = -VIEW_RADIUS, VIEW_RADIUS do
+    for dx = -VIEW_RADIUS, VIEW_RADIUS do
+      local feat = view.feature_at(dx, dy)
+      if feat and feat ~= "unseen" then
+        cells[#cells + 1] = { dx = dx, dy = dy, feat = feat }
+      end
+    end
+  end
+
+  -- visible monsters in the same window.
+  -- monster.get_monster_at(dx,dy) uses player-centred coords and only returns
+  -- monsters the player can currently see. (crawl-ref/source/l-moninf.cc)
+  local monsters = {}
+  for dy = -VIEW_RADIUS, VIEW_RADIUS do
+    for dx = -VIEW_RADIUS, VIEW_RADIUS do
+      if not (dx == 0 and dy == 0) then
+        local m = monster.get_monster_at(dx, dy)
+        if m then
+          monsters[#monsters + 1] = { name = m:name(), dx = dx, dy = dy,
+            attitude = m:attitude(), threat = m:threat(), safe = m:is_safe() }
+        end
+      end
+    end
+  end
+
+  return { turn_id = turn_id, turns = you.turns(), time = you.time(),
+    name = you.name(), race = you.race(), class = you.class(),
+    place = you.where(), depth = you.depth(),
+    hp = hp, hp_max = hpmax, mp = mp, mp_max = mpmax,
+    x = 0, y = 0,                 -- player is the origin of the player-centred frame
+    xl = you.xl(), gold = you.gold(), god = you.god(),
+    berserk = you.berserk(), confused = you.confused(),
+    poisoned = you.poisoned(), feel_safe = you.feel_safe(),
+    los = you.los(), cells = cells, monsters = monsters }
+end
+
+-- ---- action token -> crawl keys ---------------------------------------------
+-- vi movement keys; 's' waits a single turn (search).
+local ACTION_KEYS = { N = "k", S = "j", E = "l", W = "h",
+  NE = "u", NW = "y", SE = "n", SW = "b", WAIT = "s" }
+
+-- ---- FIFO I/O ---------------------------------------------------------------
+-- io.open("w") on a FIFO blocks until a reader opens; io.open("r") blocks until
+-- a writer opens.  Those blocking opens ARE the lockstep handshake.
+local function write_state(payload)
+  local f = io.open(STATE_FIFO, "w")
+  if not f then return false end
+  f:write(payload)
+  f:write("\n")
+  f:flush()
+  f:close()
+  return true
+end
+
+local function read_action()
+  local f = io.open(ACTION_FIFO, "r")
+  if not f then return nil end
+  local line = f:read("*l")
+  f:close()
+  return line
+end
+
+-- ---- the ready() hook: called every time crawl awaits player input ----------
+local READY_COUNT = 0
+function ready()
+  READY_COUNT = READY_COUNT + 1
+  local ok, payload = pcall(function() return json(gather_state(READY_COUNT)) end)
+  if not ok then
+    payload = json({ error = tostring(payload), turn_id = READY_COUNT })
+  end
+
+  if not write_state(payload) then return end   -- no reader; idle
+
+  local action = read_action()
+  if not action then return end
+  action = action:gsub("%s+$", "")              -- trim trailing whitespace/CR
+
+  if action == "QUIT" then return end
+  crawl.sendkeys(ACTION_KEYS[action] or "s")    -- default: wait
+end
+}

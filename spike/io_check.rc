@@ -1,0 +1,23 @@
+# Sanity check that crawl was built with -DCLUA_UNRESTRICTED_LIBS.
+# rc Lua blocks run at parse time (during startup), so if io/os are available
+# we (a) announce their type on the message line and (b) write a marker file.
+# If the flag is OFF, io/os are nil and the marker is never written.
+name = iocheck
+species = Minotaur
+background = Berserker
+weapon = random
+show_more = false
+clear_messages = true
+{
+local io_t = type(io)
+local os_t = type(os)
+crawl.mpr("IOCHECK io=" .. io_t .. " os=" .. os_t)
+if io then
+  local path = (os and os.getenv and os.getenv("DCSS_IO_CHECK")) or "/tmp/dcss_io_check"
+  local f = io.open(path, "w")
+  if f then
+    f:write("IO_OK io=" .. io_t .. " os=" .. os_t .. "\n")
+    f:close()
+  end
+end
+}
