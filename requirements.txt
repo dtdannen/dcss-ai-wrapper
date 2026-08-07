@@ -9,6 +9,7 @@ six==1.15.0
 txaio==21.2.1
 websockets~=10.3
 numpy
+gymnasium
 
 matplotlib # optional, only needed for graphing data
 sphinx-rtd-theme # optional, needed for generating docs

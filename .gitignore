@@ -152,3 +152,9 @@ dmypy.json
 .pytype/
 
 /FastDownward/
+
+# RL training artifacts (large binaries + run logs, not source)
+models/ppo_dcss/
+tb_logs/
+log.txt
+out.txt

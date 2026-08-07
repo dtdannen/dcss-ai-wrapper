@@ -36,6 +36,8 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._LOGGED_IN = False
         self._NEEDS_PONG = False
         self._NEEDS_ENTER = False
+        self._NEEDS_MORE = False
+        self._NEEDS_YES_NO_DECLINE = False
         self._GAME_MODE_SELECTED = False
         self._LOBBY_IS_CLEAR = False
         self._IN_LOBBY = False
@@ -81,6 +83,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         self.ability_menu_options = {}
 
         self.death_summaries = []
+        self._HAD_A_GAME = False  # set True once reset_before_next_game() has run at least once
 
         # agent_class should be set via the constructor: WebSockGame(agent_class=<your_agent_class_here>)
         self.agent_class = None
@@ -99,18 +102,35 @@ class DCSSProtocol(WebSocketClientProtocol):
 
         # start sending messages every second ..
         while True:
+            handled = False  # tracks whether anything in this tick's if/elif chain did something
             if self._CONNECTED and self._NEEDS_PONG:
+                handled = True
                 logger.debug("SENDING PONG MESSAGE")
                 pong_msg = {"msg": "pong"}
                 self.sendMessage(json.dumps(pong_msg).encode('utf-8'))
                 self._NEEDS_PONG = False
+            elif self._CONNECTED and self._NEEDS_YES_NO_DECLINE:
+                handled = True
+                logger.debug("SENDING 'N' TO DECLINE YES/NO PROMPT")
+                decline_msg = {"text": "N", "msg": "input"}
+                self.sendMessage(json.dumps(decline_msg).encode('utf-8'))
+                self._NEEDS_YES_NO_DECLINE = False
+                self._NEEDS_ENTER = False
             elif self._CONNECTED and self._NEEDS_ENTER:
+                handled = True
                 logger.debug("SENDING ENTER KEY BECAUSE OF PROMPT")
                 enter_key_msg = {"text": "\r", "msg": "input"}
                 self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
                 self._NEEDS_ENTER = False
+            elif self._CONNECTED and self._NEEDS_MORE:
+                handled = True
+                logger.debug("SENDING ENTER KEY BECAUSE OF --MORE-- PROMPT")
+                more_prompt_msg = {"text": "\r", "msg": "input"}
+                self.sendMessage(json.dumps(more_prompt_msg).encode('utf-8'))
+                self._NEEDS_MORE = False
             else:
                 if self._CONNECTED and not self._LOGGED_IN:
+                    handled = True
                     logger.debug("SENDING LOGIN MESSAGE")
                     login_msg = {'msg': 'login',
                                  'username': self.config.agent_name,
@@ -118,12 +138,14 @@ class DCSSProtocol(WebSocketClientProtocol):
                     self.sendMessage(json.dumps(login_msg).encode('utf-8'))
 
                 elif self._LOGGED_IN and self._IN_LOBBY and not self._GAME_STARTED:
+                    handled = True
                     logger.debug("SENDING GAME MODE SELECTION MESSAGE")
                     play_game_msg = {'msg': 'play', 'game_id': self.config.game_id}
                     self.sendMessage(json.dumps(play_game_msg).encode('utf-8'))
 
                 #### BEGIN SEEDED GAME MENU NAVIGATION ####
                 elif self.config.game_id == 'seeded-web-trunk' and self._IN_GAME_SEED_MENU and not self._SENT_GAME_SEED:
+                    handled = True
                     logger.debug("SENDING GAME SEED")
                     game_seed_msg = {"text": str(config.WebserverConfig.seed), "generation_id": 1, "widget_id": "seed",
                                      "msg": "ui_state_sync"}
@@ -131,6 +153,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                     self._SENT_GAME_SEED = True
 
                 elif self.config.game_id == 'seeded-web-trunk' and self._SENT_GAME_SEED and not self._CHECKED_BOX_FOR_PREGENERATION:
+                    handled = True
                     logger.debug("SENDING CHECKMARK TO CONFIRM PREGENERATION OF DUNGEON")
                     pregeneration_checkbox_msg = {"checked": True, "generation_id": 1, "widget_id": "pregenerate",
                                                   "msg": "ui_state_sync"}
@@ -138,6 +161,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                     self._CHECKED_BOX_FOR_PREGENERATION = True
 
                 elif self.config.game_id == 'seeded-web-trunk' and self._READY_TO_SEND_SEED_GAME_START and self._SENT_GAME_SEED and self._CHECKED_BOX_FOR_PREGENERATION and not self._SENT_SEEDED_GAME_START:
+                    handled = True
                     logger.debug("SENDING MESSAGE TO START THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
                     start_seeded_game_msg_button = {"generation_id": 1, "widget_id": "btn-begin",
                                                     "msg": "ui_state_sync"}
@@ -145,6 +169,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                     self._SENT_SEEDED_GAME_START = True
 
                 elif self.config.game_id == 'seeded-web-trunk' and self._SENT_SEEDED_GAME_START and not self._SENT_SEEDED_GAME_START_CONFIRMATION:
+                    handled = True
                     logger.debug("SENDING MESSAGE TO CONFIRM THE SEEDED GAME WITH CLICK BUTTON MESSAGE")
                     confirm_seeded_game_msg_button = {"keycode": 13, "msg": "key"}
                     self.sendMessage(json.dumps(confirm_seeded_game_msg_button).encode('utf-8'))
@@ -153,6 +178,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                 #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
                 elif self.config.game_id == 'tut-web-trunk' and self._IN_MENU == Menu.TUTORIAL_SELECTION_MENU:
+                    handled = True
                     logger.debug("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE TUTORIAL MENU".format(
                         config.WebserverConfig.tutorial_number))
                     hotkey = MenuBackgroundKnowledge.tutorial_lesson_number_to_hotkey[
@@ -165,6 +191,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                 #### BEGIN TUTORIAL GAME MENU NAVIGATION ####
                 elif self.config.game_id == 'sprint-web-trunk' and self._IN_MENU == Menu.SPRINT_MAP_SELECTION_MENU:
+                    handled = True
                     logger.debug("SENDING MESSAGE TO SELECT THE TUTORIAL #{} IN THE SPRINT MENU".format(
                         config.WebserverConfig.tutorial_number))
                     hotkey = MenuBackgroundKnowledge.sprint_map_letter_to_hotkey[
@@ -176,6 +203,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                 elif self._GAME_STARTED:
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_SPECIES and not self._SENT_SPECIES_SELECTION:
+                        handled = True
                         if self.config.species not in self.species_options.keys():
                             print(
                                 "ERROR species {} specified in config is not available. Available choices are: {}".format(
@@ -190,6 +218,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self.sendMessage(json.dumps(species_selection_msg).encode('utf-8'))
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_BACKGROUND and not self._SENT_BACKGROUND_SELECTION:
+                        handled = True
                         if self.config.background not in self.background_options.keys():
                             print(
                                 "ERROR background {} specified in config is not available. Available choices are: {}".format(
@@ -205,6 +234,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self.sendMessage(json.dumps(background_selection_msg).encode('utf-8'))
 
                     if self._IN_MENU == Menu.CHARACTER_CREATION_SELECT_WEAPON and not self._SENT_WEAPON_SELECTION:
+                        handled = True
                         if self.config.starting_weapon not in self.weapon_options.keys():
                             print(
                                 "ERROR weapon {} specified in config is not available. Available choices are: {}".format(
@@ -219,6 +249,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             self.sendMessage(json.dumps(weapon_selection_msg).encode('utf-8'))
 
                     if self._PLAYER_DIED and self._IN_MENU == Menu.CHARACTER_INVENTORY_MENU:
+                        handled = True
                         logger.debug("SENDING ENTER KEY BECAUSE WE ARE IN THE INVENTORY AFTER DEATH MENU")
                         enter_key_msg = {"text": "\r", "msg": "input"}
                         self.sendMessage(json.dumps(enter_key_msg).encode('utf-8'))
@@ -232,7 +263,8 @@ class DCSSProtocol(WebSocketClientProtocol):
                                          Menu.ATTRIBUTE_INCREASE_TEXT_MENU,
                                          Menu.INDIVIDUAL_INVENTORY_ITEM_MENU,
                                          Menu.RENOUNCE_FAITH_TEXT_MENU,
-                                         Menu.ARE_YOU_SURE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME:
+                                         Menu.ARE_YOU_SURE_TEXT_MENU] and self._RECEIVED_MAP_DATA and not self._BEGIN_DELETING_GAME and not self._PLAYER_DIED:
+                        handled = True
 
                         if self.config.draw_map: self.game_state.draw_cell_map()
 
@@ -251,7 +283,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                             #     self.last_message_sent = next_action
                             #     self.actions_sent += 1
                             elif next_action:
-                                print("Sending action: {}\n".format(next_action))
+                                logger.info("Sending action: {}".format(next_action))
                                 self.sendMessage(json.dumps(Action.get_execution_repr(next_action)).encode('utf-8'))
                                 self.last_message_sent = next_action
                                 self.actions_sent += 1
@@ -262,6 +294,7 @@ class DCSSProtocol(WebSocketClientProtocol):
 
                     # State machine to abandon character and delete the game
                     if self._BEGIN_DELETING_GAME and not self._SENT_CTRL_Q_TO_DELETE_GAME:
+                        handled = True
                         # send abandon character and quit game (mimics ctrl-q)
                         abandon_message = {"msg": "key", "keycode": 17}
                         print("Ending this game now, please wait...")
@@ -270,6 +303,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_CTRL_Q_TO_DELETE_GAME = True
 
                     elif self._BEGIN_DELETING_GAME and self._SENT_CTRL_Q_TO_DELETE_GAME and not self._SENT_YES_TEXT_TO_DELETE_GAME:
+                        handled = True
                         # send 'yes' confirmation string
                         confirmation_message = {"text": "yes\r", "msg": "input"}
                         logger.debug("SENDING YES CONFIRMATION TO ABANDON CHARACTER")
@@ -277,6 +311,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_YES_TEXT_TO_DELETE_GAME = True
 
                     elif self._BEGIN_DELETING_GAME and self._SENT_YES_TEXT_TO_DELETE_GAME and not self._SENT_ENTER_1_TO_DELETE_GAME:
+                        handled = True
                         # send first enter to clear the menu
                         first_enter_msg = {"text": "\r", "msg": "input"}
                         logger.debug("SENDING FIRST ENTER FOLLOWING TO ABANDON CHARACTER")
@@ -284,6 +319,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_1_TO_DELETE_GAME = True
 
                     elif self._BEGIN_DELETING_GAME and self._SENT_ENTER_1_TO_DELETE_GAME and not self._SENT_ENTER_2_TO_DELETE_GAME:
+                        handled = True
                         # send first enter to clear the menu
                         second_enter_msg = {"text": "\r", "msg": "input"}
                         logger.debug("SENDING SECOND ENTER FOLLOWING TO ABANDON CHARACTER")
@@ -291,6 +327,7 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_2_TO_DELETE_GAME = True
 
                     elif self._BEGIN_DELETING_GAME and self._SENT_ENTER_2_TO_DELETE_GAME and not self._SENT_ENTER_3_TO_DELETE_GAME:
+                        handled = True
                         # send first enter to clear the menu
                         third_enter_msg = {"text": "\r", "msg": "input"}
                         logger.debug("SENDING THIRD ENTER FOLLOWING TO ABANDON CHARACTER")
@@ -298,8 +335,9 @@ class DCSSProtocol(WebSocketClientProtocol):
                         self._SENT_ENTER_3_TO_DELETE_GAME = True
                         self.reset_before_next_game()
 
-            logger.warning("If you're seeing this message, probably forgot to update autobahn code above")
-            logger.info("About to sleep for delay {}".format(config.WebserverConfig.delay))
+            if not (not handled and (self._GAME_STARTED or self._HAD_A_GAME)):
+                logger.warning("If you're seeing this message, probably forgot to update autobahn code above")
+            logger.debug("About to sleep for delay {}".format(config.WebserverConfig.delay))
 
             # if user is trying to run with really low delay, only use that delay after a game has started
             # because otherwise logging in and setting up the game may fail because of too many msgs too fast
@@ -362,6 +400,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._RECEIVED_MAP_DATA = False
 
         self._PLAYER_DIED = False
+        self._HAD_A_GAME = True
 
         self._BEGIN_DELETING_GAME = False
         self._SENT_CTRL_Q_TO_DELETE_GAME = False
@@ -377,7 +416,10 @@ class DCSSProtocol(WebSocketClientProtocol):
         self.game_state = GameState()
 
         # keep the old agent for data purposes
-        self.previous_agents.append(copy.deepcopy(self.agent))
+        try:
+            self.previous_agents.append(copy.deepcopy(self.agent))
+        except TypeError:
+            logger.debug("Skipping previous_agents copy - agent is not deepcopy-able")
         print("THERE ARE NOW {} PREVIOUS AGENTS".format(len(self.previous_agents)))
 
         # reset the agent!
@@ -393,6 +435,14 @@ class DCSSProtocol(WebSocketClientProtocol):
         if self.check_for_enter_key(json_msg):
             logger.debug("setting _NEEDS_ENTER = TRUE")
             self._NEEDS_ENTER = True
+
+        if self.check_for_more_prompt(json_msg):
+            logger.debug("setting _NEEDS_MORE = TRUE")
+            self._NEEDS_MORE = True
+
+        if self.check_for_generic_yes_no_prompt(json_msg):
+            logger.debug("setting _NEEDS_YES_NO_DECLINE = TRUE")
+            self._NEEDS_YES_NO_DECLINE = True
 
         if self.check_for_in_lobby(json_msg):
             self._IN_LOBBY = True
@@ -535,6 +585,18 @@ class DCSSProtocol(WebSocketClientProtocol):
                 mode_is_5 = True
 
         return input_mode_found and mode_is_5
+
+    def check_for_more_prompt(self, json_msg):
+        for v in nested_lookup('more', json_msg):
+            if v:
+                return True
+        return False
+
+    def check_for_generic_yes_no_prompt(self, json_msg):
+        for v in nested_lookup('text', json_msg):
+            if "[Y]es or [N]o only, please." in v:
+                return True
+        return False
 
     def check_for_inventory_menu(self, json_msg):
         input_mode_found = False
@@ -779,17 +841,12 @@ class DCSSProtocol(WebSocketClientProtocol):
         return False
 
     def check_for_death_message(self, json_msg):
-        reason_is_dead_found = False
-        for v in nested_lookup('reason', json_msg):
-            if v == 'dead':
-                reason_is_dead_found = True
-
         message_game_ended = False
         for v in nested_lookup('msg', json_msg):
             if v == 'game_ended':
                 message_game_ended = True
 
-        return reason_is_dead_found and message_game_ended
+        return message_game_ended
 
     def check_for_species_selection_menu(self, json_msg):
         for v in nested_lookup('title', json_msg):

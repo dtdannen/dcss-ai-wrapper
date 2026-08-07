@@ -1887,7 +1887,9 @@ class GameState:
                         current_status_effects.add(StatusEffect.WATER_STATUS_EFFECT)
                     elif v == 'Constr':
                         current_status_effects.add(StatusEffect.CONSTRICTION_STATUS_EFFECT)
-                    elif v == 'Zot':
+                    elif v == 'Zot' or v.startswith('Zot ('):
+                        # Zot's countdown status is rendered as "Zot (999)", with a turn counter
+                        # in parentheses that ticks down, so match on the "Zot (" prefix too
                         current_status_effects.add(StatusEffect.ZOT_STATUS_EFFECT)
                     elif v == 'Berserk':
                         current_status_effects.add(StatusEffect.BERSERK_STATUS_EFFECT)
@@ -1898,9 +1900,8 @@ class GameState:
                     elif v == 'Slow':
                         current_status_effects.add(StatusEffect.SLOW_STATUS_EFFECT)
                     else:
-                        logger.critical("******* UNKNOWN STATUS VALUE - PLEASE SUBMIT GITHUB PULL REQUEST TO UPDATE GAME KNOWLEDGE *******")
+                        logger.warning("******* UNKNOWN STATUS VALUE - PLEASE SUBMIT GITHUB PULL REQUEST TO UPDATE GAME KNOWLEDGE *******")
                         print("light: {}".format(v))
-                        raise Exception("Please update knowledge to support this status effect (thank you! -Dustin)")
 
         self.player_status_effects = current_status_effects
 

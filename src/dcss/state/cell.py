@@ -376,14 +376,12 @@ class Cell:
         This vector has length 1 and is highly simplified. Possible values are:
         0 - empty
         1 - player
-        2 - monster
-        3 - lava
-        4 - plant or tree
-        5 - stairsup
-        6 - stairsdown
-        7 - statue or wall or
-        8 - open door
-        9 - closed door
+        2 - monster or plant
+        3 - obstacle (lava, tree, statue, or wall)
+        4 - open door
+        5 - closed door
+        6 - stairs up
+        7 - stairs down
         """
 
         if self.has_player:
@@ -397,6 +395,10 @@ class Cell:
             return 4
         elif self.has_closed_door:
             return 5
+        elif self.has_stairs_up:
+            return 6
+        elif self.has_stairs_down:
+            return 7
         else:
             return 0  # signifies being empty
 

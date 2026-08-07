@@ -6,10 +6,17 @@ from dcss.websockgame import WebSockGame
 from dcss.connection.config import WebserverConfig
 
 import random
+import os
 
 from loguru import logger
 
 import time
+
+# write full debug logs to log.txt in the project root, in addition to the
+# default terminal (stderr) handler that loguru already sets up
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+_LOG_FILE = os.path.join(_PROJECT_ROOT, "log.txt")
+logger.add(_LOG_FILE, level="DEBUG", mode="w")
 
 
 
