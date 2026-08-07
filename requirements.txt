@@ -10,6 +10,8 @@ txaio==21.2.1
 websockets~=10.3
 numpy
 gymnasium
+stable-baselines3 # needed for RL training (src/dcss/rl/train_ppo.py)
+tensorboard # needed for RL training, via PPO's tensorboard_log in train_ppo.py
 
 matplotlib # optional, only needed for graphing data
 sphinx-rtd-theme # optional, needed for generating docs
