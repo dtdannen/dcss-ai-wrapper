@@ -4,6 +4,24 @@ from loguru import logger
 
 
 
+# --- Ablation toggles -------------------------------------------------------
+# True skips a dead player-cell lookup whose only effect was a KeyError that silently
+# dropped a server message. False restores it (PPO_2 through PPO_6 behaviour).
+FIX_DEAD_PLAYER_CELL_LOOKUP = True
+
+# Append frontier features to the observation. The radius-3 window spans 3 tiles and
+# says nothing about where unexplored space lies, so across PPO_4/6/7/8 the policy had
+# no way to represent "where I haven't been" - and every one of those runs got WORSE at
+# exploring over its own length (PPO_8: 0.231 -> 0.126 cells/step while entropy fell to
+# -1.46, i.e. converging confidently on a worse strategy). This is the structural
+# candidate for that.
+#
+# Changes the observation width, so a run with this on cannot resume a checkpoint
+# trained with it off, and vice versa.
+FIX_FRONTIER_OBSERVATION = True
+# ----------------------------------------------------------------------------
+
+
 class CellMap:
     """
     Data structure that maintains the set of all cells currently seen in the game.
@@ -63,7 +81,14 @@ class CellMap:
             self.agent_y = y
 
         # safety check - cell with player matches x and y
-        if self.agent_x and self.agent_y:
+        #
+        # Disabled by FIX_DEAD_PLAYER_CELL_LOOKUP. player_cell is assigned and never
+        # read - every consumer below is commented out - so the lookup's only runtime
+        # effect is the KeyError it can raise. That is not hypothetical: PPO_6 threw
+        # KeyError: (-20, -10) here at 19:10:44, which game.py:182 re-raises out of
+        # onMessage, where asyncio logs it and continues - silently discarding that
+        # entire server message. Once per ~14 minutes observed.
+        if not FIX_DEAD_PLAYER_CELL_LOOKUP and self.agent_x and self.agent_y:
             player_cell = self.place_depth_to_x_y_to_cells[self.current_place][self.current_depth][(self.agent_x, self.agent_y)]
             # if not player_cell.has_player:
             #     print("WARNING - discrepancy in player location:")
@@ -121,6 +146,89 @@ class CellMap:
 
     def set_current_place(self, place: str):
         self.current_place = place
+
+    FRONTIER_FEATURE_LEN = 6
+
+    # 8-neighbourhood, matching DCSS movement
+    _NEIGHBOURS = ((-1, -1), (0, -1), (1, -1),
+                   (-1, 0), (1, 0),
+                   (-1, 1), (0, 1), (1, 1))
+
+    def get_frontier_features(self, r=3):
+        """
+        Fixed-length signal for WHERE THE UNEXPLORED SPACE IS, which the radius-r window
+        cannot express: it spans r tiles, and before the cell.py fix it rendered unseen
+        tiles identically to walls.
+
+        A frontier cell is a SEEN, STANDABLE cell with at least one unseen 8-neighbour -
+        somewhere the agent can actually walk to in order to reveal new map. Unseen is
+        simply "absent from the cell dict", so no new bookkeeping is needed.
+
+        Returns exactly FRONTIER_FEATURE_LEN floats:
+          0,1  unit dx, dy toward the nearest frontier cell        (-1..1)
+          2    chebyshev distance to it, /50, clipped              (0..1)
+          3    frontier cell count, /100, clipped                  (0..1)
+          4    fraction of the local (2r+1)^2 window still unseen  (0..1)
+          5    cells seen on this depth, /500, clipped             (0..1)
+
+        Chebyshev distance because DCSS movement is 8-directional, so it equals the
+        number of moves required.
+
+        Never raises and never returns a short list: on a fresh game agent_x/agent_y are
+        None and the place/depth dict is missing, and an exception here would stall the
+        run the way the encoding bug silently dropped updates.
+        """
+        zeros = [0.0] * CellMap.FRONTIER_FEATURE_LEN
+        if self.agent_x is None or self.agent_y is None:
+            return zeros
+        cells = self.place_depth_to_x_y_to_cells.get(
+            self.current_place, {}).get(self.current_depth)
+        if not cells:
+            return zeros
+
+        ax, ay = self.agent_x, self.agent_y
+
+        span = 2 * r + 1
+        unseen_local = 0
+        for dy in range(-r, r + 1):
+            for dx in range(-r, r + 1):
+                if (ax + dx, ay + dy) not in cells:
+                    unseen_local += 1
+        local_unseen_frac = unseen_local / float(span * span)
+        seen_frac = min(1.0, len(cells) / 500.0)
+
+        best_d, best, frontier_count = None, None, 0
+        for (x, y), cell in cells.items():
+            v = cell.get_simple_vector_value()
+            if v == 3 or v == 9:
+                continue  # obstacle or unknown glyph - not somewhere to walk
+            for dx, dy in CellMap._NEIGHBOURS:
+                if (x + dx, y + dy) not in cells:
+                    frontier_count += 1
+                    d = max(abs(x - ax), abs(y - ay))
+                    # Skip the agent's own tile when choosing a heading. The agent is
+                    # usually standing ON the frontier (its tile borders unseen space),
+                    # and counting it would collapse the direction to (0,0) exactly when
+                    # a heading is most useful. Pointing at the next frontier tile
+                    # instead turns a corridor into "keep going that way".
+                    if d > 0 and (best_d is None or d < best_d):
+                        best_d, best = d, (x, y)
+                    break
+
+        if best is None:
+            # Floor fully explored: no direction to give, but progress still reported.
+            return [0.0, 0.0, 0.0, 0.0, local_unseen_frac, seen_frac]
+
+        ddx, ddy = best[0] - ax, best[1] - ay
+        scale = max(abs(ddx), abs(ddy)) or 1  # 1 when standing on the frontier itself
+        return [
+            ddx / float(scale),
+            ddy / float(scale),
+            min(1.0, best_d / 50.0),
+            min(1.0, frontier_count / 100.0),
+            local_unseen_frac,
+            seen_frac,
+        ]
 
     def get_radius_around_agent_vector(self, r=2, tile_vector_repr='simple'):
         """

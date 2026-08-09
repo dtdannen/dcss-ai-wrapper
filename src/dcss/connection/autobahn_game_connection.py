@@ -20,6 +20,37 @@ from dcss.state.menu import Menu
 from dcss.state.ability import Ability
 
 
+# --- Ablation toggle --------------------------------------------------------
+# False = poll the agent's restart request only from onMessage, which is how PPO_6
+# died: the server went silent, the flag was never polled, and the run hung for 12
+# minutes emitting filler actions.
+FIX_TICK_LOOP_RESTART_POLL = True
+
+# Harden the ctrl-Q abandon handshake against modal prompts. PPO_7 died at 88k when
+# the character reached XL3 and DCSS raised the level-up stat prompt
+# ("Increase (S)trength, (I)ntelligence, or (D)exterity?", player-stats.cc:213).
+# That modal swallows input, so ctrl-Q never registered, the "yes" confirmation was
+# read as stat choices - its 's' producing "Uppercase letters only, please." - and the
+# three ENTERs did nothing. The abandon state machine advanced blindly regardless and
+# called reset_before_next_game(), so the client believed a new game was starting while
+# the server still had the old one stuck at the prompt. No new game ever came and the
+# 120s queue timeout ended the run. Observed once per ~45 restarts, which is fatal for
+# any run needing ~100 of them.
+#
+# Two independent cuts:
+#   1. Answer the stat prompt as soon as it appears, so it never blocks anything. The
+#      wrapper already DETECTED it (check_for_attribute_increase) and set _IN_MENU, but
+#      nothing ever replied - attribute_increase_menu_options was written and never read.
+#   2. Send ESC before ctrl-Q whenever any menu is open, so the abandon starts from a
+#      clean input state rather than into an unknown modal.
+FIX_ABANDON_PROMPT_HARDENING = True
+
+# Which stat to take on level-up. 'S' suits the Minotaur Berserker in config.py; the
+# choice barely matters for stage-1 exploration, but it must be UPPERCASE.
+LEVEL_UP_STAT_CHOICE = 'S'
+# ----------------------------------------------------------------------------
+
+
 class DCSSProtocol(WebSocketClientProtocol):
 
     def __init__(self):
@@ -61,6 +92,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._PLAYER_DIED = False
 
         self._BEGIN_DELETING_GAME = False
+        self._SENT_ESCAPE_BEFORE_ABANDON = False  # FIX_ABANDON_PROMPT_HARDENING
         self._SENT_CTRL_Q_TO_DELETE_GAME = False
         self._SENT_YES_TEXT_TO_DELETE_GAME = False
         self._SENT_ENTER_1_TO_DELETE_GAME = False
@@ -292,8 +324,50 @@ class DCSSProtocol(WebSocketClientProtocol):
                         else:
                             print("Game Connection Does Not Have An Agent")
 
+                    # Poll the agent's restart request from the tick loop as well as from
+                    # onMessage. onMessage only fires when the server sends us something,
+                    # so a silent server leaves the request unconsumed and the abandon
+                    # sequence never starts. That is exactly how PPO_6 died: after the
+                    # 4th truncation the server went quiet, the flag was never polled,
+                    # and the agent emitted 11,182 filler actions over 12 minutes before
+                    # webtiles timed the connection out. The tick loop runs on its own
+                    # timer, so polling here does not depend on the thing that broke.
+                    # check_agent_wants_to_start_next_game() consumes the flag one-shot,
+                    # so whichever caller sees it first wins and the other gets False.
+                    if (FIX_TICK_LOOP_RESTART_POLL
+                            and not self._BEGIN_DELETING_GAME
+                            and self.check_agent_wants_to_start_next_game()):
+                        handled = True
+                        print("AGENT WANTS TO START A NEW GAME (tick loop)")
+                        self._BEGIN_DELETING_GAME = True
+                        self._GAME_IS_ONGOING = False
+
+                    # Answer the level-up stat prompt the moment it appears. It is modal:
+                    # while it is up DCSS ignores everything except S/I/D, the agent is
+                    # gated out (the menu is in the exclusion list above), and any abandon
+                    # handshake sent into it is silently eaten. Uppercase is mandatory.
+                    if (FIX_ABANDON_PROMPT_HARDENING
+                            and self._IN_MENU == Menu.ATTRIBUTE_INCREASE_TEXT_MENU):
+                        handled = True
+                        print("ANSWERING LEVEL-UP STAT PROMPT WITH '{}'".format(LEVEL_UP_STAT_CHOICE))
+                        stat_msg = {"text": LEVEL_UP_STAT_CHOICE, "msg": "input"}
+                        self.sendMessage(json.dumps(stat_msg).encode('utf-8'))
+                        self._IN_MENU = Menu.NO_MENU
+
                     # State machine to abandon character and delete the game
-                    if self._BEGIN_DELETING_GAME and not self._SENT_CTRL_Q_TO_DELETE_GAME:
+                    elif (FIX_ABANDON_PROMPT_HARDENING
+                            and self._BEGIN_DELETING_GAME
+                            and not self._SENT_ESCAPE_BEFORE_ABANDON):
+                        # Clear whatever modal may be open before starting the handshake,
+                        # so ctrl-Q lands on the map rather than inside a prompt. Costs one
+                        # tick per abandon and is a no-op when nothing is open.
+                        handled = True
+                        logger.debug("SENDING ESCAPE TO CLEAR ANY MODAL BEFORE ABANDON")
+                        self.sendMessage(json.dumps({"msg": "key", "keycode": 27}).encode('utf-8'))
+                        self._SENT_ESCAPE_BEFORE_ABANDON = True
+                        self._IN_MENU = Menu.NO_MENU
+
+                    elif self._BEGIN_DELETING_GAME and not self._SENT_CTRL_Q_TO_DELETE_GAME:
                         handled = True
                         # send abandon character and quit game (mimics ctrl-q)
                         abandon_message = {"msg": "key", "keycode": 17}
@@ -403,6 +477,7 @@ class DCSSProtocol(WebSocketClientProtocol):
         self._HAD_A_GAME = True
 
         self._BEGIN_DELETING_GAME = False
+        self._SENT_ESCAPE_BEFORE_ABANDON = False  # FIX_ABANDON_PROMPT_HARDENING
         self._SENT_CTRL_Q_TO_DELETE_GAME = False
         self._SENT_YES_TEXT_TO_DELETE_GAME = False
         self._SENT_ENTER_1_TO_DELETE_GAME = False

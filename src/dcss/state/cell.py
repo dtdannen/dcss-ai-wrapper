@@ -1,6 +1,17 @@
+from loguru import logger
+
 from dcss.state.monster import Monster
 from dcss.state.terrain import TerrainType
 
+
+# --- Ablation toggles -------------------------------------------------------
+# Every correctness fix in this file is switchable so its individual contribution
+# can be measured later without editing logic. Setting one to False restores the
+# exact pre-fix behaviour. Grouped here deliberately - do not scatter them.
+FIX_UNSEEN_CELL_ENCODING = True    # unseen cell -> 8 instead of 3 (which means wall)
+FIX_UNKNOWN_GLYPH_ENCODING = True  # unrecognised glyph -> 9 instead of 0 (empty floor)
+FIX_PHANTOM_MONSTERS = True        # clear has_monster when the glyph says none is there
+# ----------------------------------------------------------------------------
 
 
 class Cell:
@@ -23,6 +34,12 @@ class Cell:
         self.col = None
 
         self.terrain = None
+
+        # Set when the server sends a glyph none of the branches in set_vals recognise
+        # (PPO_4 saw 274 of these: div, backtick, underscore, intersection). Without it
+        # such cells fall through to value 0 = "empty floor", so an impassable feature
+        # reads as walkable - the same class of silent error as unseen-vs-wall.
+        self.has_unknown_glyph = False
 
         self.has_wall = False
         self.has_player = False
@@ -95,6 +112,22 @@ class Cell:
 
         if 'g' in vals.keys():
             self.g = vals['g']
+
+            if FIX_UNKNOWN_GLYPH_ENCODING:
+                # Recomputed from scratch on every glyph update: the chain below only
+                # ever sets flags True, so without clearing here a cell that was once
+                # unrecognised would stay unrecognised after becoming plain floor.
+                self.has_unknown_glyph = False
+
+            if FIX_PHANTOM_MONSTERS and not (
+                    self.g not in ['p', 'P'] and self.g in Monster.all_possible_g_values):
+                # The glyph says there is no monster here. has_monster was previously
+                # only cleared when the update carried a 'mon' key, so a glyph-only
+                # update left it True with no monster behind it - and because
+                # get_simple_vector_value() checks has_monster before terrain, the cell
+                # rendered as 2 (monster) forever and masked its real contents.
+                self.has_monster = False
+                self.monster = None
 
             # ['p', 'P'] are plants
             if self.g not in ['p', 'P'] and self.g in Monster.all_possible_g_values:
@@ -207,7 +240,16 @@ class Cell:
                 self.has_flame_cloud = True
 
             else:
-                print("Found an unknown g value: {}".format(self.g))
+                if FIX_UNKNOWN_GLYPH_ENCODING:
+                    self.has_unknown_glyph = True
+                    # logger.debug, not print: this fires on glyphs like the
+                    # intersection sign (U+2229), which is absent from cp1256. Under a
+                    # non-UTF8 stdout the print raises UnicodeEncodeError, which
+                    # game.py:182 converts into an aborted game_state.update() - a
+                    # silently dropped server message.
+                    logger.debug("Found an unknown g value: {}".format(self.g))
+                else:
+                    print("Found an unknown g value: {}".format(self.g))
                 #time.sleep(20)
 
             # elif self.g in string.ascii_lowercase+string.ascii_uppercase:
@@ -384,6 +426,11 @@ class Cell:
         7 - stairs down
         """
 
+        if FIX_UNKNOWN_GLYPH_ENCODING and self.has_unknown_glyph:
+            # Checked first: an unrecognised glyph means we do not know what is here,
+            # and claiming "empty floor" (0) invites the agent to walk into it. Ranked
+            # above the other flags because those were never set for this cell anyway.
+            return 9
         if self.has_player:
             return 1
         elif self.has_monster or self.has_plant:
@@ -404,8 +451,12 @@ class Cell:
 
     @staticmethod
     def get_simple_vector_value_for_nonexistent_cell():
-        """In the situation where we need to represent a tile that doesn't exist, use this as the default value"""
-        return 3  # same as an obstacle
+        """
+        A cell we have never seen. Deliberately NOT 3 (obstacle): the exploration
+        reward pays for reaching unseen cells, so encoding them identically to walls
+        leaves the policy no way to tell its goal from an impassable barrier.
+        """
+        return 8 if FIX_UNSEEN_CELL_ENCODING else 3
 
     def __str__(self):
         if self.g and len(self.g) >= 1:
