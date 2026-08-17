@@ -336,4 +336,3 @@ So a browser watching `BridgeBot` sees the `map`/`player` stream update once per
 lockstep turn, at whatever pace `--delay` sets (~20–30 turns/sec is comfortable
 to watch). The agent's control path never touches webtiles, and webtiles never
 touches the agent's control path — exactly the separation we wanted.
-
