@@ -14,6 +14,9 @@ visualization/graphs/*
 downward/
 crawl/
 
+# T0 spike: vendored crawl checkout (never commit the crawl source/build)
+spike/crawl/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
